@@ -14,7 +14,34 @@ class World extends Scene {
     this.translocables.push(translocable);
     this.add(translocable);
 
-    this.voxels = [];
+    this.voxels = new Map();
+  }
+
+  onBeforeRender(renderer, scene, camera) {
+    super.onBeforeRender(renderer, scene, camera);
+    const { player, server } = this;
+    player.controllers.forEach((controller) => {
+      const {
+        buttons: {
+          triggerDown,
+          gripDown,
+        },
+        hand,
+        raycaster,
+      } = controller;
+      if (!hand || (!triggerDown && !gripDown)) {
+        return;
+      }
+      server.send(JSON.stringify({
+        type: 'UPDATE',
+        data: {
+          x: Math.floor(raycaster.ray.origin.x + 8),
+          y: Math.floor(raycaster.ray.origin.y + 1),
+          z: Math.floor(raycaster.ray.origin.z + 8),
+          type: triggerDown ? 0x02 : 0x00,
+        },
+      }));
+    });
   }
 
   onEvent(event) {
@@ -22,24 +49,26 @@ class World extends Scene {
     const { type, data } = event;
     switch (type) {
       case 'INIT':
-        this.onInit(data);
+      case 'UPDATE':
+        this.onUpdate(data);
         break;
       default:
         break;
     }
   }
 
-  onInit(data) {
-    // HACK
-    let i = 0;
+  onUpdate(data) {
+    const { voxels } = this;
     data.chunks.forEach(({ chunk, meshes }) => {
-      meshes.forEach((mesh) => {
-        i += 1;
-        if (!this.voxels[i]) {
-          this.voxels[i] = new Voxels();
-          this.add(this.voxels[i]);
+      meshes.forEach((geometry, subchunk) => {
+        const key = `${chunk.x}:${chunk.z}:${subchunk}`;
+        let mesh = voxels.get(key);
+        if (!mesh) {
+          mesh = new Voxels();
+          this.add(mesh);
+          voxels.set(key, mesh);
         }
-        this.voxels[i].update({ chunk, ...mesh });
+        mesh.update({ chunk, ...geometry });
       });
     });
   }
