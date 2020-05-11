@@ -1,0 +1,16 @@
+{
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "search.exclude": {
+    ".eslintcache": true,
+    ".vscode/": true,
+    "node_modules/": true,
+    "yarn.lock": true
+  },
+  "files.exclude": {
+    ".eslintcache": true,
+    ".vscode/": true,
+    "node_modules/": true,
+    "yarn.lock": true
+  }
+}

@@ -1,0 +1,37 @@
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  cursor: default;
+  user-select: none;
+  overflow: hidden;
+  font-family: monospace;
+}
+
+canvas {
+  vertical-align: middle;
+}
+
+#credits {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  opacity: 0.3;
+}
+
+#credits > a {
+  color: inherit;
+}
+
+#mount {
+  width: 100vw;
+  height: 100vh;
+}
+
+#support.supported {
+  color: #3f3;
+}
+
+#support.unsupported {
+  color: #f33;
+}
