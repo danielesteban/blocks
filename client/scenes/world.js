@@ -1,4 +1,9 @@
-import { Color, FogExp2, Vector3 } from '../core/three.js';
+import {
+  Color,
+  FogExp2,
+  Vector2,
+  Vector3,
+} from '../core/three.js';
 import Scene from '../core/scene.js';
 import Voxels from '../renderables/voxels.js';
 
@@ -6,8 +11,12 @@ class World extends Scene {
   constructor(renderer) {
     super(renderer);
 
-    this.auxVector = new Vector3();
-    this.player.chunk = new Vector3(0, -1, 0);
+    this.chunks = {
+      aux: new Vector3(),
+      loaded: new Map(),
+      requested: new Map(),
+      player: new Vector3(),
+    };
 
     this.background = new Color();
     this.fog = new FogExp2(0, 0.015);
@@ -17,9 +26,9 @@ class World extends Scene {
 
   onBeforeRender(renderer, scene, camera) {
     super.onBeforeRender(renderer, scene, camera);
-    const { offset, scale } = World;
+    const { offset, renderGrid, scale } = World;
     const {
-      auxVector,
+      chunks,
       player,
       server,
       timeOffset,
@@ -37,7 +46,7 @@ class World extends Scene {
       if (!hand || (!triggerDown && !gripDown)) {
         return;
       }
-      auxVector
+      chunks.aux
         .copy(raycaster.ray.origin)
         .sub(offset)
         .divideScalar(scale)
@@ -45,15 +54,15 @@ class World extends Scene {
       server.send(JSON.stringify({
         type: 'UPDATE',
         data: {
-          x: auxVector.x,
-          y: auxVector.y,
-          z: auxVector.z,
+          x: chunks.aux.x,
+          y: chunks.aux.y,
+          z: chunks.aux.z,
           type: triggerDown ? 0x02 : 0x00,
         },
       }));
     });
 
-    auxVector
+    chunks.aux
       .copy(player.position)
       .sub(offset)
       .divideScalar(scale)
@@ -61,8 +70,14 @@ class World extends Scene {
       .divideScalar(16)
       .floor();
 
-    if (!player.chunk.equals(auxVector)) {
-      player.chunk.copy(auxVector);
+    if (!chunks.player.equals(chunks.aux)) {
+      chunks.player.copy(chunks.aux);
+      renderGrid.forEach((neighbour) => {
+        this.loadChunk({
+          x: chunks.player.x + neighbour.x,
+          z: chunks.player.z + neighbour.y,
+        });
+      });
       this.needsTranslocablesUpdate = true;
     }
 
@@ -77,19 +92,11 @@ class World extends Scene {
 
   onEvent(event) {
     super.onEvent(event);
-    const { offset, scale } = World;
     const { type, data } = event;
     switch (type) {
       case 'INIT':
-        this.player.position
-          .copy(data.spawn)
-          .multiplyScalar(scale)
-          .add({
-            x: offset.x + 0.25,
-            y: offset.y,
-            z: offset.z + 0.25,
-          });
-        // fallsthrough
+        this.onInit(data);
+        break;
       case 'UPDATE':
         this.onUpdate(data);
         break;
@@ -98,8 +105,31 @@ class World extends Scene {
     }
   }
 
+  onInit(data) {
+    const { offset, scale } = World;
+    const { chunks, player } = this;
+    player.position
+      .copy(data.spawn)
+      .multiplyScalar(scale)
+      .add({
+        x: offset.x + 0.25,
+        y: offset.y,
+        z: offset.z + 0.25,
+      });
+    chunks.loaded.clear();
+    chunks.requested.clear();
+    chunks.player
+      .copy(player.position)
+      .sub(offset)
+      .divideScalar(scale)
+      .floor()
+      .divideScalar(16)
+      .floor()
+      .add({ x: 0, y: -1, z: 0 });
+  }
+
   onUpdate(data) {
-    const { voxels } = this;
+    const { chunks, voxels } = this;
     data.chunks.forEach(({ chunk, meshes }) => {
       meshes.forEach((geometry, subchunk) => {
         const key = `${chunk.x}:${chunk.z}:${subchunk}`;
@@ -114,8 +144,24 @@ class World extends Scene {
           ...geometry,
         });
       });
+      const key = `${chunk.x}:${chunk.z}`;
+      chunks.loaded.set(key, true);
+      chunks.requested.delete(key);
     });
     this.needsTranslocablesUpdate = true;
+  }
+
+  loadChunk(chunk) {
+    const { chunks, server } = this;
+    const key = `${chunk.x}:${chunk.z}`;
+    if (chunks.loaded.has(key) || chunks.requested.has(key)) {
+      return;
+    }
+    chunks.requested.set(key, true);
+    server.send(JSON.stringify({
+      type: 'LOAD',
+      data: chunk,
+    }));
   }
 
   updateSunlight(intensity) {
@@ -126,10 +172,10 @@ class World extends Scene {
   }
 
   updateTranslocables() {
-    const { player, translocables, voxels } = this;
+    const { chunks, translocables, voxels } = this;
     translocables.length = 0;
     voxels.forEach((mesh) => {
-      if (player.chunk.distanceTo(mesh.chunk) <= 4) {
+      if (chunks.player.distanceTo(mesh.chunk) <= 4) {
         translocables.push(mesh);
       }
     });
@@ -137,6 +183,21 @@ class World extends Scene {
   }
 }
 
+World.renderRadius = 10;
+World.renderGrid = (() => {
+  const grid = [];
+  const center = new Vector2();
+  for (let x = -World.renderRadius; x <= World.renderRadius; x += 1) {
+    for (let y = -World.renderRadius; y <= World.renderRadius; y += 1) {
+      const chunk = new Vector2(x, y);
+      if (chunk.distanceTo(center) <= World.renderRadius) {
+        grid.push(chunk);
+      }
+    }
+  }
+  grid.sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)));
+  return grid;
+})();
 World.offset = { x: -4, y: -0.5, z: -4 };
 World.scale = 0.5;
 

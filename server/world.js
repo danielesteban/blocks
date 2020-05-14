@@ -9,19 +9,6 @@ class World extends Room {
     this.chunks = new Map();
     this.noise = new Noise();
     this.noise.seed(this.seed);
-
-    // HACK
-    this.testGrid = [];
-    const radius = 5;
-    for (let i = 0, x = -radius; x <= radius; x += 1) {
-      for (let z = -radius; z <= radius; z += 1, i += 1) {
-        this.testGrid[i] = { x, z };
-      }
-    }
-    this.testGrid.sort((a, b) => (Math.sqrt(a.x ** 2 + a.z ** 2) - Math.sqrt(b.x ** 2 + b.z ** 2)));
-    this.testGrid.forEach((chunk) => {
-      this.getChunk(chunk).remesh();
-    });
   }
 
   getChunk({ x, z }) {
@@ -47,20 +34,40 @@ class World extends Room {
     spawn.y = chunk.heightmap[spawn.x][spawn.z];
     spawn.x += chunk.x * Chunk.size;
     spawn.z += chunk.z * Chunk.size;
-    // HACK
-    const { testGrid } = this;
-    return {
-      spawn,
-      chunks: testGrid.map((chunk) => ({
-        chunk,
-        meshes: this.getChunk(chunk).getSerializedMeshes(),
-      })),
-    };
+    return { spawn };
   }
 
   onRequest(client, request) {
     super.onRequest(client, request);
     switch (request.type) {
+      case 'LOAD': {
+        let {
+          x,
+          z,
+        } = request.data;
+        x = parseInt(x, 10);
+        z = parseInt(z, 10);
+        if (
+          Number.isNaN(x)
+          || Number.isNaN(z)
+        ) {
+          return;
+        }
+        const chunk = this.getChunk({ x, z });
+        if (!chunk.meshes) {
+          chunk.remesh();
+        }
+        this.broadcast({
+          type: 'UPDATE',
+          data: {
+            chunks: [{
+              chunk: { x: chunk.x, z: chunk.z },
+              meshes: chunk.getSerializedMeshes(),
+            }],
+          },
+        });
+        break;
+      }
       case 'UPDATE': {
         let {
           x,
@@ -96,21 +103,12 @@ class World extends Room {
         };
         x -= Chunk.size * chunk.x;
         z -= Chunk.size * chunk.z;
-        if (
-          // HACK
-          chunk.x < -1
-          || chunk.z < -1
-          || chunk.x > 1
-          || chunk.z > 1
-        ) {
+        chunk = this.getChunk(chunk);
+        if (!chunk.meshes) {
           return;
         }
-        chunk = this.getChunk(chunk);
         const { type: current } = chunk.get(x, y, z);
-        if (
-          (type === Chunk.types.air && current !== Chunk.types.light)
-          || (type === Chunk.types.light && current !== Chunk.types.air)
-        ) {
+        if (type === current) {
           return;
         }
         chunk.update({
