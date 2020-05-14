@@ -244,6 +244,11 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
+colorsys@^1.0.22:
+  version "1.0.22"
+  resolved "https://registry.yarnpkg.com/colorsys/-/colorsys-1.0.22.tgz#e08459b297de7d4da4a53c26c3555f5a9609ad88"
+  integrity sha512-KCqF23oqkOD0IUCTLCl0obwGIMyeGFlNWuJ4oRRVKmawvKQeb3x5UvajVeH9AShZWU9hNaIhjXeTGw3iPNtl/Q==
+
 compressible@~2.0.16:
   version "2.0.18"
   resolved "https://registry.yarnpkg.com/compressible/-/compressible-2.0.18.tgz#af53cca6b070d4c3c0750fbd77286a6d7cc46fba"
@@ -1212,6 +1217,11 @@ nocache@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/nocache/-/nocache-2.1.0.tgz#120c9ffec43b5729b1d5de88cd71aa75a0ba491f"
   integrity sha512-0L9FvHG3nfnnmaEQPjT9xhfN4ISk0A8/2j4M37Np4mcDesJjHgEUfgPhdCyZuFI954tjokaIj/A3NdpFNdEh4Q==
+
+noisejs@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/noisejs/-/noisejs-2.1.0.tgz#84b4c4cd04ff43367034f65253e213e0d9fe1aff"
+  integrity sha1-hLTEzQT/QzZwNPZSU+IT4Nn+Gv8=
 
 normalize-package-data@^2.3.2:
   version "2.5.0"

@@ -13,10 +13,12 @@
     "start": "node server/main.js"
   },
   "dependencies": {
+    "colorsys": "^1.0.22",
     "compression": "^1.7.4",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "helmet": "^3.22.0",
+    "noisejs": "^2.1.0",
     "uuid": "^8.0.0",
     "ws": "^7.3.0"
   },

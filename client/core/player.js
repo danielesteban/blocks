@@ -44,7 +44,7 @@ class Player extends Object3D {
       };
       controller.marker = new Marker();
       controller.raycaster = new Raycaster();
-      controller.raycaster.far = 16;
+      controller.raycaster.far = 32;
       controller.worldspace = {
         position: new Vector3(),
         quaternion: new Quaternion(),

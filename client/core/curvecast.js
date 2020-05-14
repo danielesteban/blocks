@@ -8,7 +8,8 @@ const restore = {
   direction: new Vector3(),
   origin: new Vector3(),
 };
-const steps = [...Array(maxSteps + 1)].map(() => new Vector3());
+const steps = [...Array(maxSteps + 2)].map(() => new Vector3());
+const WorldUp = new Vector3(0, 1, 0);
 
 // Performs a "curved" raycast
 
@@ -37,9 +38,25 @@ export default function CurveCast({
     direction.normalize();
     hit = raycaster.intersectObjects(intersects)[0] || false;
     if (hit) {
-      points.push(steps[maxSteps].copy(hit.point));
       break;
     }
+  }
+  // If it has hit a wall
+  if (hit && !hit.face.normal.equals(WorldUp)) {
+    // Do one last bounce to the floor
+    origin.copy(hit.point);
+    points.push(steps[maxSteps].copy(origin));
+    direction.copy(hit.face.normal);
+    direction.y = -1;
+    direction.normalize();
+    raycaster.far = distance;
+    hit = raycaster.intersectObjects(intersects)[0] || false;
+    if (hit && !hit.face.normal.equals(WorldUp)) {
+      hit = false;
+    }
+  }
+  if (hit) {
+    points.push(steps[maxSteps + 1].copy(hit.point));
   }
   direction.copy(restore.direction);
   origin.copy(restore.origin);

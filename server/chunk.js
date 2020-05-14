@@ -1,3 +1,5 @@
+const { hsl2Rgb } = require('colorsys');
+
 class Chunk {
   constructor({ world, x, z }) {
     this.world = world;
@@ -7,39 +9,58 @@ class Chunk {
   }
 
   generate() {
-    const { maxHeight, size, types } = Chunk;
-    this.needsSunlightPropagation = true;
+    const {
+      maxHeight,
+      size,
+      types,
+    } = Chunk;
+    const {
+      world: {
+        noise,
+      },
+    } = this;
+    this.needsLightPropagation = true;
     const voxels = [];
     for (let x = 0; x < size; x += 1) {
       voxels[x] = [];
       for (let y = 0; y < maxHeight; y += 1) {
         voxels[x][y] = [];
         for (let z = 0; z < size; z += 1) {
-          const wx = (this.x * size) + x - 7.5;
-          const wz = (this.z * size) + z - 7.5;
-          voxels[x][y][z] = {
-            type: (
-              // Ground
-              y === 0
-              || (
-                // Dome
-                Math.sqrt(wx ** 2 + wz ** 2 + y ** 2) >= 16
-                // Side openings
-                && (Math.abs(wx) > 24 || wz > 2 || wz < -2 || y > 8)
-              )
-            ) ? types.block : types.air,
-            color: y === 0 ? {
-              r: 0.2 + (Math.random() * 0.1),
-              g: 0.5 + (Math.random() * 0.1),
-              b: 0.2 + (Math.random() * 0.1),
-            } : {
-              r: 0.3 - (Math.random() * 0.06),
-              g: 0.3 - (Math.random() * 0.06),
-              b: 0.35 - (Math.random() * 0.06),
-            },
+          const wx = (this.x * size) + x - 4;
+          const wz = (this.z * size) + z - 4;
+          const height = Math.min(Math.max((
+            Math.abs(
+              (noise.simplex2(wx / 512, wz / 512) * 0.5)
+              + (noise.perlin2(wz / 1024, wx / 1024) * 0.2)
+              + (noise.perlin3(wx / 64, y / 32, wz / 64) * 0.4)
+            ) * 128
+          ) - 8, 0), maxHeight);
+          const voxel = {
+            type: types.air,
+            color: { r: 0, g: 0, b: 0 },
             light: 0,
             sunlight: 0,
           };
+          if (y <= height) {
+            voxel.type = types.block;
+            const l = (
+              1 - Math.abs(noise.perlin3(wx / 64, y / 32, wz / 64))
+            ) * (Math.max(y, 8) / maxHeight) * 33;
+            voxel.color = hsl2Rgb({
+              h: Math.abs(noise.perlin3(wx / 512, y / 128, wz / 512)) * 360,
+              s: (
+                1 - Math.abs(noise.perlin3(wx / 32, y / 16, wz / 32))
+              ) * (1 - (y / maxHeight)) * 60,
+              l,
+            });
+            voxel.color.r += Math.floor(Math.random() * l) - l * 0.5;
+            voxel.color.r = Math.min(Math.max(voxel.color.r, 0), 0xFF);
+            voxel.color.g += Math.floor(Math.random() * l) - l * 0.5;
+            voxel.color.g = Math.min(Math.max(voxel.color.g, 0), 0xFF);
+            voxel.color.b += Math.floor(Math.random() * l) - l * 0.5;
+            voxel.color.b = Math.min(Math.max(voxel.color.b, 0), 0xFF);
+          }
+          voxels[x][y][z] = voxel;
         }
       }
     }
@@ -52,6 +73,15 @@ class Chunk {
         for (let y = maxHeight - 1; y >= 0; y -= 1) {
           if (voxels[x][y][z].type !== types.air) {
             heightmap[x][z] = y;
+            if (Math.random() < 0.005 && y < maxHeight - 1) {
+              heightmap[x][z] += 1;
+              voxels[x][y + 1][z] = {
+                type: types.light,
+                color: { r: 0xFF, g: 0xFF, b: 0xFF },
+                light: 0,
+                sunlight: 0,
+              };
+            }
             break;
           }
         }
@@ -89,9 +119,9 @@ class Chunk {
     const voxel = this.get(x, y, z);
     voxel.light = maxLight;
     voxel.type = types.light;
-    voxel.color.r = 1;
-    voxel.color.g = 1;
-    voxel.color.b = 1;
+    voxel.color.r = 0xFF;
+    voxel.color.g = 0xFF;
+    voxel.color.b = 0xFF;
     this.floodLight([{ x, y, z }]);
   }
 
@@ -114,8 +144,8 @@ class Chunk {
         const nx = x + offset.x;
         const nz = z + offset.z;
         const neighbor = this.get(nx, ny, nz);
-        if (neighbor.type === types.air && neighbor[key] + 2 <= voxel[key]) {
-          const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
+        const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
+        if (neighbor.type === types.air && neighbor[key] + decay < voxel[key]) {
           neighbor[key] = voxel[key] - decay;
           queue.push({ x: nx, y: ny, z: nz });
         }
@@ -182,7 +212,7 @@ class Chunk {
     this.floodLight(fill, key);
   }
 
-  propagateSunlight() {
+  propagateLight() {
     const {
       maxHeight,
       maxLight,
@@ -190,23 +220,38 @@ class Chunk {
       types,
     } = Chunk;
     const { voxels } = this;
-    const queue = [];
-    const y = maxHeight - 1;
+    const lightQueue = [];
+    const sunlightQueue = [];
+    const top = maxHeight - 1;
     for (let x = 0; x < size; x += 1) {
-      for (let z = 0; z < size; z += 1) {
-        const voxel = voxels[x][y][z];
-        if (voxel.type === types.air) {
-          voxel.sunlight = maxLight;
-          queue.push({
-            x,
-            y,
-            z,
-          });
+      for (let y = 0; y < maxHeight; y += 1) {
+        for (let z = 0; z < size; z += 1) {
+          const voxel = voxels[x][y][z];
+          if (y === top && voxel.type === types.air) {
+            voxel.sunlight = maxLight;
+            sunlightQueue.push({
+              x,
+              y,
+              z,
+            });
+          }
+          if (voxel.type === types.light) {
+            voxel.light = maxLight;
+            voxel.color.r = 0xFF;
+            voxel.color.g = 0xFF;
+            voxel.color.b = 0xFF;
+            lightQueue.push({
+              x,
+              y,
+              z,
+            });
+          }
         }
       }
     }
-    this.floodLight(queue, 'sunlight');
-    this.needsSunlightPropagation = false;
+    this.floodLight(lightQueue, 'light');
+    this.floodLight(sunlightQueue, 'sunlight');
+    this.needsLightPropagation = false;
   }
 
   update({
@@ -271,11 +316,11 @@ class Chunk {
     const { meshes } = this;
     return meshes.map(({
       color,
-      index,
+      light,
       position,
     }) => ({
       color: color.toString('base64'),
-      index: index.toString('base64'),
+      light: light.toString('base64'),
       position: position.toString('base64'),
     }));
   }
@@ -284,13 +329,13 @@ class Chunk {
     const { chunkNeighbors, subchunks } = Chunk;
     const { world } = this;
     this.meshes = [];
-    if (this.needsSunlightPropagation) {
-      this.propagateSunlight();
+    if (this.needsLightPropagation) {
+      this.propagateLight();
     }
     chunkNeighbors.forEach(({ x, z }) => {
       const neighbor = world.getChunk({ x: this.x + x, z: this.z + z });
-      if (neighbor.needsSunlightPropagation) {
-        neighbor.propagateSunlight();
+      if (neighbor.needsLightPropagation) {
+        neighbor.propagateLight();
       }
     });
     for (let subchunk = 0; subchunk < subchunks; subchunk += 1) {
@@ -298,8 +343,8 @@ class Chunk {
     }
   }
 
-  static lighting(light, sunlight, neighbors) {
-    const { maxLight, types } = Chunk;
+  static getLighting(light, sunlight, neighbors) {
+    const { types } = Chunk;
     const n1 = neighbors[0].type !== types.air;
     const n2 = neighbors[1].type !== types.air;
     const n3 = (n1 && n2) || neighbors[2].type !== types.air;
@@ -310,8 +355,7 @@ class Chunk {
         c += 1;
       }
     });
-    light /= c;
-    light /= maxLight;
+    light = Math.round(light / c);
     c = 1;
     neighbors.forEach((n) => {
       if (n.type === types.air) {
@@ -319,19 +363,22 @@ class Chunk {
         c += 1;
       }
     });
-    sunlight /= c;
-    sunlight /= maxLight;
-    const ao = [n1, n2, n3].reduce((light, n) => (
-      n ? light - 0.2 : light
+    sunlight = Math.round(sunlight / c);
+    const ao = [n1, n2, n3].reduce((ao, n) => (
+      ao - (n ? 0.2 : 0)
     ), 1);
-    return ao * (light + Math.max(sunlight, 0.02)) ** 2.2;
+    return {
+      ao,
+      light,
+      sunlight,
+      combined: ao * (light + sunlight) * 0.5,
+    };
   }
 
   meshSubChunk(subchunk) {
-    const { lighting, size } = Chunk;
-    let offset = 0;
-    const index = [];
+    const { getLighting, size } = Chunk;
     const color = [];
+    const light = [];
     const position = [];
     const pushFace = (
       /* eslint-disable no-multi-spaces */
@@ -339,33 +386,35 @@ class Chunk {
       p2, n2,  // bottom right point + neighbours
       p3, n3,  // top right point + neighbours
       p4, n4,  // top left point + neighbours
-      c,       // voxel color
-      l,       // voxel light
-      s        // voxel sunlight
+      c,       // color
+      l,       // light level
+      s        // sunlight level
       /* eslint-enable no-multi-spaces */
     ) => {
-      const vertices = [p1, p2, p3, p4];
-      const light = [
-        lighting(l, s, n1),
-        lighting(l, s, n2),
-        lighting(l, s, n3),
-        lighting(l, s, n4),
+      const lighting = [
+        getLighting(l, s, n1),
+        getLighting(l, s, n2),
+        getLighting(l, s, n3),
+        getLighting(l, s, n4),
       ];
-      if (light[0] + light[2] < light[1] + light[3]) {
+      const vertices = [p1, p2, p3, p4];
+      if (
+        lighting[0].combined + lighting[2].combined < lighting[1].combined + lighting[3].combined
+      ) {
+        lighting.unshift(lighting.pop());
         vertices.unshift(vertices.pop());
-        light.unshift(light.pop());
       }
+      lighting.forEach((lighting) => {
+        color.push(
+          Math.round(c.r * lighting.ao),
+          Math.round(c.g * lighting.ao),
+          Math.round(c.b * lighting.ao)
+        );
+        light.push(
+          (lighting.light << 4) | lighting.sunlight
+        );
+      });
       vertices.forEach((vertex) => position.push(...vertex));
-      light.forEach((light) => color.push(
-        c.r * light,
-        c.g * light,
-        c.b * light
-      ));
-      index.push(
-        offset, offset + 1, offset + 2,
-        offset + 2, offset + 3, offset
-      );
-      offset += 4;
     };
     const yFrom = (size * subchunk) - 1;
     const yTo = yFrom + size + 1;
@@ -475,15 +524,15 @@ class Chunk {
       }
     }
     this.meshes[subchunk] = {
-      color: Buffer.from((new Float32Array(color)).buffer),
-      index: Buffer.from((new Uint16Array(index)).buffer),
-      position: Buffer.from((new Float32Array(position)).buffer),
+      color: Buffer.from((new Uint8Array(color)).buffer),
+      light: Buffer.from((new Uint8Array(light)).buffer),
+      position: Buffer.from((new Int16Array(position)).buffer),
     };
   }
 }
 
 Chunk.size = 16;
-Chunk.subchunks = 1;
+Chunk.subchunks = 4;
 Chunk.maxHeight = Chunk.size * Chunk.subchunks;
 Chunk.maxLight = 15;
 Chunk.types = {

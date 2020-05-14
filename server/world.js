@@ -1,23 +1,24 @@
+const { Noise } = require('noisejs');
 const Chunk = require('./chunk');
 const Room = require('./room');
 
 class World extends Room {
   constructor() {
     super();
+    this.seed = Math.floor(Math.random() * 65536);
     this.chunks = new Map();
+    this.noise = new Noise();
+    this.noise.seed(this.seed);
 
     // HACK
-    this.testGrid = [
-      { x: 0, z: 0 },
-      { x: -1, z: -1 },
-      { x: 0, z: -1 },
-      { x: 1, z: -1 },
-      { x: -1, z: 0 },
-      { x: 1, z: 0 },
-      { x: -1, z: 1 },
-      { x: 0, z: 1 },
-      { x: 1, z: 1 },
-    ];
+    this.testGrid = [];
+    const radius = 5;
+    for (let i = 0, x = -radius; x <= radius; x += 1) {
+      for (let z = -radius; z <= radius; z += 1, i += 1) {
+        this.testGrid[i] = { x, z };
+      }
+    }
+    this.testGrid.sort((a, b) => (Math.sqrt(a.x ** 2 + a.z ** 2) - Math.sqrt(b.x ** 2 + b.z ** 2)));
     this.testGrid.forEach((chunk) => {
       this.getChunk(chunk).remesh();
     });
@@ -35,9 +36,21 @@ class World extends Room {
   }
 
   onInit() {
+    const chunk = this.getChunk({
+      x: Math.floor(Math.random() * 3) - 1,
+      z: Math.floor(Math.random() * 3) - 1,
+    });
+    const spawn = {
+      x: Math.floor(Math.random() * Chunk.size),
+      z: Math.floor(Math.random() * Chunk.size),
+    };
+    spawn.y = chunk.heightmap[spawn.x][spawn.z];
+    spawn.x += chunk.x * Chunk.size;
+    spawn.z += chunk.z * Chunk.size;
     // HACK
     const { testGrid } = this;
     return {
+      spawn,
       chunks: testGrid.map((chunk) => ({
         chunk,
         meshes: this.getChunk(chunk).getSerializedMeshes(),
