@@ -94,6 +94,8 @@ class World extends Room {
           || Number.isNaN(color.b)
           || Number.isNaN(type)
           || (type !== Chunk.types.air && type !== Chunk.types.light)
+          || y <= 0
+          || y >= Chunk.maxHeight
         ) {
           return;
         }
