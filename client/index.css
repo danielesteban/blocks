@@ -12,15 +12,23 @@ canvas {
   vertical-align: middle;
 }
 
-#credits {
+#credits, #info {
   position: absolute;
-  left: 1rem;
   bottom: 1rem;
   opacity: 0.3;
 }
 
+#credits {
+  left: 1rem;
+}
+
 #credits > a {
   color: inherit;
+}
+
+#info {
+  right: 1rem;
+  text-align: right;
 }
 
 #mount {

@@ -23,6 +23,7 @@ class World extends Room {
   }
 
   onInit() {
+    const { seed } = this;
     const chunk = this.getChunk({
       x: Math.floor(Math.random() * 3) - 1,
       z: Math.floor(Math.random() * 3) - 1,
@@ -34,7 +35,7 @@ class World extends Room {
     spawn.y = chunk.heightmap[spawn.x][spawn.z];
     spawn.x += chunk.x * Chunk.size;
     spawn.z += chunk.z * Chunk.size;
-    return { spawn };
+    return { seed, spawn };
   }
 
   onRequest(client, request) {

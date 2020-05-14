@@ -10,15 +10,14 @@ import Voxels from '../renderables/voxels.js';
 class World extends Scene {
   constructor(renderer) {
     super(renderer);
-
+    this.background = new Color();
     this.chunks = {
       aux: new Vector3(),
       loaded: new Map(),
       requested: new Map(),
       player: new Vector3(),
     };
-
-    this.background = new Color();
+    this.debug = renderer.debug;
     this.fog = new FogExp2(0, 0.02);
     this.timeOffset = Date.now() / 1000;
     this.voxels = new Map();
@@ -34,6 +33,7 @@ class World extends Scene {
     } = World;
     const {
       chunks,
+      debug,
       player,
       server,
       timeOffset,
@@ -77,6 +77,7 @@ class World extends Scene {
 
     if (!chunks.player.equals(chunks.aux)) {
       chunks.player.copy(chunks.aux);
+      debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
       const maxDistance = renderRadius * 1.5;
       chunks.loaded.forEach((chunk) => {
         if (
@@ -115,7 +116,12 @@ class World extends Scene {
     const { type, data } = event;
     switch (type) {
       case 'INIT':
-        this.onInit(data);
+      case 'JOIN':
+      case 'LEAVE':
+        this.debug.players.innerText = this.peers.peers.length + 1;
+        if (type === 'INIT') {
+          this.onInit(data);
+        }
         break;
       case 'UPDATE':
         this.onUpdate(data);
@@ -127,7 +133,8 @@ class World extends Scene {
 
   onInit(data) {
     const { offset, scale } = World;
-    const { chunks, player } = this;
+    const { chunks, debug, player } = this;
+    debug.seed.innerText = data.seed;
     player.position
       .copy(data.spawn)
       .multiplyScalar(scale)
