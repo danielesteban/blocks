@@ -26,7 +26,12 @@ class World extends Scene {
 
   onBeforeRender(renderer, scene, camera) {
     super.onBeforeRender(renderer, scene, camera);
-    const { offset, renderGrid, scale } = World;
+    const {
+      offset,
+      renderGrid,
+      renderRadius,
+      scale,
+    } = World;
     const {
       chunks,
       player,
@@ -72,6 +77,21 @@ class World extends Scene {
 
     if (!chunks.player.equals(chunks.aux)) {
       chunks.player.copy(chunks.aux);
+      const maxDistance = renderRadius * 1.5;
+      chunks.loaded.forEach((chunk) => {
+        if (
+          chunks.player.distanceTo(chunks.aux.set(chunk.x, chunks.player.y, chunk.z)) > maxDistance
+        ) {
+          this.unloadChunk(chunk);
+        }
+      });
+      chunks.requested.forEach((chunk, key) => {
+        if (
+          chunks.player.distanceTo(chunks.aux.set(chunk.x, chunks.player.y, chunk.z)) > maxDistance
+        ) {
+          chunks.requested.delete(key);
+        }
+      });
       renderGrid.forEach((neighbour) => {
         this.loadChunk({
           x: chunks.player.x + neighbour.x,
@@ -131,6 +151,10 @@ class World extends Scene {
   onUpdate(data) {
     const { chunks, voxels } = this;
     data.chunks.forEach(({ chunk, meshes }) => {
+      const key = `${chunk.x}:${chunk.z}`;
+      if (!chunks.loaded.has(key) && !chunks.requested.has(key)) {
+        return;
+      }
       meshes.forEach((geometry, subchunk) => {
         const key = `${chunk.x}:${chunk.z}:${subchunk}`;
         let mesh = voxels.get(key);
@@ -144,8 +168,7 @@ class World extends Scene {
           ...geometry,
         });
       });
-      const key = `${chunk.x}:${chunk.z}`;
-      chunks.loaded.set(key, true);
+      chunks.loaded.set(key, chunk);
       chunks.requested.delete(key);
     });
     this.needsTranslocablesUpdate = true;
@@ -157,11 +180,25 @@ class World extends Scene {
     if (chunks.loaded.has(key) || chunks.requested.has(key)) {
       return;
     }
-    chunks.requested.set(key, true);
+    chunks.requested.set(key, chunk);
     server.send(JSON.stringify({
       type: 'LOAD',
       data: chunk,
     }));
+  }
+
+  unloadChunk(chunk) {
+    const { chunks, voxels } = this;
+    chunks.loaded.delete(`${chunk.x}:${chunk.z}`);
+    for (let subchunk = 0; subchunk < 4; subchunk += 1) {
+      const key = `${chunk.x}:${chunk.z}:${subchunk}`;
+      const mesh = voxels.get(key);
+      if (mesh) {
+        mesh.dispose();
+        this.remove(mesh);
+        voxels.delete(key);
+      }
+    }
   }
 
   updateSunlight(intensity) {

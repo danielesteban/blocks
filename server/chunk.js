@@ -532,7 +532,7 @@ class Chunk {
 }
 
 Chunk.size = 16;
-Chunk.subchunks = 4;
+Chunk.subchunks = 3;
 Chunk.maxHeight = Chunk.size * Chunk.subchunks;
 Chunk.maxLight = 15;
 Chunk.types = {

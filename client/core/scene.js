@@ -39,6 +39,8 @@ class Scene extends ThreeScene {
           leftwardsDown,
           rightwardsDown,
           secondaryDown,
+          trigger,
+          triggerUp,
         },
         hand,
         marker,
@@ -59,14 +61,14 @@ class Scene extends ThreeScene {
       if (
         !player.destination
         && hand.handedness === 'right'
-        && (forwards || forwardsUp)
+        && (forwards || forwardsUp || trigger || triggerUp)
       ) {
         const { hit, points } = CurveCast({
           intersects: translocables,
           raycaster,
         });
         if (hit) {
-          if (forwardsUp) {
+          if (forwardsUp || triggerUp) {
             player.translocate(hit.point);
           } else {
             marker.update({ hit, points });
