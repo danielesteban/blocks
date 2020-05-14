@@ -99,7 +99,7 @@ class Chunk {
     } = Chunk;
     const { world } = this;
     if (y < 0) return { type: types.bedrock, light: 0, sunlight: 0 };
-    if (y >= maxHeight) return { type: types.air, light: maxLight, sunlight: maxLight };
+    if (y >= maxHeight) return { type: types.air, light: 0, sunlight: maxLight };
     let chunk = this;
     const cx = (x < 0 || x >= size) ? Math.floor(x / size) : 0;
     const cz = (z < 0 || z >= size) ? Math.floor(z / size) : 0;
