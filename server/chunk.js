@@ -376,7 +376,7 @@ class Chunk {
   }
 
   meshSubChunk(subchunk) {
-    const { getLighting, size } = Chunk;
+    const { getLighting, size, types } = Chunk;
     const color = [];
     const light = [];
     const position = [];
@@ -424,7 +424,7 @@ class Chunk {
           const voxel = this.get(x, y, z);
           if (voxel.type) {
             const top = this.get(x, y + 1, z);
-            if (top.type === 0) {
+            if (top.type === types.air) {
               const n = this.get(x, y + 1, z - 1);
               const e = this.get(x + 1, y + 1, z);
               const w = this.get(x - 1, y + 1, z);
@@ -440,7 +440,7 @@ class Chunk {
               );
             }
             const bottom = this.get(x, y - 1, z);
-            if (bottom.type === 0) {
+            if (bottom.type === types.air) {
               const n = this.get(x, y - 1, z - 1);
               const e = this.get(x + 1, y - 1, z);
               const w = this.get(x - 1, y - 1, z);
@@ -456,7 +456,7 @@ class Chunk {
               );
             }
             const south = this.get(x, y, z + 1);
-            if (south.type === 0) {
+            if (south.type === types.air) {
               const e = this.get(x + 1, y, z + 1);
               const w = this.get(x - 1, y, z + 1);
               const t = this.get(x, y + 1, z + 1);
@@ -472,7 +472,7 @@ class Chunk {
               );
             }
             const north = this.get(x, y, z - 1);
-            if (north.type === 0) {
+            if (north.type === types.air) {
               const e = this.get(x + 1, y, z - 1);
               const w = this.get(x - 1, y, z - 1);
               const t = this.get(x, y + 1, z - 1);
@@ -488,7 +488,7 @@ class Chunk {
               );
             }
             const west = this.get(x + 1, y, z);
-            if (west.type === 0) {
+            if (west.type === types.air) {
               const n = this.get(x + 1, y, z - 1);
               const s = this.get(x + 1, y, z + 1);
               const t = this.get(x + 1, y + 1, z);
@@ -504,7 +504,7 @@ class Chunk {
               );
             }
             const east = this.get(x - 1, y, z);
-            if (east.type === 0) {
+            if (east.type === types.air) {
               const n = this.get(x - 1, y, z - 1);
               const s = this.get(x - 1, y, z + 1);
               const t = this.get(x - 1, y + 1, z);
@@ -536,10 +536,10 @@ Chunk.subchunks = 3;
 Chunk.maxHeight = Chunk.size * Chunk.subchunks;
 Chunk.maxLight = 15;
 Chunk.types = {
-  air: 0,
-  bedrock: 1,
-  light: 2,
-  block: 3,
+  air: 0x00,
+  light: 0x01,
+  block: 0x02,
+  bedrock: 0xFF,
 };
 Chunk.chunkNeighbors = [
   { x: -1, z: -1 },

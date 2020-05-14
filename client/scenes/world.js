@@ -62,7 +62,7 @@ class World extends Scene {
           x: chunks.aux.x,
           y: chunks.aux.y,
           z: chunks.aux.z,
-          type: triggerDown ? 0x02 : 0x00,
+          type: triggerDown ? 1 : 0,
         },
       }));
     });
