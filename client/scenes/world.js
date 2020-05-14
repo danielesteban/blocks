@@ -19,7 +19,7 @@ class World extends Scene {
     };
 
     this.background = new Color();
-    this.fog = new FogExp2(0, 0.015);
+    this.fog = new FogExp2(0, 0.02);
     this.timeOffset = Date.now() / 1000;
     this.voxels = new Map();
   }
