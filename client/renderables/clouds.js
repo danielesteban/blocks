@@ -91,6 +91,6 @@ class Clouds extends Object3D {
   }
 }
 
-Clouds.y = 64;
+Clouds.y = 50;
 
 export default Clouds;
