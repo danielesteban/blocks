@@ -7,7 +7,7 @@ const World = require('./world');
 
 const world = new World({
   seed: process.env.SEED ? parseInt(process.env.SEED, 10) : undefined,
-  preload: !!process.env.PRELOAD,
+  preload: process.env.PRELOAD ? parseInt(process.env.PRELOAD, 10) : undefined,
 });
 
 const server = express();

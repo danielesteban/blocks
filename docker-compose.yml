@@ -4,6 +4,6 @@ services:
     image: danigatunes/unnamed:latest
     restart: always
     environment:
-     - PRELOAD=1
+     - PRELOAD=10
     ports:
      - "80:8080"

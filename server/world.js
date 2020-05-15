@@ -13,7 +13,7 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.noise.seed(this.seed);
-    if (preload) {
+    if (preload && !Number.isNaN(preload)) {
       for (let z = -preload; z <= preload; z += 1) {
         for (let x = -preload; x <= preload; x += 1) {
           this.getChunk({ x, z }).remesh();
