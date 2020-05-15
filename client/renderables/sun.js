@@ -64,7 +64,7 @@ class Sun extends Mesh {
     if (!Sun.material) {
       Sun.setupMaterial();
     }
-    Sun.material.color.setHSL(0.166, 0.8, intensity * 0.25);
+    Sun.material.color.setHSL(0.166, 0.8, intensity * 0.2);
     Sun.material.time = time;
   }
 
@@ -86,7 +86,7 @@ class Sun extends Mesh {
   onAnimationTick() {
     const { material: { time }, distance } = Sun;
     const { anchor, position } = this;
-    const angle = Math.PI * (1 - time) * 1.1;
+    const angle = Math.PI * (1 - time) * 1.2;
     position
       .copy(anchor.position)
       .add({
