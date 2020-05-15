@@ -6,6 +6,7 @@ import {
 } from '../core/three.js';
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
+import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
 class World extends Scene {
@@ -18,10 +19,12 @@ class World extends Scene {
       requested: new Map(),
       player: new Vector3(),
     };
-    this.clouds = new Clouds({ target: this.player });
+    this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
     this.debug = renderer.debug;
     this.fog = new FogExp2(0, 0.015);
+    this.sun = new Sun({ anchor: this.player });
+    this.add(this.sun);
     this.timeOffset = Date.now() / 1000;
     this.voxels = new Map();
   }
@@ -40,7 +43,7 @@ class World extends Scene {
       debug,
       player,
       server,
-      timeOffset,
+      sun,
     } = this;
 
     player.controllers.forEach((controller) => {
@@ -110,11 +113,9 @@ class World extends Scene {
       this.updateTranslocables();
     }
 
+    this.updateTime(renderer.animation.time);
     clouds.onAnimationTick(renderer.animation);
-
-    this.updateSunlight(
-      0.5 + (Math.sin((timeOffset + renderer.animation.time) * 0.05) * 0.5)
-    );
+    sun.onAnimationTick(renderer.animation);
   }
 
   onEvent(event) {
@@ -214,11 +215,15 @@ class World extends Scene {
     }
   }
 
-  updateSunlight(intensity) {
-    const { background, fog } = this;
+  updateTime(time) {
+    const { dayDuration } = World;
+    const { background, fog, timeOffset } = this;
+    time = ((timeOffset + time) % dayDuration) / dayDuration;
+    const intensity = (time > 0.5 ? (1 - time) : time) * 2;
     background.setHSL(0.55, 0.4, Math.max(intensity, 0.1) * 0.5);
     fog.color.copy(background);
-    Voxels.setSunlightIntensity(intensity);
+    Sun.updateMaterial({ intensity, time });
+    Voxels.updateMaterial(intensity);
   }
 
   updateTranslocables() {
@@ -233,6 +238,7 @@ class World extends Scene {
   }
 }
 
+World.dayDuration = 120;
 World.renderRadius = 10;
 World.renderGrid = (() => {
   const grid = [];

@@ -58,7 +58,7 @@ class Voxels extends Mesh {
     });
   }
 
-  static setSunlightIntensity(intensity) {
+  static updateMaterial(intensity) {
     if (!Voxels.material) {
       Voxels.setupMaterial();
     }

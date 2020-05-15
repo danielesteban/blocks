@@ -17,7 +17,7 @@ class Clouds extends Object3D {
     });
   }
 
-  constructor({ target }) {
+  constructor({ anchor }) {
     if (!Clouds.material) {
       Clouds.setupMaterial();
     }
@@ -66,7 +66,7 @@ class Clouds extends Object3D {
         this.add(cloud);
       }
     }
-    this.target = target;
+    this.anchor = anchor;
     this.scale.set(10, 1, 10);
   }
 
@@ -78,14 +78,14 @@ class Clouds extends Object3D {
   }
 
   onAnimationTick({ delta }) {
-    const { children, target, position } = this;
+    const { anchor, children, position } = this;
     children.forEach(({ position, speed }) => {
       position.x += speed * delta;
       if (position.x > 30) {
         position.x -= 60;
       }
     });
-    position.copy(target.position);
+    position.copy(anchor.position);
     position.y = Clouds.y;
     this.updateMatrixWorld();
   }
