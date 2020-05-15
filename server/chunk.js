@@ -45,12 +45,12 @@ class Chunk {
             voxel.type = types.block;
             const l = (
               1 - Math.abs(noise.perlin3(wx / 64, y / 32, wz / 64))
-            ) * (Math.max(y, 8) / maxHeight) * 33;
+            ) * (Math.max(y, 8) / maxHeight) * 60;
             voxel.color = hsl2Rgb({
-              h: Math.abs(noise.perlin3(wx / 512, y / 128, wz / 512)) * 360,
+              h: Math.abs(noise.perlin3(wx / 256, y / 64, wz / 256)) * 360,
               s: (
                 1 - Math.abs(noise.perlin3(wx / 32, y / 16, wz / 32))
-              ) * (1 - (y / maxHeight)) * 60,
+              ) * (1 - (y / maxHeight)) * 80,
               l,
             });
             voxel.color.r += Math.floor(Math.random() * l) - l * 0.5;
@@ -59,6 +59,12 @@ class Chunk {
             voxel.color.g = Math.min(Math.max(voxel.color.g, 0), 0xFF);
             voxel.color.b += Math.floor(Math.random() * l) - l * 0.5;
             voxel.color.b = Math.min(Math.max(voxel.color.b, 0), 0xFF);
+            if (y === 0) {
+              const avg = Math.floor((voxel.color.r + voxel.color.g) / 2);
+              voxel.color.r = avg;
+              voxel.color.g = avg;
+              voxel.color.b = Math.floor(avg * 1.5);
+            }
           }
           voxels[x][y][z] = voxel;
         }
@@ -74,8 +80,8 @@ class Chunk {
           if (voxels[x][y][z].type !== types.air) {
             heightmap[x][z] = y;
             // HACK: Generate test lights
-            if (Math.random() < 0.005) {
-              voxels[x][y === 0 ? y + 1 : y][z] = {
+            if (y > 0 && Math.random() < 0.005) {
+              voxels[x][y][z] = {
                 type: types.light,
                 color: { r: 0xFF, g: 0xFF, b: 0xFF },
                 light: 0,
