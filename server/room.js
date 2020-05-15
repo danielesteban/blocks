@@ -1,8 +1,9 @@
 const { v4: uuid } = require('uuid');
 
 class Room {
-  constructor() {
+  constructor({ maxClients }) {
     this.clients = [];
+    this.maxClients = maxClients;
   }
 
   onClose(client) {
@@ -22,7 +23,11 @@ class Room {
   }
 
   onClient(client) {
-    const { clients, pingInterval } = this;
+    const { clients, maxClients, pingInterval } = this;
+    if (clients.length >= maxClients) {
+      client.terminate();
+      return;
+    }
     client.id = uuid();
     client.send(JSON.stringify({
       type: 'INIT',

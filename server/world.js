@@ -3,8 +3,8 @@ const Chunk = require('./chunk');
 const Room = require('./room');
 
 class World extends Room {
-  constructor({ preload, seed }) {
-    super();
+  constructor({ maxClients, preload, seed }) {
+    super({ maxClients });
     this.chunks = new Map();
     this.noise = new Noise();
     this.seed = seed && !Number.isNaN(seed) ? (
@@ -13,7 +13,9 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.noise.seed(this.seed);
+    console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
+      console.log(`Preloading ${((preload * 2) + 1) ** 2} chunks...`);
       for (let z = -preload; z <= preload; z += 1) {
         for (let x = -preload; x <= preload; x += 1) {
           this.getChunk({ x, z }).remesh();
