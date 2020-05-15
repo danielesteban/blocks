@@ -5,6 +5,7 @@ import {
   Vector3,
 } from '../core/three.js';
 import Scene from '../core/scene.js';
+import Clouds from '../renderables/clouds.js';
 import Voxels from '../renderables/voxels.js';
 
 class World extends Scene {
@@ -17,8 +18,10 @@ class World extends Scene {
       requested: new Map(),
       player: new Vector3(),
     };
+    this.clouds = new Clouds({ target: this.player });
+    this.add(this.clouds);
     this.debug = renderer.debug;
-    this.fog = new FogExp2(0, 0.02);
+    this.fog = new FogExp2(0, 0.015);
     this.timeOffset = Date.now() / 1000;
     this.voxels = new Map();
   }
@@ -33,6 +36,7 @@ class World extends Scene {
     } = World;
     const {
       chunks,
+      clouds,
       debug,
       player,
       server,
@@ -106,8 +110,10 @@ class World extends Scene {
       this.updateTranslocables();
     }
 
+    clouds.onAnimationTick(renderer.animation);
+
     this.updateSunlight(
-      0.5 + (Math.sin((timeOffset + renderer.animation.time) * 0.1) * 0.5)
+      0.5 + (Math.sin((timeOffset + renderer.animation.time) * 0.05) * 0.5)
     );
   }
 

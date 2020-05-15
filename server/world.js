@@ -3,12 +3,23 @@ const Chunk = require('./chunk');
 const Room = require('./room');
 
 class World extends Room {
-  constructor() {
+  constructor({ preload, seed }) {
     super();
-    this.seed = Math.floor(Math.random() * 65536);
     this.chunks = new Map();
     this.noise = new Noise();
+    this.seed = seed && !Number.isNaN(seed) ? (
+      seed % 65536
+    ) : (
+      Math.floor(Math.random() * 65536)
+    );
     this.noise.seed(this.seed);
+    if (preload) {
+      for (let z = -preload; z <= preload; z += 1) {
+        for (let x = -preload; x <= preload; x += 1) {
+          this.getChunk({ x, z }).remesh();
+        }
+      }
+    }
   }
 
   getChunk({ x, z }) {

@@ -73,9 +73,9 @@ class Chunk {
         for (let y = maxHeight - 1; y >= 0; y -= 1) {
           if (voxels[x][y][z].type !== types.air) {
             heightmap[x][z] = y;
-            if (Math.random() < 0.005 && y < maxHeight - 1) {
-              heightmap[x][z] += 1;
-              voxels[x][y + 1][z] = {
+            // HACK: Generate test lights
+            if (Math.random() < 0.005) {
+              voxels[x][y === 0 ? y + 1 : y][z] = {
                 type: types.light,
                 color: { r: 0xFF, g: 0xFF, b: 0xFF },
                 light: 0,

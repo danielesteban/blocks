@@ -5,7 +5,10 @@ const helmet = require('helmet');
 const path = require('path');
 const World = require('./world');
 
-const world = new World();
+const world = new World({
+  seed: process.env.SEED ? parseInt(process.env.SEED, 10) : undefined,
+  preload: !!process.env.PRELOAD,
+});
 
 const server = express();
 server.use(compression());
