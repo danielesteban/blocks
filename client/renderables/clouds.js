@@ -87,6 +87,7 @@ class Clouds extends Object3D {
     });
     position.copy(target.position);
     position.y = Clouds.y;
+    this.updateMatrixWorld();
   }
 }
 
