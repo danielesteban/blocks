@@ -147,7 +147,7 @@ class World extends Scene {
       .multiplyScalar(scale)
       .add({
         x: offset.x + 0.25,
-        y: offset.y,
+        y: 0,
         z: offset.z + 0.25,
       });
     chunks.loaded.clear();
