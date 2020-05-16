@@ -32,7 +32,6 @@ class World extends Scene {
   onBeforeRender(renderer, scene, camera) {
     super.onBeforeRender(renderer, scene, camera);
     const {
-      offset,
       renderGrid,
       renderRadius,
       scale,
@@ -60,7 +59,6 @@ class World extends Scene {
       }
       chunks.aux
         .copy(raycaster.ray.origin)
-        .sub(offset)
         .divideScalar(scale)
         .floor();
       server.send(JSON.stringify({
@@ -76,7 +74,6 @@ class World extends Scene {
 
     chunks.aux
       .copy(player.position)
-      .sub(offset)
       .divideScalar(scale)
       .floor()
       .divideScalar(16)
@@ -139,22 +136,21 @@ class World extends Scene {
   }
 
   onInit(data) {
-    const { offset, scale } = World;
+    const { scale } = World;
     const { chunks, debug, player } = this;
     debug.seed.innerText = data.seed;
     player.position
       .copy(data.spawn)
       .multiplyScalar(scale)
       .add({
-        x: offset.x + 0.25,
-        y: 0,
-        z: offset.z + 0.25,
+        x: 0.25,
+        y: 0.5,
+        z: 0.25,
       });
     chunks.loaded.clear();
     chunks.requested.clear();
     chunks.player
       .copy(player.position)
-      .sub(offset)
       .divideScalar(scale)
       .floor()
       .divideScalar(16)
@@ -254,7 +250,6 @@ World.renderGrid = (() => {
   grid.sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)));
   return grid;
 })();
-World.offset = { x: -4, y: -0.5, z: -4 };
 World.scale = 0.5;
 
 export default World;

@@ -15,9 +15,9 @@ class World extends Room {
     this.noise.seed(this.seed);
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
-      console.log(`Preloading ${((preload * 2) + 1) ** 2} chunks...`);
-      for (let z = -preload; z <= preload; z += 1) {
-        for (let x = -preload; x <= preload; x += 1) {
+      console.log(`Preloading ${((preload + preload)) ** 2} chunks...`);
+      for (let z = -preload; z < preload; z += 1) {
+        for (let x = -preload; x < preload; x += 1) {
           this.getChunk({ x, z }).remesh();
         }
       }
@@ -38,8 +38,8 @@ class World extends Room {
   onInit() {
     const { seed } = this;
     const chunk = this.getChunk({
-      x: Math.floor(Math.random() * 3) - 1,
-      z: Math.floor(Math.random() * 3) - 1,
+      x: Math.floor(Math.random() * 2) - 1,
+      z: Math.floor(Math.random() * 2) - 1,
     });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),

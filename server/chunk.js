@@ -80,14 +80,14 @@ class Chunk {
           if (voxels[x][y][z].type !== types.air) {
             heightmap[x][z] = y;
             // HACK: Generate test lights
-            if (y > 0 && Math.random() < 0.005) {
-              voxels[x][y][z] = {
-                type: types.light,
-                color: { r: 0xFF, g: 0xFF, b: 0xFF },
-                light: 0,
-                sunlight: 0,
-              };
-            }
+            // if (y > 0 && Math.random() < 0.005) {
+            //   voxels[x][y][z] = {
+            //     type: types.light,
+            //     color: { r: 0xFF, g: 0xFF, b: 0xFF },
+            //     light: 0,
+            //     sunlight: 0,
+            //   };
+            // }
             break;
           }
         }

@@ -147,8 +147,7 @@ class Voxels extends Mesh {
 
     this.position
       .set(chunk.x, 0, chunk.z)
-      .multiply({ x: 8, y: 8, z: 8 })
-      .add({ x: -4, y: -0.5, z: -4 });
+      .multiply({ x: 8, y: 8, z: 8 });
     this.scale.set(0.5, 0.5, 0.5);
     this.updateMatrix();
     this.updateMatrixWorld();
