@@ -2,6 +2,7 @@ import {
   CanvasTexture,
   Mesh,
   MeshBasicMaterial,
+  NearestFilter,
   PlaneBufferGeometry,
   Vector3,
 } from './three.js';
@@ -26,9 +27,9 @@ class UI extends Mesh {
       UI.setupGeometry();
     }
     styles = {
-      background: 'rgba(0, 0, 0, .25)',
+      background: 'rgba(0, 0, 0, .2)',
       color: '#fff',
-      font: '700 12px monospace',
+      font: '700 12px courier',
       textAlign: 'center',
       textBaseline: 'middle',
       ...styles,
@@ -49,7 +50,8 @@ class UI extends Mesh {
     renderer.width = textureWidth;
     renderer.height = textureHeight;
     const texture = new CanvasTexture(renderer);
-    texture.anisotropy = 4;
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
     super(
       UI.geometry,
       new MeshBasicMaterial({

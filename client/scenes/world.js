@@ -232,6 +232,7 @@ class World extends Scene {
     const intensity = (time > 0.5 ? (1 - time) : time) * 2;
     background.setHSL(0.55, 0.4, Math.max(intensity, 0.1) * 0.5);
     fog.color.copy(background);
+    Clouds.updateMaterial(intensity);
     Sun.updateMaterial({ intensity, time });
     Voxels.updateMaterial(intensity);
   }

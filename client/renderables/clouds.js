@@ -18,6 +18,13 @@ class Clouds extends Object3D {
     };
   }
 
+  static updateMaterial(intensity) {
+    if (!Clouds.material) {
+      Clouds.setupMaterial();
+    }
+    Clouds.material.color.setHSL(0, 0, intensity);
+  }
+
   constructor({ anchor }) {
     if (!Clouds.material) {
       Clouds.setupMaterial();
