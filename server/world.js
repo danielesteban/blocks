@@ -94,9 +94,9 @@ class World extends Room {
         y = parseInt(y, 10);
         z = parseInt(z, 10);
         color = {
-          r: parseFloat(color ? color.r : '0', 10),
-          g: parseFloat(color ? color.g : '0', 10),
-          b: parseFloat(color ? color.b : '0', 10),
+          r: parseInt(color ? color.r : '', 10),
+          g: parseInt(color ? color.g : '', 10),
+          b: parseInt(color ? color.b : '', 10),
         };
         type = parseInt(type, 10);
         if (
@@ -107,9 +107,19 @@ class World extends Room {
           || Number.isNaN(color.g)
           || Number.isNaN(color.b)
           || Number.isNaN(type)
-          || (type !== Chunk.types.air && type !== Chunk.types.light)
           || y <= 0
           || y >= Chunk.maxHeight
+          || color.r < 0
+          || color.r > 0xFF
+          || color.g < 0
+          || color.g > 0xFF
+          || color.b < 0
+          || color.b > 0xFF
+          || (
+            type !== Chunk.types.air
+            && type !== Chunk.types.light
+            && type !== Chunk.types.block
+          )
         ) {
           return;
         }
@@ -121,10 +131,6 @@ class World extends Room {
         z -= Chunk.size * chunk.z;
         chunk = this.getChunk(chunk);
         if (!chunk.meshes) {
-          return;
-        }
-        const { type: current } = chunk.get(x, y, z);
-        if (type === current) {
           return;
         }
         chunk.update({

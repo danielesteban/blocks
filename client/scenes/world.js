@@ -7,6 +7,7 @@ import {
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
 import FPSMeter from '../renderables/fps.js';
+import Menu from '../renderables/menu.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
@@ -21,6 +22,15 @@ class World extends Scene {
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
 
+    this.menu = new Menu();
+    const { attachments } = this.player;
+    attachments.left = [this.menu];
+    attachments.right = [new FPSMeter()];
+    this.ui.push(
+      ...attachments.left,
+      ...attachments.right
+    );
+
     this.chunks = {
       aux: new Vector3(),
       loaded: new Map(),
@@ -30,12 +40,7 @@ class World extends Scene {
     this.voxels = new Map();
     this.timeOffset = Date.now() / 1000;
 
-    this.player.attachments.left = [
-      new FPSMeter(),
-    ];
-    this.ui.push(...this.player.attachments.left);
-
-    this.timeOffset = 50;
+    this.timeOffset = 160;
   }
 
   onBeforeRender(renderer, scene, camera) {
@@ -49,6 +54,7 @@ class World extends Scene {
       chunks,
       clouds,
       debug,
+      menu,
       player,
       server,
       sun,
@@ -76,7 +82,8 @@ class World extends Scene {
           x: chunks.aux.x,
           y: chunks.aux.y,
           z: chunks.aux.z,
-          type: triggerDown ? 1 : 0,
+          color: menu.blockColor,
+          type: triggerDown ? menu.blockType : 0,
         },
       }));
     });
@@ -243,7 +250,7 @@ class World extends Scene {
   }
 }
 
-World.dayDuration = 120;
+World.dayDuration = 600;
 World.renderRadius = 10;
 World.renderGrid = (() => {
   const grid = [];

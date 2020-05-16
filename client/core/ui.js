@@ -20,21 +20,21 @@ class UI extends Mesh {
     width = 0.5,
     height = 0.5,
     styles = {},
-    textureWidth = 256,
-    textureHeight = 256,
+    textureWidth = 128,
+    textureHeight = 128,
   }) {
     if (!UI.geometry) {
       UI.setupGeometry();
     }
     styles = {
-      background: 'rgba(0, 0, 0, .5)',
+      background: 'rgba(0, 0, 0, .25)',
       color: '#fff',
-      font: '700 30px monospace',
+      font: '700 12px monospace',
       textAlign: 'center',
       textBaseline: 'middle',
       ...styles,
       button: {
-        background: '#393',
+        background: '#111',
         border: '#000',
         color: '#fff',
         ...(styles.button || {}),
@@ -58,7 +58,7 @@ class UI extends Mesh {
         transparent: true,
       })
     );
-    this.isUI = true;
+    this.matrixAutoUpdate = false;
     this.scale.set(width, height, 1);
     this.buttons = buttons;
     this.graphics = graphics;
@@ -114,19 +114,21 @@ class UI extends Mesh {
       ctx.translate(x, y);
       ctx.beginPath();
       ctx.rect(0, 0, width, height);
-      ctx.fillStyle = background || button.background || styles.background;
-      ctx.strokeStyle = border || button.border || styles.border;
+      ctx.fillStyle = background || button.background;
+      ctx.strokeStyle = border || button.border;
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = color || button.color || styles.color;
+      ctx.fillStyle = color || button.color;
       ctx.font = font || button.font || styles.font;
       ctx.textAlign = textAlign || button.textAlign || styles.textAlign;
       ctx.textBaseline = textBaseline || button.textBaseline || styles.textBaseline;
-      ctx.fillText(
-        label,
-        width * 0.5,
-        height * 0.5
-      );
+      if (label) {
+        ctx.fillText(
+          label,
+          width * 0.5,
+          height * 0.5
+        );
+      }
       ctx.restore();
     });
     labels.forEach(({
@@ -157,25 +159,28 @@ class UI extends Mesh {
       (1 - (pointer.y + 0.5)) * renderer.height,
       0
     );
-    buttons
-      .filter(({ isDisabled }) => (!isDisabled))
-      .forEach(({
+    const l = buttons.length - 1;
+    for (let i = l; i >= 0; i -= 1) {
+      const {
+        isDisabled,
         x,
         y,
         width,
         height,
         onPointer,
-      }) => {
-        if (
-          pointer.x < x
-          || pointer.x > x + width
-          || pointer.y < y
-          || pointer.y > y + height
-        ) {
-          return;
-        }
+      } = buttons[i];
+      if (
+        !isDisabled
+        && onPointer
+        && pointer.x >= x
+        && pointer.x <= x + width
+        && pointer.y >= y
+        && pointer.y <= y + height
+      ) {
         onPointer();
-      });
+        break;
+      }
+    }
   }
 }
 

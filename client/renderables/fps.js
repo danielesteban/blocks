@@ -28,6 +28,7 @@ class FPSMeter extends UI {
       Math.PI * -0.5,
       Math.PI * 0.5
     );
+    this.updateMatrix();
   }
 
   onBeforeRender({ fps }) {
