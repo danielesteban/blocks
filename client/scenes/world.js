@@ -22,7 +22,7 @@ class World extends Scene {
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
     this.debug = renderer.debug;
-    this.fog = new FogExp2(0, 0.015);
+    this.fog = new FogExp2(0, 0.02);
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
     this.timeOffset = Date.now() / 1000;

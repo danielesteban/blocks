@@ -2,8 +2,8 @@ import {
   BufferGeometry,
   Mesh,
   BufferAttribute,
-  ShaderMaterial,
   ShaderLib,
+  ShaderMaterial,
   UniformsUtils,
   VertexColors,
 } from '../core/three.js';
@@ -13,7 +13,7 @@ import {
 class Voxels extends Mesh {
   static setupMaterial() {
     Voxels.material = new ShaderMaterial({
-      name: 'display-material',
+      name: 'voxels-material',
       vertexColors: VertexColors,
       fog: true,
       fragmentShader: ShaderLib.basic.fragmentShader

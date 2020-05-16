@@ -2,8 +2,11 @@ import {
   BufferAttribute,
   BufferGeometry,
   Color,
+  EqualDepth,
   Mesh,
-  MeshBasicMaterial,
+  ShaderLib,
+  ShaderMaterial,
+  UniformsUtils,
   Vector2,
   VertexColors,
 } from '../core/three.js';
@@ -11,6 +14,28 @@ import {
 // Animated sun
 
 class Sun extends Mesh {
+  static setupMaterial() {
+    Sun.material = new ShaderMaterial({
+      name: 'sun-material',
+      defines: {
+        FOG_DENSITY: 0.01,
+      },
+      depthFunc: EqualDepth,
+      fog: true,
+      vertexColors: VertexColors,
+      fragmentShader: ShaderLib.basic.fragmentShader,
+      vertexShader: ShaderLib.basic.vertexShader
+        .replace(
+          '#include <project_vertex>',
+          [
+            '#include <project_vertex>',
+            'gl_Position = gl_Position.xyww;',
+          ].join('\n')
+        ),
+      uniforms: UniformsUtils.clone(ShaderLib.basic.uniforms),
+    });
+  }
+
   static setupGeometry() {
     const size = 12;
     const center = new Vector2(size * 0.5 - 0.5, size * 0.5 - 0.5);
@@ -53,18 +78,11 @@ class Sun extends Mesh {
     Sun.geometry = geometry;
   }
 
-  static setupMaterial() {
-    Sun.material = new MeshBasicMaterial({
-      depthWrite: false,
-      vertexColors: VertexColors,
-    });
-  }
-
   static updateMaterial({ intensity, time }) {
     if (!Sun.material) {
       Sun.setupMaterial();
     }
-    Sun.material.color.setHSL(0.166, 0.8, intensity * 0.2);
+    Sun.material.uniforms.diffuse.value.setHSL(0.166, 0.8, intensity * 0.2);
     Sun.material.time = time;
   }
 
@@ -80,25 +98,23 @@ class Sun extends Mesh {
       Sun.material
     );
     this.anchor = anchor;
-    this.renderOrder = -1;
+    this.matrixAutoUpdate = false;
+    this.renderOrder = 100;
   }
 
   onAnimationTick() {
     const { material: { time }, distance } = Sun;
     const { anchor, position } = this;
     const angle = Math.PI * (1 - time) * 1.2;
-    position
-      .copy(anchor.position)
-      .add({
-        x: 0,
-        y: Math.sin(angle) * distance,
-        z: Math.cos(angle) * distance,
-      });
+    position.copy(anchor.position);
+    position.y = Math.sin(angle) * distance;
+    position.z += Math.cos(angle) * distance;
     this.rotation.x = Math.PI - angle;
-    this.updateWorldMatrix();
+    this.updateMatrix();
+    this.updateMatrixWorld();
   }
 }
 
-Sun.distance = 40;
+Sun.distance = 64;
 
 export default Sun;

@@ -12,9 +12,10 @@ import {
 
 class Clouds extends Object3D {
   static setupMaterial() {
-    Clouds.material = new MeshBasicMaterial({
-      color: 0xffffff,
-    });
+    Clouds.material = new MeshBasicMaterial();
+    Clouds.material.defines = {
+      FOG_DENSITY: 0.01,
+    };
   }
 
   constructor({ anchor }) {
@@ -63,10 +64,12 @@ class Clouds extends Object3D {
         );
         cloud.position.set(gx * 20, Math.random(), gy * 20);
         cloud.speed = 0.01 + Math.random() * 0.05;
+        cloud.matrixAutoUpdate = false;
         this.add(cloud);
       }
     }
     this.anchor = anchor;
+    this.matrixAutoUpdate = false;
     this.scale.set(10, 1, 10);
   }
 
@@ -79,18 +82,21 @@ class Clouds extends Object3D {
 
   onAnimationTick({ delta }) {
     const { anchor, children, position } = this;
-    children.forEach(({ position, speed }) => {
+    children.forEach((cloud) => {
+      const { position, speed } = cloud;
       position.x += speed * delta;
       if (position.x > 30) {
         position.x -= 60;
       }
+      cloud.updateMatrix();
     });
     position.copy(anchor.position);
     position.y = Clouds.y;
+    this.updateMatrix();
     this.updateMatrixWorld();
   }
 }
 
-Clouds.y = 50;
+Clouds.y = 64;
 
 export default Clouds;

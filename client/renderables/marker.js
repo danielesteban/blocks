@@ -69,6 +69,7 @@ class Marker extends Object3D {
       Marker.lineMaterial
     );
     this.add(this.line);
+    this.matrixAutoUpdate = false;
     this.visible = false;
   }
 
