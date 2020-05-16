@@ -29,7 +29,7 @@ class Menu extends UI {
               background: 'transparent',
               border: 'transparent',
               label: 'Light',
-              font: '700 24px monospace',
+              font: '700 28px monospace',
               x: 0,
               y: 0,
               width,

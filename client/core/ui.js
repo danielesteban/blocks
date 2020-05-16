@@ -29,7 +29,7 @@ class UI extends Mesh {
     styles = {
       background: 'rgba(0, 0, 0, .2)',
       color: '#fff',
-      font: '700 12px courier',
+      font: '700 11px courier',
       textAlign: 'center',
       textBaseline: 'middle',
       ...styles,
