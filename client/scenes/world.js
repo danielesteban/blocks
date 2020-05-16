@@ -6,7 +6,7 @@ import {
 } from '../core/three.js';
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
-import FPSMeter from '../renderables/fps.js';
+import Info from '../renderables/info.js';
 import Menu from '../renderables/menu.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
@@ -25,7 +25,7 @@ class World extends Scene {
     this.menu = new Menu();
     const { attachments } = this.player;
     attachments.left = [this.menu];
-    attachments.right = [new FPSMeter()];
+    attachments.right = [new Info()];
     this.ui.push(
       ...attachments.left,
       ...attachments.right
