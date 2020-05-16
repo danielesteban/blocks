@@ -2,7 +2,6 @@ import {
   BufferAttribute,
   BufferGeometry,
   Color,
-  EqualDepth,
   Mesh,
   ShaderLib,
   ShaderMaterial,
@@ -20,7 +19,7 @@ class Sun extends Mesh {
       defines: {
         FOG_DENSITY: 0.01,
       },
-      depthFunc: EqualDepth,
+      depthWrite: false,
       fog: true,
       vertexColors: VertexColors,
       fragmentShader: ShaderLib.basic.fragmentShader,
@@ -99,7 +98,7 @@ class Sun extends Mesh {
     );
     this.anchor = anchor;
     this.matrixAutoUpdate = false;
-    this.renderOrder = 100;
+    this.renderOrder = -1;
   }
 
   onAnimationTick() {
