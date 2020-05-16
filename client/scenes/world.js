@@ -39,8 +39,6 @@ class World extends Scene {
     };
     this.voxels = new Map();
     this.timeOffset = Date.now() / 1000;
-
-    this.timeOffset = 160;
   }
 
   onBeforeRender(renderer, scene, camera) {
