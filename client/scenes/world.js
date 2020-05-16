@@ -16,9 +16,9 @@ class World extends Scene {
     super(renderer);
 
     this.background = new Color();
+    this.fog = new FogExp2(0, 0.02);
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
-    this.fog = new FogExp2(0, 0.02);
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
 
