@@ -17,7 +17,7 @@ class Sun extends Mesh {
     Sun.material = new ShaderMaterial({
       name: 'sun-material',
       defines: {
-        FOG_DENSITY: 0.01,
+        FOG_DENSITY: 0.00125,
       },
       depthWrite: false,
       fog: true,
@@ -98,6 +98,7 @@ class Sun extends Mesh {
     );
     this.anchor = anchor;
     this.matrixAutoUpdate = false;
+    this.scale.set(8, 8, 1);
     this.renderOrder = -1;
   }
 
@@ -114,6 +115,6 @@ class Sun extends Mesh {
   }
 }
 
-Sun.distance = 64;
+Sun.distance = 512;
 
 export default Sun;
