@@ -80,7 +80,7 @@ class World extends Scene {
           x: chunks.aux.x,
           y: chunks.aux.y,
           z: chunks.aux.z,
-          color: menu.blockColor,
+          color: menu.blockColor.getHex(),
           type: triggerDown ? menu.blockType : 0,
         },
       }));

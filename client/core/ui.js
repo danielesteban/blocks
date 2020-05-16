@@ -14,11 +14,10 @@ class UI extends Mesh {
   }
 
   constructor({
-    buttons = [],
-    graphics = [],
-    labels = [],
     width = 0.5,
     height = 0.5,
+    page = 0,
+    pages = [],
     styles = {},
     textureWidth = 128,
     textureHeight = 128,
@@ -60,15 +59,13 @@ class UI extends Mesh {
     );
     this.matrixAutoUpdate = false;
     this.scale.set(width, height, 1);
-    this.buttons = buttons;
-    this.graphics = graphics;
-    this.labels = labels;
     this.context = renderer.getContext('2d');
+    this.pages = pages;
     this.pointer = new Vector3();
     this.renderer = renderer;
     this.styles = styles;
     this.texture = texture;
-    this.draw();
+    this.setPage(page);
   }
 
   dispose() {
@@ -79,9 +76,11 @@ class UI extends Mesh {
 
   draw() {
     const {
-      buttons,
-      graphics,
-      labels,
+      page: {
+        buttons,
+        graphics,
+        labels,
+      },
       context: ctx,
       renderer,
       styles,
@@ -152,7 +151,7 @@ class UI extends Mesh {
   }
 
   onPointer(point) {
-    const { buttons, pointer, renderer } = this;
+    const { page: { buttons }, pointer, renderer } = this;
     this.worldToLocal(pointer.copy(point));
     pointer.set(
       (pointer.x + 0.5) * renderer.width,
@@ -181,6 +180,18 @@ class UI extends Mesh {
         break;
       }
     }
+  }
+
+  setPage(page) {
+    const { pages } = this;
+    this.page = {
+      id: page,
+      buttons: [],
+      graphics: [],
+      labels: [],
+      ...pages[page],
+    };
+    this.draw();
   }
 }
 

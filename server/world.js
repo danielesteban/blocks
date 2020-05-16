@@ -93,28 +93,18 @@ class World extends Room {
         x = parseInt(x, 10);
         y = parseInt(y, 10);
         z = parseInt(z, 10);
-        color = {
-          r: parseInt(color ? color.r : '', 10),
-          g: parseInt(color ? color.g : '', 10),
-          b: parseInt(color ? color.b : '', 10),
-        };
+        color = parseInt(color, 10);
         type = parseInt(type, 10);
         if (
           Number.isNaN(x)
           || Number.isNaN(y)
           || Number.isNaN(z)
-          || Number.isNaN(color.r)
-          || Number.isNaN(color.g)
-          || Number.isNaN(color.b)
+          || Number.isNaN(color)
           || Number.isNaN(type)
           || y <= 0
           || y >= Chunk.maxHeight
-          || color.r < 0
-          || color.r > 0xFF
-          || color.g < 0
-          || color.g > 0xFF
-          || color.b < 0
-          || color.b > 0xFF
+          || color < 0
+          || color > 16777215
           || (
             type !== Chunk.types.air
             && type !== Chunk.types.light
@@ -137,7 +127,11 @@ class World extends Room {
           x,
           y,
           z,
-          color,
+          color: {
+            r: (color >> 16) & 0xFF,
+            g: (color >> 8) & 0xFF,
+            b: color & 0xFF,
+          },
           type,
         });
         const chunks = [

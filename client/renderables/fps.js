@@ -7,11 +7,15 @@ class FPSMeter extends UI {
     super({
       width: 0.05,
       height: 0.05,
-      labels: [
+      pages: [
         {
-          text: '0fps',
-          x: 32,
-          y: 32,
+          labels: [
+            {
+              text: '0fps',
+              x: 32,
+              y: 32,
+            },
+          ],
         },
       ],
       styles: {
@@ -20,7 +24,7 @@ class FPSMeter extends UI {
       textureWidth: 64,
       textureHeight: 64,
     });
-    const [label] = this.labels;
+    const [label] = this.page.labels;
     this.label = label;
     this.position.set(-0.01, -0.1 / 3, 0.05);
     this.rotation.set(
