@@ -49,6 +49,7 @@ class Menu extends UI {
               onPointer: () => this.setBlock('Block'),
             },
             {
+              background: '#393',
               label: 'Light',
               x: 16,
               y: 52,
