@@ -92,11 +92,9 @@ class Renderer {
     fps.count += 1;
     if (renderer.animation.time >= fps.lastTick + 1) {
       renderer.fps = Math.round(fps.count / (renderer.animation.time - fps.lastTick));
+      debug.fps.innerText = `${renderer.fps}fps`;
       fps.lastTick = renderer.animation.time;
       fps.count = 0;
-      if (!renderer.xr.isPresenting) {
-        debug.fps.innerText = `${renderer.fps}fps`;
-      }
     }
   }
 
