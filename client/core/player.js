@@ -8,6 +8,7 @@ import {
 } from './three.js';
 import Hand from '../renderables/hand.js';
 import Marker from '../renderables/marker.js';
+import Pointer from '../renderables/pointer.js';
 
 // Player controller
 
@@ -19,6 +20,7 @@ class Player extends Object3D {
     this.auxMatrixB = new Matrix4();
     this.auxVector = new Vector3();
     this.auxDestination = new Vector3();
+    this.attachments = {};
     this.direction = new Vector3();
     this.head = new AudioListener();
     const onFirstInteraction = () => {
@@ -43,6 +45,8 @@ class Player extends Object3D {
         secondary: false,
       };
       controller.marker = new Marker();
+      controller.pointer = new Pointer();
+      controller.add(controller.pointer);
       controller.raycaster = new Raycaster();
       controller.raycaster.far = 32;
       controller.worldspace = {
@@ -54,12 +58,25 @@ class Player extends Object3D {
         controller.hand = hand;
         controller.gamepad = gamepad;
         controller.add(hand);
+        const attachments = this.attachments[handedness];
+        if (attachments) {
+          attachments.forEach((attachment) => {
+            controller.add(attachment);
+          });
+        }
       });
       controller.addEventListener('disconnected', () => {
+        const attachments = this.attachments[controller.hand.handedness];
+        if (attachments) {
+          attachments.forEach((attachment) => {
+            controller.remove(attachment);
+          });
+        }
         controller.remove(controller.hand);
         delete controller.hand;
         delete controller.gamepad;
         controller.marker.visible = false;
+        controller.pointer.visible = false;
       });
       return controller;
     });
@@ -84,12 +101,15 @@ class Player extends Object3D {
       gamepad,
       marker,
       matrixWorld,
+      pointer,
       raycaster,
       worldspace,
     }) => {
       if (!hand) {
         return;
       }
+      marker.visible = false;
+      pointer.visible = false;
       [
         ['forwards', gamepad.axes[3] <= -0.5],
         ['backwards', gamepad.axes[3] >= 0.5],
@@ -110,7 +130,6 @@ class Player extends Object3D {
         middle: gamepad.buttons[1] && gamepad.buttons[1].pressed,
       });
       hand.animate({ delta });
-      marker.visible = false;
       matrixWorld.decompose(worldspace.position, worldspace.quaternion, vector);
       rotation.identity().extractRotation(matrixWorld);
       raycaster.ray.origin

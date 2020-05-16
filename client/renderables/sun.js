@@ -111,7 +111,7 @@ class Sun extends Mesh {
     position.z += Math.cos(angle) * distance;
     this.rotation.x = Math.PI - angle;
     this.updateMatrix();
-    this.updateMatrixWorld();
+    this.updateWorldMatrix();
   }
 }
 

@@ -6,8 +6,10 @@ import Player from './player.js';
 // A multiplayer VR scene base class
 
 class Scene extends ThreeScene {
-  constructor({ camera, renderer: { xr } }) {
+  constructor({ camera, debug, renderer: { xr } }) {
     super();
+
+    this.debug = debug;
 
     this.player = new Player({ camera, xr });
     this.player.controllers.forEach(({ marker }) => (
@@ -19,6 +21,7 @@ class Scene extends ThreeScene {
     this.add(this.peers);
 
     this.translocables = [];
+    this.ui = [];
 
     this.connect();
   }
@@ -28,6 +31,7 @@ class Scene extends ThreeScene {
       peers,
       player,
       translocables,
+      ui,
     } = this;
     player.onAnimationTick({ delta, camera });
     peers.onAnimationTick({ delta, player });
@@ -39,11 +43,12 @@ class Scene extends ThreeScene {
           leftwardsDown,
           rightwardsDown,
           secondaryDown,
-          trigger,
-          triggerUp,
+          primary,
+          primaryUp,
         },
         hand,
         marker,
+        pointer,
         raycaster,
       } = controller;
       if (!hand) {
@@ -61,17 +66,33 @@ class Scene extends ThreeScene {
       if (
         !player.destination
         && hand.handedness === 'right'
-        && (forwards || forwardsUp || trigger || triggerUp)
+        && (forwards || forwardsUp)
       ) {
         const { hit, points } = CurveCast({
           intersects: translocables,
           raycaster,
         });
         if (hit) {
-          if (forwardsUp || triggerUp) {
+          if (forwardsUp) {
             player.translocate(hit.point);
           } else {
             marker.update({ hit, points });
+          }
+        }
+      }
+      if (
+        !player.destination
+        && (primary || primaryUp)
+      ) {
+        const hit = raycaster.intersectObjects(ui)[0] || false;
+        if (hit) {
+          if (primaryUp) {
+            hit.object.onPointer(hit.point);
+          } else {
+            pointer.update({
+              distance: hit.distance,
+              origin: raycaster.ray.origin,
+            });
           }
         }
       }

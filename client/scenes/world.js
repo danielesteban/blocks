@@ -6,27 +6,36 @@ import {
 } from '../core/three.js';
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
+import FPSMeter from '../renderables/fps.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
 class World extends Scene {
   constructor(renderer) {
     super(renderer);
+
     this.background = new Color();
+    this.clouds = new Clouds({ anchor: this.player });
+    this.add(this.clouds);
+    this.fog = new FogExp2(0, 0.02);
+    this.sun = new Sun({ anchor: this.player });
+    this.add(this.sun);
+
     this.chunks = {
       aux: new Vector3(),
       loaded: new Map(),
       requested: new Map(),
       player: new Vector3(),
     };
-    this.clouds = new Clouds({ anchor: this.player });
-    this.add(this.clouds);
-    this.debug = renderer.debug;
-    this.fog = new FogExp2(0, 0.02);
-    this.sun = new Sun({ anchor: this.player });
-    this.add(this.sun);
-    this.timeOffset = Date.now() / 1000;
     this.voxels = new Map();
+    this.timeOffset = Date.now() / 1000;
+
+    this.player.attachments.left = [
+      new FPSMeter(),
+    ];
+    this.ui.push(...this.player.attachments.left);
+
+    this.timeOffset = 50;
   }
 
   onBeforeRender(renderer, scene, camera) {

@@ -82,6 +82,10 @@ class Clouds extends Object3D {
 
   onAnimationTick({ delta }) {
     const { anchor, children, position } = this;
+    position.copy(anchor.position);
+    position.y = Clouds.y;
+    this.updateMatrix();
+    this.updateWorldMatrix();
     children.forEach((cloud) => {
       const { position, speed } = cloud;
       position.x += speed * delta;
@@ -89,11 +93,8 @@ class Clouds extends Object3D {
         position.x -= 60;
       }
       cloud.updateMatrix();
+      cloud.updateWorldMatrix();
     });
-    position.copy(anchor.position);
-    position.y = Clouds.y;
-    this.updateMatrix();
-    this.updateMatrixWorld();
   }
 }
 

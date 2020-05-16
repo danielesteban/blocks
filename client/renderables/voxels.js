@@ -150,7 +150,7 @@ class Voxels extends Mesh {
       .multiply({ x: 8, y: 8, z: 8 });
     this.scale.set(0.5, 0.5, 0.5);
     this.updateMatrix();
-    this.updateMatrixWorld();
+    this.updateWorldMatrix();
 
     this.visible = true;
   }
