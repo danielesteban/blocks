@@ -36,10 +36,14 @@ class World extends Room {
   }
 
   onInit() {
-    const { seed } = this;
+    const { noise, seed } = this;
+    const offset = {
+      x: Math.floor(Math.abs(noise.simplex2(seed, seed)) * 100) - 50,
+      z: Math.floor(Math.abs(noise.simplex2(seed / 2, seed / 2)) * 100) - 50,
+    };
     const chunk = this.getChunk({
-      x: Math.floor(Math.random() * 2) - 1,
-      z: Math.floor(Math.random() * 2) - 1,
+      x: offset.x + Math.floor(Math.random() * 2) - 1,
+      z: offset.z + Math.floor(Math.random() * 2) - 1,
     });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),

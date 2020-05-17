@@ -28,13 +28,11 @@ class Chunk {
         for (let z = 0; z < size; z += 1) {
           const wx = (this.x * size) + x - 4;
           const wz = (this.z * size) + z - 4;
-          const height = Math.min(Math.max((
-            Math.abs(
-              (noise.simplex2(wx / 512, wz / 512) * 0.5)
-              + (noise.perlin2(wz / 1024, wx / 1024) * 0.2)
-              + (noise.perlin3(wx / 64, y / 32, wz / 64) * 0.4)
-            ) * 128
-          ) - 8, 0), maxHeight);
+          const height = Math.max((Math.abs(
+            (noise.perlin2(wz / 1024, wx / 1024) * 0.3)
+            + (noise.simplex2(wx / 512, wz / 512) * 0.3)
+            + (noise.perlin3(wz / 32, y / 24, wx / 32) * 0.3)
+          ) * maxHeight * 2) - 4, 0);
           const voxel = {
             type: types.air,
             color: { r: 0, g: 0, b: 0 },
@@ -44,12 +42,12 @@ class Chunk {
           if (y <= height) {
             voxel.type = types.block;
             const l = (
-              1 - Math.abs(noise.perlin3(wx / 64, y / 32, wz / 64))
+              1 - Math.abs(noise.perlin3(wx / 64, y / 24, wz / 64))
             ) * (Math.max(y, 8) / maxHeight) * 60;
             voxel.color = hsl2Rgb({
-              h: Math.abs(noise.perlin3(wx / 256, y / 64, wz / 256)) * 360,
+              h: Math.abs(noise.perlin3(wx / 128, y / 32, wz / 128)) * 360,
               s: (
-                1 - Math.abs(noise.perlin3(wx / 32, y / 16, wz / 32))
+                1 - Math.abs(noise.perlin3(wx / 32, y / 24, wz / 32))
               ) * (1 - (y / maxHeight)) * 80,
               l,
             });
