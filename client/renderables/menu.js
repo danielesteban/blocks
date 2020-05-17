@@ -203,7 +203,7 @@ class Menu extends UI {
     const {
       pages: [
         { buttons: [toggle] },
-        { buttons: [/* fly */, /* teleport */, block, light] },
+        { buttons: [/* teleport */, /* fly */, block, light] },
       ],
     } = this;
     toggle.label = type;
@@ -226,13 +226,13 @@ class Menu extends UI {
 
   setLocomotion(type) {
     const {
-      pages: [/* toggle */, { buttons: [fly, teleport] }],
+      pages: [/* toggle */, { buttons: [teleport, fly] }],
     } = this;
     delete fly.background;
     delete teleport.background;
     const buttons = { fly, teleport };
     buttons[type].background = '#393';
-    const locomotions = { fly: 1, teleport: 0 };
+    const locomotions = { fly: 0, teleport: 1 };
     this.world.locomotion = locomotions[type];
     this.setPage(0);
   }
