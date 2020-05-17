@@ -271,6 +271,7 @@ class Chunk {
       types,
       voxelNeighbors,
     } = Chunk;
+    const { heightmap } = this;
     const voxel = this.get(x, y, z);
     const { type: current } = voxel;
     voxel.type = type;
@@ -313,6 +314,16 @@ class Chunk {
         }
         this.floodLight(queue, key);
       });
+      if (heightmap[x][z] === y) {
+        for (let i = y - 1; i >= 0; i -= 1) {
+          if (this.get(x, i, z).type !== types.air) {
+            heightmap[x][z] = y;
+            break;
+          }
+        }
+      }
+    } else if (heightmap[x][z] < y) {
+      heightmap[x][z] = y;
     }
   }
 
