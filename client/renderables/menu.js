@@ -28,7 +28,7 @@ class Menu extends UI {
             {
               background: 'transparent',
               border: 'transparent',
-              label: 'Light',
+              label: 'Menu',
               font: '700 28px monospace',
               x: 0,
               y: 0,
@@ -63,7 +63,7 @@ class Menu extends UI {
               y: 52,
               width: 52,
               height: 24,
-              onPointer: () => this.setBlock('Block'),
+              onPointer: () => this.setBlock(0x02),
             },
             {
               background: '#393',
@@ -72,7 +72,7 @@ class Menu extends UI {
               y: 52,
               width: 52,
               height: 24,
-              onPointer: () => this.setBlock('Light'),
+              onPointer: () => this.setBlock(0x01),
             },
             {
               label: 'Color Picker',
@@ -166,6 +166,13 @@ class Menu extends UI {
     this.picker = { area, strip };
   }
 
+  dispose() {
+    super.dispose();
+    if (this.timer) {
+      clearTimeout(this.timer);
+    }
+  }
+
   onPointer(point) {
     super.onPointer(point);
     const {
@@ -178,63 +185,48 @@ class Menu extends UI {
     if (page.id !== 2) {
       return;
     }
-    [area, strip].forEach((object) => {
+    for (let i = 0; i < 2; i += 1) {
       const {
         x,
         y,
         width,
         height,
-      } = object;
+      } = i === 0 ? area : strip;
       if (
-        pointer.x < x
-        || pointer.x > x + width
-        || pointer.y < y
-        || pointer.y > y + height
+        pointer.x >= x
+        && pointer.x <= x + width
+        && pointer.y >= y
+        && pointer.y <= y + height
       ) {
-        return;
-      }
-      const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
-      if (object === strip) {
-        area.color.setRGB(
+        const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
+        blockColor.setRGB(
           imageData[0] / 0xFF,
           imageData[1] / 0xFF,
           imageData[2] / 0xFF
         );
+        if (i === 1) {
+          area.color.setRGB(
+            imageData[0] / 0xFF,
+            imageData[1] / 0xFF,
+            imageData[2] / 0xFF
+          );
+        }
+        this.setPage(i === 0 ? 1 : 2);
+        break;
       }
-      blockColor.setRGB(
-        imageData[0] / 0xFF,
-        imageData[1] / 0xFF,
-        imageData[2] / 0xFF
-      );
-      if (object === area) {
-        this.setPage(0);
-      }
-    });
+    }
   }
 
   setBlock(type) {
     const {
-      pages: [
-        { buttons: [toggle] },
-        { buttons: [/* teleport */, /* fly */, block, light] },
-      ],
+      pages: [/* toggle */, { buttons: [/* teleport */, /* fly */, block, light] }],
     } = this;
-    toggle.label = type;
     delete block.background;
     delete light.background;
-    switch (type) {
-      case 'Light':
-        this.blockType = 0x01;
-        light.background = '#393';
-        break;
-      case 'Block':
-        this.blockType = 0x02;
-        block.background = '#393';
-        break;
-      default:
-        break;
-    }
-    this.setPage(0);
+    const buttons = { 0x02: block, 0x01: light };
+    buttons[type].background = '#393';
+    this.blockType = type;
+    this.setPage(1);
   }
 
   setLocomotion(type) {
@@ -247,18 +239,25 @@ class Menu extends UI {
     buttons[type].background = '#393';
     const locomotions = { fly: 0, teleport: 1 };
     this.world.locomotion = locomotions[type];
-    this.setPage(0);
+    this.setPage(1);
   }
 
   setPage(page) {
     const {
       position,
       scale,
+      timer,
     } = this;
     position.x = -(0.01 + (page > 0 ? 0.002 : 0));
     scale.set(page > 0 ? 0.25 : 0.05, page > 0 ? 0.25 : 0.05, 1);
     this.updateMatrix();
     this.updateWorldMatrix();
+    if (timer) {
+      clearTimeout(timer);
+    }
+    if (this.page && this.page.id !== 0 && page === 1) {
+      this.timer = setTimeout(() => this.setPage(0), 300);
+    }
     super.setPage(page);
   }
 }
