@@ -54,6 +54,7 @@ class Scene extends ThreeScene {
         marker,
         pointer,
         raycaster,
+        worldspace,
       } = controller;
       if (!hand) {
         return;
@@ -90,7 +91,10 @@ class Scene extends ThreeScene {
         && hand.handedness === 'right'
         && (backwards || forwards)
       ) {
-        player.fly({ delta, direction: forwards ? 1 : -1 });
+        player.fly({
+          direction: worldspace.quaternion,
+          scale: delta * (forwards ? 1 : -1),
+        });
       }
       if (primary || primaryUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
