@@ -13,6 +13,7 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.noise.seed(this.seed);
+    this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(seed, seed)) * 100) - 50;
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload)) ** 2} chunks...`);
@@ -36,11 +37,10 @@ class World extends Room {
   }
 
   onInit() {
-    const { noise, seed } = this;
-    const offset = Math.floor(Math.abs(noise.simplex2(seed, seed)) * 100) - 50;
+    const { seed, spawnOffset } = this;
     const chunk = this.getChunk({
-      x: offset + Math.floor(Math.random() * 3) - 1,
-      z: offset + Math.floor(Math.random() * 3) - 1,
+      x: spawnOffset + Math.floor(Math.random() * 3) - 1,
+      z: spawnOffset + Math.floor(Math.random() * 3) - 1,
     });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),
