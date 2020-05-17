@@ -16,10 +16,13 @@ class World extends Room {
     this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(this.seed, this.seed)) * 100) - 50;
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
-      console.log(`Preloading ${((preload + preload)) ** 2} chunks...`);
-      for (let z = -preload; z < preload; z += 1) {
-        for (let x = -preload; x < preload; x += 1) {
-          this.getChunk({ x, z }).remesh();
+      console.log(`Preloading ${((preload + preload + 1)) ** 2} chunks...`);
+      for (let z = -preload; z <= preload; z += 1) {
+        for (let x = -preload; x <= preload; x += 1) {
+          this.getChunk({
+            x: this.spawnOffset + x,
+            z: this.spawnOffset + z,
+          }).remesh();
         }
       }
     }
