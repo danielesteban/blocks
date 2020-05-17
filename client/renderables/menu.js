@@ -76,11 +76,22 @@ class Menu extends UI {
             },
             {
               label: 'Color Picker',
-              x: 24,
+              x: 32,
               y: 84,
-              width: 80,
+              width: 88,
               height: 24,
               onPointer: () => this.setPage(2),
+            },
+          ],
+          graphics: [
+            ({ ctx }) => {
+              ctx.translate(8, 84);
+              ctx.fillStyle = `#${color.getHexString()}`;
+              ctx.strokeStyle = '#000';
+              ctx.beginPath();
+              ctx.rect(0, 0, 24, 24);
+              ctx.fill();
+              ctx.stroke();
             },
           ],
         },
