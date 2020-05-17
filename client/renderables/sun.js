@@ -17,7 +17,7 @@ class Sun extends Mesh {
     Sun.material = new ShaderMaterial({
       name: 'sun-material',
       defines: {
-        FOG_DENSITY: 0.00125,
+        FOG_DENSITY: 0.0015,
       },
       depthWrite: false,
       fog: true,
