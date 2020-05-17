@@ -4,7 +4,7 @@ import UI from '../core/ui.js';
 // Menu UI
 
 class Menu extends UI {
-  constructor() {
+  constructor({ world }) {
     const width = 128;
     const height = 128;
     const color = new Color(Math.random() * 0xFFFFFF);
@@ -41,27 +41,44 @@ class Menu extends UI {
         {
           buttons: [
             {
-              label: 'Block',
-              x: 16,
+              background: '#393',
+              label: 'Teleport',
+              x: 8,
               y: 20,
-              width: 96,
+              width: 52,
+              height: 24,
+              onPointer: () => this.setLocomotion('teleport'),
+            },
+            {
+              label: 'Fly',
+              x: 68,
+              y: 20,
+              width: 52,
+              height: 24,
+              onPointer: () => this.setLocomotion('fly'),
+            },
+            {
+              label: 'Block',
+              x: 8,
+              y: 52,
+              width: 52,
               height: 24,
               onPointer: () => this.setBlock('Block'),
             },
             {
               background: '#393',
               label: 'Light',
-              x: 16,
+              x: 68,
               y: 52,
-              width: 96,
+              width: 52,
               height: 24,
               onPointer: () => this.setBlock('Light'),
             },
             {
               label: 'Color Picker',
-              x: 16,
+              x: 24,
               y: 84,
-              width: 96,
+              width: 80,
               height: 24,
               onPointer: () => this.setPage(2),
             },
@@ -134,6 +151,7 @@ class Menu extends UI {
     this.updateMatrix();
     this.blockColor = color;
     this.blockType = 0x01;
+    this.world = world;
     this.picker = { area, strip };
   }
 
@@ -185,7 +203,7 @@ class Menu extends UI {
     const {
       pages: [
         { buttons: [toggle] },
-        { buttons: [block, light] },
+        { buttons: [/* fly */, /* teleport */, block, light] },
       ],
     } = this;
     toggle.label = type;
@@ -203,6 +221,19 @@ class Menu extends UI {
       default:
         break;
     }
+    this.setPage(0);
+  }
+
+  setLocomotion(type) {
+    const {
+      pages: [/* toggle */, { buttons: [fly, teleport] }],
+    } = this;
+    delete fly.background;
+    delete teleport.background;
+    const buttons = { fly, teleport };
+    buttons[type].background = '#393';
+    const locomotions = { fly: 1, teleport: 0 };
+    this.world.locomotion = locomotions[type];
     this.setPage(0);
   }
 

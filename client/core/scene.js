@@ -9,6 +9,7 @@ class Scene extends ThreeScene {
   constructor({ camera, debug, renderer: { xr } }) {
     super();
 
+    this.locomotion = Scene.locomotions.teleport;
     this.debug = debug;
 
     this.player = new Player({ camera, xr });
@@ -27,7 +28,9 @@ class Scene extends ThreeScene {
   }
 
   onBeforeRender({ animation: { delta }, xr }, scene, camera) {
+    const { locomotions } = Scene;
     const {
+      locomotion,
       peers,
       player,
       translocables,
@@ -38,6 +41,7 @@ class Scene extends ThreeScene {
     player.controllers.forEach((controller) => {
       const {
         buttons: {
+          backwards,
           forwards,
           forwardsUp,
           leftwardsDown,
@@ -64,7 +68,8 @@ class Scene extends ThreeScene {
         );
       }
       if (
-        !player.destination
+        locomotion === locomotions.teleport
+        && !player.destination
         && hand.handedness === 'right'
         && (forwards || forwardsUp)
       ) {
@@ -81,9 +86,13 @@ class Scene extends ThreeScene {
         }
       }
       if (
-        !player.destination
-        && (primary || primaryUp)
+        locomotion === locomotions.fly
+        && hand.handedness === 'right'
+        && (backwards || forwards)
       ) {
+        player.fly({ delta, direction: forwards ? 1 : -1 });
+      }
+      if (primary || primaryUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
         if (hit) {
           if (primaryUp) {
@@ -160,5 +169,10 @@ class Scene extends ThreeScene {
     this.server = server;
   }
 }
+
+Scene.locomotions = {
+  fly: 0,
+  teleport: 1,
+};
 
 export default Scene;

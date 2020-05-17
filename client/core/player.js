@@ -152,6 +152,18 @@ class Player extends Object3D {
     position.addScaledVector(direction, step);
   }
 
+  fly({ delta, direction }) {
+    const {
+      auxVector: vector,
+      head,
+      position,
+    } = this;
+    position.addScaledVector(
+      vector.set(0, 0, -1).applyQuaternion(head.quaternion),
+      direction * 4 * delta
+    );
+  }
+
   rotate(radians) {
     const {
       auxMatrixA: transform,

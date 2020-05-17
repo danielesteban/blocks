@@ -22,7 +22,7 @@ class World extends Scene {
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
 
-    this.menu = new Menu();
+    this.menu = new Menu({ world: this });
     const { attachments } = this.player;
     attachments.left = [this.menu];
     attachments.right = [new Info()];
