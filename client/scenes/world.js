@@ -94,29 +94,36 @@ class World extends Scene {
       .floor();
 
     if (!chunks.player.equals(chunks.aux)) {
+      const hasCrossedBorder = chunks.player.x !== chunks.aux.x && chunks.player.z !== chunks.aux.z;
       chunks.player.copy(chunks.aux);
       debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
-      const maxDistance = renderRadius * 1.5;
-      chunks.loaded.forEach((chunk) => {
-        if (
-          chunks.player.distanceTo(chunks.aux.set(chunk.x, chunks.player.y, chunk.z)) > maxDistance
-        ) {
-          this.unloadChunk(chunk);
-        }
-      });
-      chunks.requested.forEach((chunk, key) => {
-        if (
-          chunks.player.distanceTo(chunks.aux.set(chunk.x, chunks.player.y, chunk.z)) > maxDistance
-        ) {
-          chunks.requested.delete(key);
-        }
-      });
-      renderGrid.forEach((neighbour) => {
-        this.loadChunk({
-          x: chunks.player.x + neighbour.x,
-          z: chunks.player.z + neighbour.y,
+      if (hasCrossedBorder) {
+        const maxDistance = renderRadius * 1.5;
+        chunks.loaded.forEach((chunk) => {
+          if (
+            chunks.player.distanceTo(
+              chunks.aux.set(chunk.x, chunks.player.y, chunk.z)
+            ) > maxDistance
+          ) {
+            this.unloadChunk(chunk);
+          }
         });
-      });
+        chunks.requested.forEach((chunk, key) => {
+          if (
+            chunks.player.distanceTo(
+              chunks.aux.set(chunk.x, chunks.player.y, chunk.z)
+            ) > maxDistance
+          ) {
+            chunks.requested.delete(key);
+          }
+        });
+        renderGrid.forEach((neighbour) => {
+          this.loadChunk({
+            x: chunks.player.x + neighbour.x,
+            z: chunks.player.z + neighbour.y,
+          });
+        });
+      }
       this.needsTranslocablesUpdate = true;
     }
 
@@ -163,13 +170,7 @@ class World extends Scene {
       });
     chunks.loaded.clear();
     chunks.requested.clear();
-    chunks.player
-      .copy(player.position)
-      .divideScalar(scale)
-      .floor()
-      .divideScalar(16)
-      .floor()
-      .add({ x: 0, y: -1, z: 0 });
+    chunks.player.set(Infinity, Infinity, Infinity);
   }
 
   onUpdate(data) {
