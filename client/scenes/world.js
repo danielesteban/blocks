@@ -97,6 +97,7 @@ class World extends Scene {
       const hasCrossedBorder = chunks.player.x !== chunks.aux.x && chunks.player.z !== chunks.aux.z;
       chunks.player.copy(chunks.aux);
       debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
+      this.needsTranslocablesUpdate = true;
       if (hasCrossedBorder) {
         const maxDistance = renderRadius * 1.5;
         chunks.loaded.forEach((chunk) => {
@@ -124,7 +125,6 @@ class World extends Scene {
           });
         });
       }
-      this.needsTranslocablesUpdate = true;
     }
 
     if (this.needsTranslocablesUpdate) {
