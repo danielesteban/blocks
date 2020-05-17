@@ -13,7 +13,7 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.noise.seed(this.seed);
-    this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(seed, seed)) * 100) - 50;
+    this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(this.seed, this.seed)) * 100) - 50;
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload)) ** 2} chunks...`);
