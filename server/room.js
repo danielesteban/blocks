@@ -25,6 +25,12 @@ class Room {
   onClient(client) {
     const { clients, maxClients, pingInterval } = this;
     if (clients.length >= maxClients) {
+      client.send(JSON.stringify({
+        type: 'ERROR',
+        data: {
+          message: 'Server is full. Try again later.',
+        },
+      }), () => {});
       client.terminate();
       return;
     }

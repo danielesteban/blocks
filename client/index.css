@@ -31,6 +31,16 @@ canvas {
   text-align: right;
 }
 
+#error {
+  position: absolute;
+  background: rgba(0, 0, 0, .5);
+  padding: 3rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.3;
+}
+
 #mount {
   width: 100vw;
   height: 100vh;
