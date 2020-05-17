@@ -36,8 +36,9 @@ class World extends Scene {
       loaded: new Map(),
       requested: new Map(),
       player: new Vector3(),
+      pool: [...Array(World.renderGrid.length * World.subchunks)].map(() => new Voxels()),
+      voxels: new Map(),
     };
-    this.voxels = new Map();
     this.timeOffset = Date.now() / 1000;
   }
 
@@ -174,7 +175,7 @@ class World extends Scene {
   }
 
   onUpdate(data) {
-    const { chunks, voxels } = this;
+    const { chunks } = this;
     data.chunks.forEach(({ chunk, meshes }) => {
       const key = `${chunk.x}:${chunk.z}`;
       if (!chunks.loaded.has(key) && !chunks.requested.has(key)) {
@@ -182,11 +183,14 @@ class World extends Scene {
       }
       meshes.forEach((geometry, subchunk) => {
         const key = `${chunk.x}:${chunk.z}:${subchunk}`;
-        let mesh = voxels.get(key);
+        let mesh = chunks.voxels.get(key);
         if (!mesh) {
-          mesh = new Voxels();
+          mesh = chunks.pool.shift();
+          if (!mesh) {
+            mesh = new Voxels();
+          }
           this.add(mesh);
-          voxels.set(key, mesh);
+          chunks.voxels.set(key, mesh);
         }
         mesh.update({
           chunk: { ...chunk, y: subchunk },
@@ -213,15 +217,15 @@ class World extends Scene {
   }
 
   unloadChunk(chunk) {
-    const { chunks, voxels } = this;
+    const { chunks } = this;
     chunks.loaded.delete(`${chunk.x}:${chunk.z}`);
-    for (let subchunk = 0; subchunk < 4; subchunk += 1) {
+    for (let subchunk = 0; subchunk < World.subchunks; subchunk += 1) {
       const key = `${chunk.x}:${chunk.z}:${subchunk}`;
-      const mesh = voxels.get(key);
+      const mesh = chunks.voxels.get(key);
       if (mesh) {
-        mesh.dispose();
         this.remove(mesh);
-        voxels.delete(key);
+        chunks.voxels.delete(key);
+        chunks.pool.push(mesh);
       }
     }
   }
@@ -239,9 +243,9 @@ class World extends Scene {
   }
 
   updateTranslocables() {
-    const { chunks, translocables, voxels } = this;
+    const { chunks, translocables } = this;
     translocables.length = 0;
-    voxels.forEach((mesh) => {
+    chunks.voxels.forEach((mesh) => {
       if (chunks.player.distanceTo(mesh.chunk) <= 4) {
         translocables.push(mesh);
       }
@@ -267,5 +271,6 @@ World.renderGrid = (() => {
   return grid;
 })();
 World.scale = 0.5;
+World.subchunks = 3;
 
 export default World;

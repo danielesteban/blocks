@@ -74,7 +74,6 @@ class Voxels extends Mesh {
       Voxels.material
     );
     this.matrixAutoUpdate = false;
-    this.visible = false;
   }
 
   dispose() {
