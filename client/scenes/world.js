@@ -94,7 +94,7 @@ class World extends Scene {
       .floor();
 
     if (!chunks.player.equals(chunks.aux)) {
-      const hasCrossedBorder = chunks.player.x !== chunks.aux.x && chunks.player.z !== chunks.aux.z;
+      const hasCrossedBorder = chunks.player.x !== chunks.aux.x || chunks.player.z !== chunks.aux.z;
       chunks.player.copy(chunks.aux);
       debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
       this.needsTranslocablesUpdate = true;
