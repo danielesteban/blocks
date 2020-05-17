@@ -80,7 +80,7 @@ class Menu extends UI {
               y: 84,
               width: 88,
               height: 24,
-              onPointer: () => this.setPage(2),
+              onPointer: () => setTimeout(() => this.setPage(2), 0),
             },
           ],
           graphics: [
