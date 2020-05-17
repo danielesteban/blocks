@@ -206,7 +206,9 @@ class Menu extends UI {
         imageData[1] / 0xFF,
         imageData[2] / 0xFF
       );
-      this.setPage(0);
+      if (object === area) {
+        this.setPage(0);
+      }
     });
   }
 

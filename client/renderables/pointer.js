@@ -43,7 +43,7 @@ class Pointer extends Line {
       return;
     }
     parent.worldToLocal(position.copy(origin));
-    scale.z = distance - 0.05;
+    scale.z = distance;
     this.updateMatrix();
     this.updateWorldMatrix();
     this.visible = true;
