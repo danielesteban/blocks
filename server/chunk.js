@@ -317,7 +317,7 @@ class Chunk {
       if (heightmap[x][z] === y) {
         for (let i = y - 1; i >= 0; i -= 1) {
           if (this.get(x, i, z).type !== types.air) {
-            heightmap[x][z] = y;
+            heightmap[x][z] = i;
             break;
           }
         }
