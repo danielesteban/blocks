@@ -1,7 +1,7 @@
 version: '3'
 services:
   server:
-    image: danigatunes/unnamed:latest
+    image: danigatunes/blocks:latest
     restart: always
     environment:
      - PRELOAD=10

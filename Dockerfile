@@ -1,8 +1,8 @@
 FROM node:erbium
 
 # Create working directory
-RUN mkdir -p /usr/src/unnamed
-WORKDIR /usr/src/unnamed
+RUN mkdir -p /usr/src/blocks
+WORKDIR /usr/src/blocks
 
 # Install dependencies
 COPY package.json .
