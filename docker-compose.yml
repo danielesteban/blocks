@@ -10,4 +10,4 @@ services:
     ports:
      - "80:8080"
     volumes:
-      - ./data:/data
+     - ./data:/data
