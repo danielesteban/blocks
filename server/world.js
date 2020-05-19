@@ -39,7 +39,7 @@ class World extends Room {
     }
     if (storage) {
       if (!fs.existsSync(storage)) {
-        fs.mkdirSync(storage);
+        fs.mkdirSync(storage, { recursive: true });
       }
       setInterval(() => this.onPersist(), 60000);
     }
