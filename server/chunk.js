@@ -109,17 +109,6 @@ class Chunk {
     return chunk.voxels[x][y][z];
   }
 
-  addLight(x, y, z) {
-    const { maxLight, types } = Chunk;
-    const voxel = this.get(x, y, z);
-    voxel.light = maxLight;
-    voxel.type = types.light;
-    voxel.color.r = 0xFF;
-    voxel.color.g = 0xFF;
-    voxel.color.b = 0xFF;
-    this.floodLight([{ x, y, z }]);
-  }
-
   floodLight(queue, key = 'light') {
     const {
       maxHeight,
@@ -270,18 +259,14 @@ class Chunk {
     voxel.color.g = color.g;
     voxel.color.b = color.b;
     if (current === types.air) {
-      if (voxel.light !== 0) {
-        this.removeLight(x, y, z);
-      }
-      if (voxel.sunlight !== 0) {
-        this.removeLight(x, y, z, 'sunlight');
-      }
+      ['light', 'sunlight'].forEach((key) => {
+        if (voxel[key] !== 0) {
+          this.removeLight(x, y, z, key);
+        }
+      });
     }
     if (current === types.light) {
       this.removeLight(x, y, z);
-    }
-    if (type === types.light) {
-      this.addLight(x, y, z);
     }
     if (type === types.air) {
       ['light', 'sunlight'].forEach((key) => {
@@ -313,8 +298,17 @@ class Chunk {
           }
         }
       }
-    } else if (heightmap[x][z] < y) {
-      heightmap[x][z] = y;
+    } else {
+      if (type === types.light) {
+        voxel.color.r = 0xFF;
+        voxel.color.g = 0xFF;
+        voxel.color.b = 0xFF;
+        voxel.light = maxLight;
+        this.floodLight([{ x, y, z }]);
+      }
+      if (heightmap[x][z] < y) {
+        heightmap[x][z] = y;
+      }
     }
   }
 
