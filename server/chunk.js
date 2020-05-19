@@ -1,11 +1,26 @@
 const { hsl2Rgb } = require('colorsys');
+const fs = require('fs');
+const path = require('path');
+const zlib = require('zlib');
 
 class Chunk {
-  constructor({ world, x, z }) {
-    this.world = world;
+  constructor({
+    x,
+    z,
+    world,
+  }) {
     this.x = x;
     this.z = z;
-    this.generate();
+    this.world = world;
+    if (!world.storage) {
+      this.generate();
+      return;
+    }
+    try {
+      this.load();
+    } catch (e) {
+      this.generate();
+    }
   }
 
   generate() {
@@ -20,6 +35,7 @@ class Chunk {
       },
     } = this;
     this.needsLightPropagation = true;
+    this.needsPersistence = true;
     const voxels = [];
     for (let x = 0; x < size; x += 1) {
       voxels[x] = [];
@@ -34,6 +50,7 @@ class Chunk {
             + (noise.perlin3(wz / 32, y / 24, wx / 32) * 0.3)
           ) * maxHeight * 2) - 4, 0);
           const voxel = {
+            chunk: this,
             type: types.air,
             color: { r: 0, g: 0, b: 0 },
             light: 0,
@@ -69,6 +86,18 @@ class Chunk {
       }
     }
     this.voxels = voxels;
+    this.generateHeightmap();
+  }
+
+  generateHeightmap() {
+    const {
+      maxHeight,
+      size,
+      types,
+    } = Chunk;
+    const {
+      voxels,
+    } = this;
     const heightmap = [];
     for (let x = 0; x < size; x += 1) {
       heightmap[x] = [];
@@ -83,6 +112,61 @@ class Chunk {
       }
     }
     this.heightmap = heightmap;
+  }
+
+  load() {
+    const { x, z, world } = this;
+    const {
+      needsLightPropagation,
+      voxels,
+    } = JSON.parse(zlib.inflateSync(fs.readFileSync(path.join(world.storage, `${x}_${z}.json.gz`))));
+    this.needsLightPropagation = needsLightPropagation;
+    this.needsPersistence = false;
+    this.voxels = voxels.map((z) => z.map((y) => y.map(([
+      type,
+      color,
+      light,
+      sunlight,
+    ]) => ({
+      chunk: this,
+      type,
+      color: {
+        r: (color >> 16) & 0xFF,
+        g: (color >> 8) & 0xFF,
+        b: color & 0xFF,
+      },
+      light,
+      sunlight,
+    }))));
+    this.generateHeightmap();
+  }
+
+  persist() {
+    const {
+      x,
+      z,
+      needsLightPropagation,
+      voxels,
+      world: { storage },
+    } = this;
+    if (!storage) {
+      return;
+    }
+    fs.writeFileSync(path.join(storage, `${x}_${z}.json.gz`), zlib.deflateSync(JSON.stringify({
+      needsLightPropagation,
+      voxels: voxels.map((z) => z.map((y) => y.map(({
+        type,
+        color,
+        light,
+        sunlight,
+      }) => ([
+        type,
+        (color.r << 16) | (color.g << 8) | color.b,
+        light,
+        sunlight,
+      ])))),
+    })));
+    this.needsPersistence = false;
   }
 
   get(x, y, z) {
@@ -131,6 +215,7 @@ class Chunk {
         const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
         if (neighbor.type === types.air && neighbor[key] + decay < voxel[key]) {
           neighbor[key] = voxel[key] - decay;
+          neighbor.chunk.needsPersistence = true;
           queue.push({ x: nx, y: ny, z: nz });
         }
       });
@@ -149,6 +234,7 @@ class Chunk {
       light: voxel[key],
     });
     voxel[key] = 0;
+    voxel.chunk.needsPersistence = true;
     const isSunLight = key === 'sunlight';
     while (queue.length) {
       const {
@@ -184,6 +270,7 @@ class Chunk {
             light: neighbor[key],
           });
           neighbor[key] = 0;
+          neighbor.chunk.needsPersistence = true;
         } else if (neighbor[key] >= light) {
           fill.push({
             x: nx,
@@ -236,6 +323,7 @@ class Chunk {
     this.floodLight(lightQueue, 'light');
     this.floodLight(sunlightQueue, 'sunlight');
     this.needsLightPropagation = false;
+    this.needsPersistence = true;
   }
 
   update({
@@ -310,6 +398,7 @@ class Chunk {
         heightmap[x][z] = y;
       }
     }
+    this.needsPersistence = true;
   }
 
   getSerializedMeshes() {

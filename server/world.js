@@ -1,9 +1,19 @@
+const fs = require('fs');
 const { Noise } = require('noisejs');
 const Chunk = require('./chunk');
 const Room = require('./room');
 
 class World extends Room {
-  constructor({ maxClients, preload, seed }) {
+  constructor({
+    maxClients,
+    preload,
+    seed,
+    storage,
+  }) {
+    if (storage && !seed) {
+      console.error('Must provide a SEED if you want STORAGE.\n');
+      process.exit(1);
+    }
     super({ maxClients });
     this.chunks = new Map();
     this.noise = new Noise();
@@ -14,6 +24,7 @@ class World extends Room {
     );
     this.noise.seed(this.seed);
     this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(this.seed, this.seed)) * 100) - 50;
+    this.storage = storage;
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload + 1)) ** 2} chunks...`);
@@ -25,6 +36,12 @@ class World extends Room {
           }).remesh();
         }
       }
+    }
+    if (storage) {
+      if (!fs.existsSync(storage)) {
+        fs.mkdirSync(storage);
+      }
+      setInterval(() => this.onPersist(), 60000);
     }
   }
 
@@ -166,6 +183,15 @@ class World extends Room {
       default:
         break;
     }
+  }
+
+  onPersist() {
+    const { chunks } = this;
+    chunks.forEach((chunk) => {
+      if (chunk.needsPersistence) {
+        chunk.persist();
+      }
+    });
   }
 }
 

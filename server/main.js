@@ -9,6 +9,7 @@ const world = new World({
   maxClients: process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16,
   seed: process.env.SEED ? parseInt(process.env.SEED, 10) : undefined,
   preload: process.env.PRELOAD ? parseInt(process.env.PRELOAD, 10) : undefined,
+  storage: process.env.STORAGE,
 });
 
 const app = express();
