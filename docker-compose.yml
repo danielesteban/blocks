@@ -5,5 +5,9 @@ services:
     restart: always
     environment:
      - PRELOAD=10
+     - SEED=34653
+     - STORAGE=/data
     ports:
      - "80:8080"
+    volumes:
+      - ./data:/data
