@@ -99,14 +99,14 @@ class Sun extends Mesh {
     );
     this.anchor = anchor;
     this.matrixAutoUpdate = false;
-    this.scale.set(1, 8, 8);
+    this.scale.set(1, 6, 6);
     this.renderOrder = -1;
   }
 
   onAnimationTick() {
     const { material: { time }, distance } = Sun;
     const { anchor, position } = this;
-    const angle = Math.PI * (1 - time) * 1.2;
+    const angle = Math.PI * (1 - time) * 1.5;
     position.copy(anchor.position);
     position.x -= Math.cos(angle) * distance;
     position.y = Math.sin(angle) * distance;
