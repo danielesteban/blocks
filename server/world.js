@@ -58,7 +58,6 @@ class World extends Room {
         if (oldestChunk.needsPersistence) {
           oldestChunk.persist();
         }
-        console.log('unloaded')
         chunks.delete(oldestKey);
       }
     }
