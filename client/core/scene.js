@@ -91,10 +91,7 @@ class Scene extends ThreeScene {
         && hand.handedness === 'right'
         && (backwards || forwards)
       ) {
-        player.fly({
-          direction: worldspace.quaternion,
-          scale: delta * (forwards ? 1 : -1),
-        });
+        player.fly(worldspace.quaternion);
       }
       if (primary || primaryUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;

@@ -46,12 +46,21 @@ class World extends Room {
   }
 
   getChunk({ x, z }) {
+    const { maxChunks } = World;
     const { chunks } = this;
     const key = `${x}:${z}`;
     let chunk = chunks.get(key);
     if (!chunk) {
       chunk = new Chunk({ world: this, x, z });
       chunks.set(key, chunk);
+      if (chunks.size > maxChunks) {
+        const [oldestKey, oldestChunk] = chunks.entries().next().value;
+        if (oldestChunk.needsPersistence) {
+          oldestChunk.persist();
+        }
+        console.log('unloaded')
+        chunks.delete(oldestKey);
+      }
     }
     return chunk;
   }
@@ -194,5 +203,7 @@ class World extends Room {
     });
   }
 }
+
+World.maxChunks = 1024;
 
 module.exports = World;
