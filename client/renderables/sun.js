@@ -74,6 +74,7 @@ class Sun extends Mesh {
     geometry.setIndex(new BufferAttribute(new Uint16Array(index), 1));
     geometry.addAttribute('position', new BufferAttribute(new Float32Array(position), 3));
     geometry.addAttribute('color', new BufferAttribute(new Float32Array(color), 3));
+    geometry.rotateY(Math.PI * -0.5);
     Sun.geometry = geometry;
   }
 
@@ -81,7 +82,7 @@ class Sun extends Mesh {
     if (!Sun.material) {
       Sun.setupMaterial();
     }
-    Sun.material.uniforms.diffuse.value.setHSL(0.166, 0.8, intensity * 0.2);
+    Sun.material.uniforms.diffuse.value.setHSL(0.166, 0.8, (intensity ** 2) / 3);
     Sun.material.time = time;
   }
 
@@ -98,7 +99,7 @@ class Sun extends Mesh {
     );
     this.anchor = anchor;
     this.matrixAutoUpdate = false;
-    this.scale.set(8, 8, 1);
+    this.scale.set(1, 8, 8);
     this.renderOrder = -1;
   }
 
@@ -107,9 +108,9 @@ class Sun extends Mesh {
     const { anchor, position } = this;
     const angle = Math.PI * (1 - time) * 1.2;
     position.copy(anchor.position);
+    position.x -= Math.cos(angle) * distance;
     position.y = Math.sin(angle) * distance;
-    position.z += Math.cos(angle) * distance;
-    this.rotation.x = Math.PI - angle;
+    this.rotation.z = Math.PI - angle;
     this.updateMatrix();
     this.updateWorldMatrix();
   }
