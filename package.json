@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "eslint --cache --ext .js client server",
-    "start": "node server/main.js"
+    "start": "cross-env PRELOAD=10 SEED=34653 STORAGE=./data npm start"
   },
   "dependencies": {
     "colorsys": "^1.0.22",
@@ -23,6 +23,7 @@
     "ws": "^7.3.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.1",
