@@ -41,7 +41,6 @@ class Scene extends ThreeScene {
     player.controllers.forEach((controller) => {
       const {
         buttons: {
-          backwards,
           forwards,
           forwardsUp,
           leftwardsDown,
@@ -89,7 +88,7 @@ class Scene extends ThreeScene {
       if (
         locomotion === locomotions.fly
         && hand.handedness === 'right'
-        && (backwards || forwards)
+        && forwards
       ) {
         player.fly({
           delta,
