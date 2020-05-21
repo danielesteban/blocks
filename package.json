@@ -10,7 +10,7 @@
   },
   "scripts": {
     "lint": "eslint --cache --ext .js client server",
-    "start": "cross-env PRELOAD=10 SEED=34653 STORAGE=./data npm start"
+    "start": "cross-env PRELOAD=10 SEED=34653 STORAGE=./data node server/main.js"
   },
   "dependencies": {
     "colorsys": "^1.0.22",
