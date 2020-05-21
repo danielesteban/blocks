@@ -1,5 +1,7 @@
 FROM node:erbium
 
+ENV NODE_ENV production
+
 # Create working directory
 RUN mkdir -p /usr/src/blocks
 WORKDIR /usr/src/blocks
