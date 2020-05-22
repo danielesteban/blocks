@@ -126,22 +126,39 @@ class Renderer {
   }
 }
 
-// Tweak ThreeJS fog
-ShaderChunk.fog_vertex = ShaderChunk.fog_vertex.replace(
-  'fogDepth = -mvPosition.z;',
-  'fogDepth = length(mvPosition);'
+// Tweak ThreeJS fog + allow fog density override
+ShaderChunk.fog_pars_vertex = ShaderChunk.fog_pars_vertex.replace(
+  'varying float fogDepth;',
+  'varying vec3 vViewPosition;'
 );
 
-// Allow fog density override
-ShaderChunk.fog_fragment = ShaderChunk.fog_fragment.replace(
-  'float fogFactor = 1.0 - exp( - fogDensity * fogDensity * fogDepth * fogDepth );',
-  [
-    '#ifdef FOG_DENSITY',
-    '  float fogFactor = 1.0 - exp( - FOG_DENSITY * FOG_DENSITY * fogDepth * fogDepth );',
-    '#else',
-    '  float fogFactor = 1.0 - exp( - fogDensity * fogDensity * fogDepth * fogDepth );',
-    '#endif',
-  ].join('\n')
+ShaderChunk.fog_vertex = ShaderChunk.fog_vertex.replace(
+  'fogDepth = -mvPosition.z;',
+  'vViewPosition = -mvPosition.xyz;'
 );
+
+ShaderChunk.fog_pars_fragment = ShaderChunk.fog_pars_fragment.replace(
+  'varying float fogDepth;',
+  'varying vec3 vViewPosition;'
+);
+
+ShaderChunk.fog_fragment = ShaderChunk.fog_fragment
+  .replace(
+    '#ifdef USE_FOG',
+    [
+      '#ifdef USE_FOG',
+      '  float fogDepth = length(vViewPosition);',
+    ].join('\n')
+  )
+  .replace(
+    'float fogFactor = 1.0 - exp( - fogDensity * fogDensity * fogDepth * fogDepth );',
+    [
+      '#ifdef FOG_DENSITY',
+      '  float fogFactor = 1.0 - exp( - FOG_DENSITY * FOG_DENSITY * fogDepth * fogDepth );',
+      '#else',
+      '  float fogFactor = 1.0 - exp( - fogDensity * fogDensity * fogDepth * fogDepth );',
+      '#endif',
+    ].join('\n')
+  );
 
 export default Renderer;
