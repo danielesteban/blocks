@@ -1,4 +1,5 @@
 import {
+  AdditiveBlending,
   BufferGeometry,
   Mesh,
   BufferAttribute,
@@ -58,6 +59,7 @@ class Voxels extends Mesh {
     });
     Voxels.transparentMaterial = Voxels.material.clone();
     Voxels.transparentMaterial.uniforms.opacity.value = 0.5;
+    Voxels.transparentMaterial.blending = AdditiveBlending;
     Voxels.transparentMaterial.depthWrite = false;
     Voxels.transparentMaterial.transparent = true;
   }
