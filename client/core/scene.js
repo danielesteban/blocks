@@ -46,8 +46,8 @@ class Scene extends ThreeScene {
           leftwardsDown,
           rightwardsDown,
           secondaryDown,
-          primary,
-          primaryUp,
+          trigger,
+          triggerUp,
         },
         hand,
         marker,
@@ -95,16 +95,15 @@ class Scene extends ThreeScene {
           direction: worldspace.quaternion,
         });
       }
-      if (primary || primaryUp) {
+      if (trigger || triggerUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
         if (hit) {
-          if (primaryUp) {
+          pointer.update({
+            distance: hit.distance,
+            origin: raycaster.ray.origin,
+          });
+          if (triggerUp) {
             hit.object.onPointer(hit.point);
-          } else {
-            pointer.update({
-              distance: hit.distance,
-              origin: raycaster.ray.origin,
-            });
           }
         }
       }

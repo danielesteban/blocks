@@ -57,34 +57,54 @@ class World extends Scene {
       player,
       server,
       sun,
+      translocables,
     } = this;
 
     player.controllers.forEach((controller) => {
       const {
         buttons: {
-          triggerDown,
-          gripDown,
+          grip,
+          gripUp,
+          trigger,
+          triggerUp,
         },
         hand,
+        pointer,
         raycaster,
       } = controller;
-      if (!hand || (!triggerDown && !gripDown)) {
+      if (
+        !hand
+        || !(grip || gripUp || trigger || triggerUp)
+        || pointer.visible
+      ) {
         return;
       }
-      chunks.aux
-        .copy(raycaster.ray.origin)
-        .divideScalar(scale)
-        .floor();
-      server.send(JSON.stringify({
-        type: 'UPDATE',
-        data: {
-          x: chunks.aux.x,
-          y: chunks.aux.y,
-          z: chunks.aux.z,
-          color: menu.blockColor.getHex(),
-          type: triggerDown ? menu.blockType : 0,
-        },
-      }));
+      const hit = raycaster.intersectObjects(translocables)[0] || false;
+      if (!hit) {
+        return;
+      }
+      pointer.update({
+        distance: hit.distance,
+        origin: raycaster.ray.origin,
+      });
+      if (gripUp || triggerUp) {
+        const { point, face: { normal } } = hit;
+        const remove = grip || gripUp;
+        point
+          .addScaledVector(normal, (remove ? -1 : 1) * 0.25)
+          .divideScalar(scale)
+          .floor();
+        server.send(JSON.stringify({
+          type: 'UPDATE',
+          data: {
+            x: point.x,
+            y: point.y,
+            z: point.z,
+            color: menu.blockColor.getHex(),
+            type: remove ? 0 : menu.blockType,
+          },
+        }));
+      }
     });
 
     chunks.aux
