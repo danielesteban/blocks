@@ -215,8 +215,8 @@ class Chunk {
         const nx = x + offset.x;
         const nz = z + offset.z;
         const neighbor = this.get(nx, ny, nz);
-        if (isTransparent(neighbor.type) && neighbor[key] + 2 <= voxel[key]) {
-          const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
+        const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
+        if (isTransparent(neighbor.type) && neighbor[key] + decay < voxel[key]) {
           neighbor[key] = voxel[key] - decay;
           neighbor.chunk.needsPersistence = true;
           queue.push({ x: nx, y: ny, z: nz });

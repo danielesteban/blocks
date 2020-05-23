@@ -170,24 +170,34 @@ class World extends Room {
           },
           type,
         });
-        const chunks = [
-          chunk,
-          ...Chunk.chunkNeighbors.map(({ x, z }) => (
+        [
+          // @hack: To reduce latency on most of the cases
+          //        remesh/broadcast the update origin chunk first.
+          //        once the affected chunks get filtered, they should
+          //        all get broadcasted at once to avoid artifacts
+          //        at the chunk borders
+          [chunk],
+          // @incomplete: This should only remesh/broadcast the
+          //              chunks that the update has affected
+          //              instead of all the chunk neighbors.
+          //              (this requires the Chunk class to track the updated chunks)
+          Chunk.chunkNeighbors.map(({ x, z }) => (
             this.getChunk({ x: chunk.x + x, z: chunk.z + z })
           )),
-        ];
-        this.broadcast({
-          type: 'UPDATE',
-          data: {
-            chunks: chunks.map((chunk) => {
-              chunk.remesh();
-              return {
-                chunk: { x: chunk.x, z: chunk.z },
-                meshes: chunk.getSerializedMeshes(),
-              };
-            }),
-          },
-        });
+        ].forEach((chunks) => (
+          this.broadcast({
+            type: 'UPDATE',
+            data: {
+              chunks: chunks.map((chunk) => {
+                chunk.remesh();
+                return {
+                  chunk: { x: chunk.x, z: chunk.z },
+                  meshes: chunk.getSerializedMeshes(),
+                };
+              }),
+            },
+          })
+        ));
         break;
       }
       default:
