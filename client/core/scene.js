@@ -43,6 +43,8 @@ class Scene extends ThreeScene {
         buttons: {
           forwards,
           forwardsUp,
+          grip,
+          gripUp,
           leftwardsDown,
           rightwardsDown,
           secondaryDown,
@@ -95,16 +97,18 @@ class Scene extends ThreeScene {
           direction: worldspace.quaternion,
         });
       }
-      if (trigger || triggerUp) {
+      if (trigger || triggerUp || grip || gripUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
         if (hit) {
           pointer.update({
             distance: hit.distance,
             origin: raycaster.ray.origin,
           });
-          if (triggerUp) {
-            hit.object.onPointer(hit.point);
-          }
+          hit.object.onPointer({
+            point: hit.point,
+            primary: triggerUp,
+            secondary: gripUp,
+          });
         }
       }
       if (secondaryDown) {

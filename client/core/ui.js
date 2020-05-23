@@ -152,7 +152,7 @@ class UI extends Mesh {
     texture.needsUpdate = true;
   }
 
-  onPointer(point) {
+  onPointer({ point, primary, secondary }) {
     const { page: { buttons }, pointer, renderer } = this;
     this.worldToLocal(pointer.copy(point));
     pointer.set(
@@ -160,6 +160,9 @@ class UI extends Mesh {
       (1 - (pointer.y + 0.5)) * renderer.height,
       0
     );
+    if (!primary && !secondary) {
+      return;
+    }
     const l = buttons.length - 1;
     for (let i = l; i >= 0; i -= 1) {
       const {
@@ -178,7 +181,7 @@ class UI extends Mesh {
         && pointer.y >= y
         && pointer.y <= y + height
       ) {
-        onPointer();
+        onPointer({ primary, secondary });
         break;
       }
     }

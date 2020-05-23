@@ -24,17 +24,12 @@ class Menu extends UI {
     super({
       pages: [
         {
-          buttons: [
+          labels: [
             {
-              background: 'transparent',
-              border: 'transparent',
-              label: 'Menu',
+              text: 'Menu',
               font: '700 28px monospace',
-              x: 0,
-              y: 0,
-              width,
-              height,
-              onPointer: () => this.setPage(1),
+              x: 64,
+              y: 64,
             },
           ],
         },
@@ -188,8 +183,8 @@ class Menu extends UI {
     }
   }
 
-  onPointer(point) {
-    super.onPointer(point);
+  onPointer({ point, primary, secondary }) {
+    super.onPointer({ point, primary, secondary });
     const {
       blockColor,
       context: ctx,
@@ -197,38 +192,46 @@ class Menu extends UI {
       pointer,
       picker: { area, strip },
     } = this;
-    if (page.id !== 2) {
-      return;
-    }
-    for (let i = 0; i < 2; i += 1) {
-      const {
-        x,
-        y,
-        width,
-        height,
-      } = i === 0 ? area : strip;
-      if (
-        pointer.x >= x
-        && pointer.x <= x + width
-        && pointer.y >= y
-        && pointer.y <= y + height
-      ) {
-        const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
-        blockColor.setRGB(
-          imageData[0] / 0xFF,
-          imageData[1] / 0xFF,
-          imageData[2] / 0xFF
-        );
-        if (i === 1) {
-          area.color.setRGB(
-            imageData[0] / 0xFF,
-            imageData[1] / 0xFF,
-            imageData[2] / 0xFF
-          );
-        }
-        this.setPage(i === 0 ? 1 : 2);
+    switch (page.id) {
+      case 0:
+        this.setPage(1);
         break;
-      }
+      case 2:
+        if (primary || secondary) {
+          for (let i = 0; i < 2; i += 1) {
+            const {
+              x,
+              y,
+              width,
+              height,
+            } = i === 0 ? area : strip;
+            if (
+              pointer.x >= x
+              && pointer.x <= x + width
+              && pointer.y >= y
+              && pointer.y <= y + height
+            ) {
+              const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
+              blockColor.setRGB(
+                imageData[0] / 0xFF,
+                imageData[1] / 0xFF,
+                imageData[2] / 0xFF
+              );
+              if (i === 1) {
+                area.color.setRGB(
+                  imageData[0] / 0xFF,
+                  imageData[1] / 0xFF,
+                  imageData[2] / 0xFF
+                );
+              }
+              this.setPage(i === 0 ? 1 : 2);
+              break;
+            }
+          }
+        }
+        break;
+      default:
+        break;
     }
   }
 
