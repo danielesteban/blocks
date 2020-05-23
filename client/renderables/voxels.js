@@ -155,14 +155,8 @@ class Voxels extends Mesh {
         (v & 0xF) / 0xF
       )), 1));
 
-      if (
-        geometry.attributes.normal
-        && geometry.attributes.normal.array.length !== position.length
-      ) {
-        geometry.deleteAttribute('normal');
-      }
+      geometry.deleteAttribute('normal');
       geometry.computeVertexNormals();
-
       geometry.computeBoundingSphere();
 
       mesh.visible = true;
