@@ -41,10 +41,50 @@ class Menu extends UI {
         {
           buttons: [
             {
+              label: 'Block',
+              x: 8,
+              y: 20,
+              width: 32,
+              height: 24,
+              onPointer: () => this.setBlock(0x01),
+            },
+            {
+              label: 'Glass',
+              x: 48,
+              y: 20,
+              width: 32,
+              height: 24,
+              onPointer: () => this.setBlock(0x02),
+            },
+            {
+              background: '#393',
+              label: 'Light',
+              x: 88,
+              y: 20,
+              width: 32,
+              height: 24,
+              onPointer: () => this.setBlock(0x03),
+            },
+            {
+              x: 8,
+              y: 52,
+              width: 24,
+              height: 24,
+              onPointer: () => setTimeout(() => this.setPage(2), 0),
+            },
+            {
+              label: 'Color Picker',
+              x: 32,
+              y: 52,
+              width: 88,
+              height: 24,
+              onPointer: () => setTimeout(() => this.setPage(2), 0),
+            },
+            {
               background: '#393',
               label: 'Teleport',
               x: 8,
-              y: 20,
+              y: 84,
               width: 52,
               height: 24,
               onPointer: () => this.setLocomotion('teleport'),
@@ -52,40 +92,15 @@ class Menu extends UI {
             {
               label: 'Fly',
               x: 68,
-              y: 20,
+              y: 84,
               width: 52,
               height: 24,
               onPointer: () => this.setLocomotion('fly'),
             },
-            {
-              label: 'Block',
-              x: 8,
-              y: 52,
-              width: 52,
-              height: 24,
-              onPointer: () => this.setBlock(0x02),
-            },
-            {
-              background: '#393',
-              label: 'Light',
-              x: 68,
-              y: 52,
-              width: 52,
-              height: 24,
-              onPointer: () => this.setBlock(0x01),
-            },
-            {
-              label: 'Color Picker',
-              x: 32,
-              y: 84,
-              width: 88,
-              height: 24,
-              onPointer: () => setTimeout(() => this.setPage(2), 0),
-            },
           ],
           graphics: [
             ({ ctx }) => {
-              ctx.translate(8, 84);
+              ctx.translate(8, 52);
               ctx.fillStyle = `#${color.getHexString()}`;
               ctx.strokeStyle = '#000';
               ctx.beginPath();
@@ -161,7 +176,7 @@ class Menu extends UI {
     );
     this.updateMatrix();
     this.blockColor = color;
-    this.blockType = 0x01;
+    this.blockType = 0x03;
     this.world = world;
     this.picker = { area, strip };
   }
@@ -219,11 +234,12 @@ class Menu extends UI {
 
   setBlock(type) {
     const {
-      pages: [/* toggle */, { buttons: [/* teleport */, /* fly */, block, light] }],
+      pages: [/* toggle */, { buttons: [block, glass, light] }],
     } = this;
     delete block.background;
+    delete glass.background;
     delete light.background;
-    const buttons = { 0x02: block, 0x01: light };
+    const buttons = { 0x01: block, 0x02: glass, 0x03: light };
     buttons[type].background = '#393';
     this.blockType = type;
     this.setPage(1);
@@ -231,7 +247,20 @@ class Menu extends UI {
 
   setLocomotion(type) {
     const {
-      pages: [/* toggle */, { buttons: [teleport, fly] }],
+      pages: [
+        /* toggle */, // eslint-disable-line comma-style
+        {
+          buttons: [
+            /* block */,
+            /* glass */,
+            /* light */,
+            /* color */,
+            /* picker */, // eslint-disable-line comma-style
+            teleport,
+            fly,
+          ],
+        },
+      ],
     } = this;
     delete fly.background;
     delete teleport.background;

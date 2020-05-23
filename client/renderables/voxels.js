@@ -56,17 +56,22 @@ class Voxels extends Mesh {
         sunlightIntensity: { value: 1 },
       },
     });
+    Voxels.transparentMaterial = Voxels.material.clone();
+    Voxels.transparentMaterial.uniforms.opacity.value = 0.5;
+    Voxels.transparentMaterial.depthWrite = false;
+    Voxels.transparentMaterial.transparent = true;
   }
 
   static updateMaterial(intensity) {
-    if (!Voxels.material) {
+    if (!Voxels.material || !Voxels.transparentMaterial) {
       Voxels.setupMaterial();
     }
     Voxels.material.uniforms.sunlightIntensity.value = intensity;
+    Voxels.transparentMaterial.uniforms.sunlightIntensity.value = intensity;
   }
 
   constructor() {
-    if (!Voxels.material) {
+    if (!Voxels.material || !Voxels.transparentMaterial) {
       Voxels.setupMaterial();
     }
     super(
@@ -74,6 +79,12 @@ class Voxels extends Mesh {
       Voxels.material
     );
     this.matrixAutoUpdate = false;
+    this.transparentMesh = new Mesh(
+      new BufferGeometry(),
+      Voxels.transparentMaterial
+    );
+    this.transparentMesh.matrixAutoUpdate = false;
+    this.add(this.transparentMesh);
   }
 
   dispose() {
@@ -92,66 +103,73 @@ class Voxels extends Mesh {
 
   update({
     chunk,
-    color,
-    light,
-    position,
+    opaque,
+    transparent,
   }) {
     const { decodeBase64 } = Voxels;
-    const { geometry } = this;
 
     this.chunk = chunk;
-
-    if (!position.length) {
-      this.visible = false;
-      return;
-    }
-
-    light = decodeBase64(Uint8Array, light);
-    position = new Float32Array(decodeBase64(Int16Array, position));
-    color = new Float32Array(decodeBase64(Uint8Array, color))
-      .map((c) => (
-        c / 0xFF
-      ));
-
-    const index = new Uint16Array((position.length / 3 / 4) * 6);
-    const l = index.length;
-    for (let i = 0, v = 0; i < l; i += 6, v += 4) {
-      index[i] = v;
-      index[i + 1] = v + 1;
-      index[i + 2] = v + 2;
-      index[i + 3] = v + 2;
-      index[i + 4] = v + 3;
-      index[i + 5] = v;
-    }
-    geometry.setIndex(new BufferAttribute(index, 1));
-
-    geometry.setAttribute('position', new BufferAttribute(position, 3));
-    geometry.setAttribute('color', new BufferAttribute(color, 3));
-    geometry.setAttribute('light', new BufferAttribute(new Float32Array(light).map((v) => (
-      ((v >> 4) & 0xF) / 0xF
-    )), 1));
-    geometry.setAttribute('sunlight', new BufferAttribute(new Float32Array(light).map((v) => (
-      (v & 0xF) / 0xF
-    )), 1));
-
-    if (
-      geometry.attributes.normal
-      && geometry.attributes.normal.array.length !== position.length
-    ) {
-      geometry.deleteAttribute('normal');
-    }
-    geometry.computeVertexNormals();
-
-    geometry.computeBoundingSphere();
-
     this.position
       .set(chunk.x, 0, chunk.z)
       .multiply({ x: 8, y: 8, z: 8 });
     this.scale.set(0.5, 0.5, 0.5);
     this.updateMatrix();
-    this.updateWorldMatrix();
 
-    this.visible = true;
+    [opaque, transparent].forEach(({
+      color,
+      light,
+      position,
+    }, isTransparent) => {
+      const mesh = isTransparent ? this.transparentMesh : this;
+      if (!position.length) {
+        mesh.visible = false;
+        return;
+      }
+
+      const { geometry } = mesh;
+
+      light = decodeBase64(Uint8Array, light);
+      position = new Float32Array(decodeBase64(Int16Array, position));
+      color = new Float32Array(decodeBase64(Uint8Array, color))
+        .map((c) => (
+          c / 0xFF
+        ));
+
+      const index = new Uint16Array((position.length / 3 / 4) * 6);
+      const l = index.length;
+      for (let i = 0, v = 0; i < l; i += 6, v += 4) {
+        index[i] = v;
+        index[i + 1] = v + 1;
+        index[i + 2] = v + 2;
+        index[i + 3] = v + 2;
+        index[i + 4] = v + 3;
+        index[i + 5] = v;
+      }
+      geometry.setIndex(new BufferAttribute(index, 1));
+
+      geometry.setAttribute('position', new BufferAttribute(position, 3));
+      geometry.setAttribute('color', new BufferAttribute(color, 3));
+      geometry.setAttribute('light', new BufferAttribute(new Float32Array(light).map((v) => (
+        ((v >> 4) & 0xF) / 0xF
+      )), 1));
+      geometry.setAttribute('sunlight', new BufferAttribute(new Float32Array(light).map((v) => (
+        (v & 0xF) / 0xF
+      )), 1));
+
+      if (
+        geometry.attributes.normal
+        && geometry.attributes.normal.array.length !== position.length
+      ) {
+        geometry.deleteAttribute('normal');
+      }
+      geometry.computeVertexNormals();
+
+      geometry.computeBoundingSphere();
+
+      mesh.visible = true;
+    });
+
+    this.updateMatrixWorld();
   }
 }
 

@@ -181,7 +181,7 @@ class World extends Scene {
       if (!chunks.loaded.has(key) && !chunks.requested.has(key)) {
         return;
       }
-      meshes.forEach((geometry, subchunk) => {
+      meshes.forEach(([opaque, transparent], subchunk) => {
         const key = `${chunk.x}:${chunk.z}:${subchunk}`;
         let mesh = chunks.voxels.get(key);
         if (!mesh) {
@@ -194,7 +194,8 @@ class World extends Scene {
         }
         mesh.update({
           chunk: { ...chunk, y: subchunk },
-          ...geometry,
+          opaque,
+          transparent,
         });
       });
       chunks.loaded.set(key, chunk);
@@ -247,7 +248,7 @@ class World extends Scene {
     translocables.length = 0;
     chunks.voxels.forEach((mesh) => {
       if (chunks.player.distanceTo(mesh.chunk) <= 4) {
-        translocables.push(mesh);
+        translocables.push(mesh, mesh.transparentMesh);
       }
     });
     this.needsTranslocablesUpdate = false;

@@ -46,20 +46,12 @@ class World extends Room {
   }
 
   getChunk({ x, z }) {
-    const { maxChunks } = World;
     const { chunks } = this;
     const key = `${x}:${z}`;
     let chunk = chunks.get(key);
     if (!chunk) {
       chunk = new Chunk({ world: this, x, z });
       chunks.set(key, chunk);
-      if (chunks.size > maxChunks) {
-        const [oldestKey, oldestChunk] = chunks.entries().next().value;
-        if (oldestChunk.needsPersistence) {
-          oldestChunk.persist();
-        }
-        chunks.delete(oldestKey);
-      }
     }
     return chunk;
   }
@@ -109,6 +101,15 @@ class World extends Room {
             }],
           },
         });
+        const { maxChunks } = World;
+        const { chunks } = this;
+        while (chunks.size > maxChunks) {
+          const [oldestKey, oldestChunk] = chunks.entries().next().value;
+          if (oldestChunk.needsPersistence) {
+            oldestChunk.persist();
+          }
+          chunks.delete(oldestKey);
+        }
         break;
       }
       case 'UPDATE': {
@@ -136,8 +137,9 @@ class World extends Room {
           || color > 16777215
           || (
             type !== Chunk.types.air
-            && type !== Chunk.types.light
             && type !== Chunk.types.block
+            && type !== Chunk.types.glass
+            && type !== Chunk.types.light
           )
         ) {
           return;
