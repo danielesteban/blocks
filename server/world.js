@@ -101,9 +101,9 @@ class World extends Room {
             }],
           },
         });
-        const { maxChunks } = World;
+        const { maxLoadedChunks } = World;
         const { chunks } = this;
-        while (chunks.size > maxChunks) {
+        while (chunks.size > maxLoadedChunks) {
           const [oldestKey, oldestChunk] = chunks.entries().next().value;
           if (oldestChunk.needsPersistence) {
             oldestChunk.persist();
@@ -215,6 +215,6 @@ class World extends Room {
   }
 }
 
-World.maxChunks = 1024;
+World.maxLoadedChunks = 1024;
 
 module.exports = World;
