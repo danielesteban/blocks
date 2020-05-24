@@ -152,13 +152,16 @@ class Player extends Object3D {
     position.addScaledVector(direction, step);
   }
 
-  fly({ delta, direction }) {
+  fly({ delta, direction, movement }) {
     const {
       auxVector: vector,
       position,
     } = this;
     position.addScaledVector(
-      vector.set(0, 0, -1).applyQuaternion(direction),
+      vector
+        .copy(movement)
+        .normalize()
+        .applyQuaternion(direction),
       delta * 4
     );
   }

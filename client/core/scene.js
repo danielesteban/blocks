@@ -41,11 +41,14 @@ class Scene extends ThreeScene {
     player.controllers.forEach((controller) => {
       const {
         buttons: {
+          backwards,
           forwards,
           forwardsUp,
           grip,
           gripUp,
+          leftwards,
           leftwardsDown,
+          rightwards,
           rightwardsDown,
           secondaryDown,
           trigger,
@@ -90,11 +93,25 @@ class Scene extends ThreeScene {
       if (
         locomotion === locomotions.fly
         && hand.handedness === 'right'
-        && forwards
+        && (backwards || forwards || leftwards || rightwards)
       ) {
+        const movement = { x: 0, y: 0, z: 0 };
+        if (backwards) {
+          movement.z = 1;
+        }
+        if (forwards) {
+          movement.z = -1;
+        }
+        if (leftwards) {
+          movement.x = -1;
+        }
+        if (rightwards) {
+          movement.x = 1;
+        }
         player.fly({
           delta,
           direction: worldspace.quaternion,
+          movement,
         });
       }
       if (trigger || triggerUp || grip || gripUp) {
