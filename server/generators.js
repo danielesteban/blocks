@@ -6,12 +6,12 @@ const Chunk = require('./chunk.js');
 const computeColor = (noise, x, y, z) => {
   const { maxHeight } = Chunk;
   const hsl = {
-    h: Math.abs(noise.perlin3(x / 128, y / 32, z / 128)) * 360,
+    h: Math.abs(noise.perlin3(z / 128, y / 64, x / 128)) * 360,
     s: (
-      1 - Math.abs(noise.perlin3(x / 32, y / 24, z / 32))
+      1 - Math.abs(noise.simplex3(x / 64, y / 32, z / 64))
     ) * (1 - (y / maxHeight)) * 80,
-    l: (
-      1 - Math.abs(noise.perlin3(x / 64, y / 24, z / 64))
+    l: 30 + (
+      Math.abs(noise.perlin3(x / 256, y / 64, z / 256))
     ) * 60,
   };
   const color = hsl2Rgb(hsl);
@@ -44,7 +44,7 @@ module.exports = {
         voxel.type = isBlock ? types.block : types.glass;
         voxel.color = computeColor(noise, x, y, z);
         if (!isBlock) {
-          const avg = Math.floor((voxel.color.r + voxel.color.g) / 2);
+          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
           voxel.color.r = avg;
           voxel.color.g = avg;
           voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
@@ -98,7 +98,7 @@ module.exports = {
         voxel.color = computeColor(noise, x, y, z);
         voxel.sunlight = 0;
         if (!isBlock) {
-          const avg = Math.floor((voxel.color.r + voxel.color.g) / 2);
+          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
           voxel.color.r = avg;
           voxel.color.g = avg;
           voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
