@@ -1,10 +1,12 @@
 const fs = require('fs');
 const { Noise } = require('noisejs');
 const Chunk = require('./chunk');
+const Generators = require('./generators');
 const Room = require('./room');
 
 class World extends Room {
   constructor({
+    generator,
     maxClients,
     preload,
     seed,
@@ -16,15 +18,20 @@ class World extends Room {
     }
     super({ maxClients });
     this.chunks = new Map();
-    this.noise = new Noise();
     this.seed = seed && !Number.isNaN(seed) ? (
       seed % 65536
     ) : (
       Math.floor(Math.random() * 65536)
     );
-    this.noise.seed(this.seed);
-    this.spawnOffset = Math.floor(Math.abs(this.noise.simplex2(this.seed, this.seed)) * 100) - 50;
     this.storage = storage;
+    const noise = new Noise();
+    noise.seed(this.seed);
+    this.generator = Generators[generator](noise);
+    this.spawnOffset = generator === 'default' ? (
+      Math.floor(Math.abs(noise.simplex2(this.seed, this.seed)) * 100) - 50
+    ) : (
+      0
+    );
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload + 1)) ** 2} chunks...`);
@@ -41,7 +48,7 @@ class World extends Room {
       if (!fs.existsSync(storage)) {
         fs.mkdirSync(storage, { recursive: true });
       }
-      setInterval(() => this.onPersist(), 60000);
+      setInterval(() => this.persist(), 60000);
     }
   }
 
@@ -101,15 +108,7 @@ class World extends Room {
             }],
           },
         });
-        const { maxLoadedChunks } = World;
-        const { chunks } = this;
-        while (chunks.size > maxLoadedChunks) {
-          const [oldestKey, oldestChunk] = chunks.entries().next().value;
-          if (oldestChunk.needsPersistence) {
-            oldestChunk.persist();
-          }
-          chunks.delete(oldestKey);
-        }
+        this.unloadChunks();
         break;
       }
       case 'UPDATE': {
@@ -205,13 +204,25 @@ class World extends Room {
     }
   }
 
-  onPersist() {
+  persist() {
     const { chunks } = this;
     chunks.forEach((chunk) => {
       if (chunk.needsPersistence) {
         chunk.persist();
       }
     });
+  }
+
+  unloadChunks() {
+    const { maxLoadedChunks } = World;
+    const { chunks } = this;
+    while (chunks.size > maxLoadedChunks) {
+      const [oldestKey, oldestChunk] = chunks.entries().next().value;
+      if (oldestChunk.needsPersistence) {
+        oldestChunk.persist();
+      }
+      chunks.delete(oldestKey);
+    }
   }
 }
 

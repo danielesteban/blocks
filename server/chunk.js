@@ -1,4 +1,3 @@
-const { hsl2Rgb } = require('colorsys');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
@@ -24,70 +23,28 @@ class Chunk {
   }
 
   generate() {
-    const {
-      maxHeight,
-      size,
-      types,
-    } = Chunk;
-    const {
-      world: {
-        noise,
-      },
-    } = this;
-    const waterLevel = 6;
-    this.needsLightPropagation = true;
-    this.needsPersistence = true;
+    const { maxHeight, size } = Chunk;
+    const { world: { generator } } = this;
+    const offset = { x: this.x * size, z: this.z * size };
     const voxels = [];
     for (let x = 0; x < size; x += 1) {
       voxels[x] = [];
       for (let y = 0; y < maxHeight; y += 1) {
         voxels[x][y] = [];
         for (let z = 0; z < size; z += 1) {
-          const wx = (this.x * size) + x - 4;
-          const wz = (this.z * size) + z - 4;
-          const height = Math.abs(
-            (noise.perlin2(wz / 1024, wx / 1024) * 0.3)
-            + (noise.simplex2(wx / 512, wz / 512) * 0.3)
-            + (noise.perlin3(wz / 32, y / 24, wx / 32) * 0.3)
-          ) * maxHeight * 2;
-          const voxel = {
+          voxels[x][y][z] = {
+            ...generator(
+              offset.x + x,
+              y,
+              offset.z + z
+            ),
             chunk: this,
-            type: types.air,
-            color: { r: 0, g: 0, b: 0 },
-            light: 0,
-            sunlight: 0,
           };
-          const isBlock = y <= height;
-          const isWater = y <= waterLevel;
-          if (isBlock || isWater) {
-            voxel.type = isBlock ? types.block : types.glass;
-            const l = (
-              1 - Math.abs(noise.perlin3(wx / 64, y / 24, wz / 64))
-            ) * (Math.max(y, 8) / maxHeight) * 60;
-            voxel.color = hsl2Rgb({
-              h: Math.abs(noise.perlin3(wx / 128, y / 32, wz / 128)) * 360,
-              s: (
-                1 - Math.abs(noise.perlin3(wx / 32, y / 24, wz / 32))
-              ) * (1 - (y / maxHeight)) * 80,
-              l,
-            });
-            voxel.color.r += Math.floor(Math.random() * l) - l * 0.5;
-            voxel.color.r = Math.min(Math.max(voxel.color.r, 0), 0xFF);
-            voxel.color.g += Math.floor(Math.random() * l) - l * 0.5;
-            voxel.color.g = Math.min(Math.max(voxel.color.g, 0), 0xFF);
-            voxel.color.b += Math.floor(Math.random() * l) - l * 0.5;
-            voxel.color.b = Math.min(Math.max(voxel.color.b, 0), 0xFF);
-            if (!isBlock) {
-              const avg = Math.floor((voxel.color.r + voxel.color.g) / 2);
-              voxel.color.r = avg;
-              voxel.color.g = avg;
-              voxel.color.b = Math.floor(avg * 1.5);
-            }
-          }
-          voxels[x][y][z] = voxel;
         }
       }
     }
+    this.needsLightPropagation = true;
+    this.needsPersistence = true;
     this.voxels = voxels;
     this.generateHeightmap();
   }
@@ -131,7 +88,6 @@ class Chunk {
       light,
       sunlight,
     ]) => ({
-      chunk: this,
       type,
       color: {
         r: (color >> 16) & 0xFF,
@@ -140,6 +96,7 @@ class Chunk {
       },
       light,
       sunlight,
+      chunk: this,
     }))));
     this.generateHeightmap();
   }

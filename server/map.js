@@ -97,6 +97,7 @@ class Map {
           }
         }
       }
+      world.unloadChunks();
       process.nextTick(renderChunks);
     };
     renderChunks();
@@ -113,6 +114,6 @@ class Map {
   }
 }
 
-Map.maxRadius = 20;
+Map.maxRadius = 10;
 
 module.exports = Map;
