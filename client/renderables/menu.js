@@ -1,9 +1,9 @@
 import { Color } from '../core/three.js';
-import UI from '../core/ui.js';
+import Panel from './panel.js';
 
 // Menu UI
 
-class Menu extends UI {
+class Menu extends Panel {
   constructor({ world }) {
     const width = 128;
     const height = 128;
@@ -22,6 +22,7 @@ class Menu extends UI {
       height: height * 0.75,
     };
     super({
+      handedness: 'left',
       pages: [
         {
           labels: [
@@ -162,25 +163,10 @@ class Menu extends UI {
         },
       ],
     });
-    this.position.y = -0.1 / 3;
-    this.position.z = 0.05;
-    this.rotation.set(
-      0,
-      Math.PI * -0.5,
-      Math.PI * 0.5
-    );
-    this.updateMatrix();
     this.blockColor = color;
     this.blockType = 0x03;
     this.world = world;
     this.picker = { area, strip };
-  }
-
-  dispose() {
-    super.dispose();
-    if (this.timer) {
-      clearTimeout(this.timer);
-    }
   }
 
   onPointer({ point, primary, secondary }) {
@@ -192,46 +178,37 @@ class Menu extends UI {
       pointer,
       picker: { area, strip },
     } = this;
-    switch (page.id) {
-      case 0:
-        this.setPage(1);
-        break;
-      case 2:
-        if (primary || secondary) {
-          for (let i = 0; i < 2; i += 1) {
-            const {
-              x,
-              y,
-              width,
-              height,
-            } = i === 0 ? area : strip;
-            if (
-              pointer.x >= x
-              && pointer.x <= x + width
-              && pointer.y >= y
-              && pointer.y <= y + height
-            ) {
-              const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
-              blockColor.setRGB(
-                imageData[0] / 0xFF,
-                imageData[1] / 0xFF,
-                imageData[2] / 0xFF
-              );
-              if (i === 1) {
-                area.color.setRGB(
-                  imageData[0] / 0xFF,
-                  imageData[1] / 0xFF,
-                  imageData[2] / 0xFF
-                );
-              }
-              this.setPage(i === 0 ? 1 : 2);
-              break;
-            }
+    if (page.id === 2 && (primary || secondary)) {
+      for (let i = 0; i < 2; i += 1) {
+        const {
+          x,
+          y,
+          width,
+          height,
+        } = i === 0 ? area : strip;
+        if (
+          pointer.x >= x
+          && pointer.x <= x + width
+          && pointer.y >= y
+          && pointer.y <= y + height
+        ) {
+          const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
+          blockColor.setRGB(
+            imageData[0] / 0xFF,
+            imageData[1] / 0xFF,
+            imageData[2] / 0xFF
+          );
+          if (i === 1) {
+            area.color.setRGB(
+              imageData[0] / 0xFF,
+              imageData[1] / 0xFF,
+              imageData[2] / 0xFF
+            );
           }
+          this.setPage(i === 0 ? 1 : 2);
+          break;
         }
-        break;
-      default:
-        break;
+      }
     }
   }
 
@@ -272,25 +249,6 @@ class Menu extends UI {
     const locomotions = { fly: 0, teleport: 1 };
     this.world.locomotion = locomotions[type];
     this.setPage(1);
-  }
-
-  setPage(page) {
-    const {
-      position,
-      scale,
-      timer,
-    } = this;
-    position.x = -(0.01 + (page > 0 ? 0.002 : 0));
-    scale.set(page > 0 ? 0.25 : 0.05, page > 0 ? 0.25 : 0.05, 1);
-    this.updateMatrix();
-    this.updateWorldMatrix();
-    if (timer) {
-      clearTimeout(timer);
-    }
-    if (this.page && this.page.id !== 0 && page === 1) {
-      this.timer = setTimeout(() => this.setPage(0), 300);
-    }
-    super.setPage(page);
   }
 }
 

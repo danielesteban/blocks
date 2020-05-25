@@ -17,7 +17,7 @@ class UI extends Mesh {
   constructor({
     width = 0.5,
     height = 0.5,
-    page = 0,
+    page,
     pages = [],
     styles = {},
     textureWidth = 128,
@@ -62,12 +62,15 @@ class UI extends Mesh {
     this.matrixAutoUpdate = false;
     this.scale.set(width, height, 1);
     this.context = renderer.getContext('2d');
+    this.context.imageSmoothingEnabled = false;
     this.pages = pages;
     this.pointer = new Vector3();
     this.renderer = renderer;
     this.styles = styles;
     this.texture = texture;
-    this.setPage(page);
+    if (page !== undefined) {
+      this.setPage(page);
+    }
   }
 
   dispose() {

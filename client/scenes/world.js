@@ -6,7 +6,7 @@ import {
 } from '../core/three.js';
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
-import Info from '../renderables/info.js';
+import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
@@ -22,10 +22,11 @@ class World extends Scene {
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
 
+    this.map = new MapUI();
     this.menu = new Menu({ world: this });
     const { attachments } = this.player;
     attachments.left = [this.menu];
-    attachments.right = [new Info()];
+    attachments.right = [this.map];
     this.ui.push(
       ...attachments.left,
       ...attachments.right
@@ -53,6 +54,7 @@ class World extends Scene {
       chunks,
       clouds,
       debug,
+      map,
       menu,
       player,
       server,
@@ -145,6 +147,7 @@ class World extends Scene {
             z: chunks.player.z + neighbour.y,
           });
         });
+        map.setChunk(chunks.player);
       }
     }
 
