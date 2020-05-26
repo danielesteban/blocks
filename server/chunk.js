@@ -26,11 +26,11 @@ class Chunk {
     const { maxHeight, size } = Chunk;
     const { world: { generator } } = this;
     const offset = { x: this.x * size, z: this.z * size };
-    const voxels = [];
+    const voxels = Array(size);
     for (let x = 0; x < size; x += 1) {
-      voxels[x] = [];
+      voxels[x] = Array(maxHeight);
       for (let y = 0; y < maxHeight; y += 1) {
-        voxels[x][y] = [];
+        voxels[x][y] = Array(size);
         for (let z = 0; z < size; z += 1) {
           voxels[x][y][z] = {
             ...generator(
@@ -58,9 +58,9 @@ class Chunk {
     const {
       voxels,
     } = this;
-    const heightmap = [];
+    const heightmap = Array(size);
     for (let x = 0; x < size; x += 1) {
-      heightmap[x] = [];
+      heightmap[x] = new Uint8Array(size);
       for (let z = 0; z < size; z += 1) {
         heightmap[x][z] = 0;
         for (let y = maxHeight - 1; y >= 0; y -= 1) {
@@ -82,7 +82,7 @@ class Chunk {
     } = JSON.parse(zlib.inflateSync(fs.readFileSync(path.join(world.storage, `${x}_${z}.json.gz`))));
     this.needsLightPropagation = needsLightPropagation;
     this.needsPersistence = false;
-    this.voxels = voxels.map((z) => z.map((y) => y.map(([
+    this.voxels = voxels.map((x) => x.map((y) => y.map(([
       type,
       color,
       light,
@@ -251,6 +251,7 @@ class Chunk {
       size,
       types,
     } = Chunk;
+    this.needsLightPropagation = false;
     const { voxels } = this;
     const lightQueue = [];
     const sunlightQueue = [];
@@ -283,7 +284,6 @@ class Chunk {
     }
     this.floodLight(lightQueue, 'light');
     this.floodLight(sunlightQueue, 'sunlight');
-    this.needsLightPropagation = false;
     this.needsPersistence = true;
   }
 
@@ -409,32 +409,28 @@ class Chunk {
 
   static getLighting(light, sunlight, neighbors) {
     const { isTransparent, types } = Chunk;
-    const n1 = neighbors[0].type !== types.air;
-    const n2 = neighbors[1].type !== types.air;
-    const n3 = (n1 && n2) || (neighbors[2].type !== types.air);
+    let n1 = neighbors[0].type !== types.air;
+    let n2 = neighbors[1].type !== types.air;
+    let n3 = (n1 && n2) || (neighbors[2].type !== types.air);
+    const ao = [n1, n2, n3].reduce((ao, n) => (
+      ao - (n ? 0.2 : 0)
+    ), 1);
+    n1 = isTransparent(neighbors[0].type);
+    n2 = isTransparent(neighbors[1].type);
+    n3 = (n1 || n2) && isTransparent(neighbors[2].type);
     let c = 1;
-    neighbors.forEach((n) => {
-      if (isTransparent(n.type)) {
-        light += n.light;
+    [n1, n2, n3].forEach((n, i) => {
+      if (n) {
+        light += neighbors[i].light;
+        sunlight += neighbors[i].sunlight;
         c += 1;
       }
     });
     light = Math.round(light / c);
-    c = 1;
-    neighbors.forEach((n) => {
-      if (isTransparent(n.type)) {
-        sunlight += n.sunlight;
-        c += 1;
-      }
-    });
     sunlight = Math.round(sunlight / c);
-    const ao = [n1, n2, n3].reduce((ao, n) => (
-      ao - (n ? 0.2 : 0)
-    ), 1);
     return {
       ao,
-      light,
-      sunlight,
+      light: (light << 4) | sunlight,
       combined: ao * (light + sunlight) * 0.5,
     };
   }
@@ -491,9 +487,7 @@ class Chunk {
           Math.round(c.g * lighting.ao),
           Math.round(c.b * lighting.ao)
         );
-        mesh.light.push(
-          (lighting.light << 4) | lighting.sunlight
-        );
+        mesh.light.push(lighting.light);
       });
       vertices.forEach((vertex) => mesh.position.push(...vertex));
     };

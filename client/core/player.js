@@ -6,6 +6,7 @@ import {
   Raycaster,
   Vector3,
 } from './three.js';
+import DesktopControls from './desktop.js';
 import Hand from '../renderables/hand.js';
 import Marker from '../renderables/marker.js';
 import Pointer from '../renderables/pointer.js';
@@ -80,13 +81,15 @@ class Player extends Object3D {
       });
       return controller;
     });
+    this.desktopControls = new DesktopControls({ xr });
   }
 
-  onAnimationTick({ delta, camera }) {
+  onAnimationTick({ camera, delta }) {
     const {
       auxMatrixA: rotation,
       auxVector: vector,
       controllers,
+      desktopControls,
       destination,
       direction,
       head,
@@ -139,17 +142,17 @@ class Player extends Object3D {
         );
       raycaster.ray.direction.set(0, 0, -1).applyMatrix4(rotation);
     });
-    if (!destination) {
-      return;
+    desktopControls.onAnimationTick({ camera, delta, player: this });
+    if (destination) {
+      const step = speed * delta;
+      const distance = destination.distanceTo(position);
+      if (distance <= step) {
+        position.copy(destination);
+        delete this.destination;
+        return;
+      }
+      position.addScaledVector(direction, step);
     }
-    const step = speed * delta;
-    const distance = destination.distanceTo(position);
-    if (distance <= step) {
-      position.copy(destination);
-      delete this.destination;
-      return;
-    }
-    position.addScaledVector(direction, step);
   }
 
   fly({ delta, direction, movement }) {

@@ -21,7 +21,7 @@ class Renderer {
     this.mount = mount;
 
     // Setup camera
-    this.camera = new PerspectiveCamera(90, 1, 0.1, 1000);
+    this.camera = new PerspectiveCamera(70, 1, 0.1, 1000);
     this.camera.position.y = 1.6;
 
     // Setup renderer

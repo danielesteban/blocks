@@ -107,4 +107,48 @@ module.exports = {
       return voxel;
     };
   },
+  legacy(noise) {
+    const { maxHeight, types } = Chunk;
+    const waterLevel = 10;
+    return (x, y, z) => {
+      const isBlock = y <= Math.max((
+        Math.abs(
+          (noise.simplex2(x / 1024, z / 1024) * 0.6)
+          + (noise.perlin2(x / 512, z / 512) * 0.2)
+          + (noise.perlin3(x / 32, y / 16, z / 32) * 0.2)
+        ) * 120
+      ) - 8, 0);
+      const voxel = {
+        type: types.air,
+        color: { r: 0, g: 0, b: 0 },
+        light: 0,
+        sunlight: 0,
+      };
+      if (isBlock || y <= waterLevel) {
+        voxel.type = isBlock ? types.block : types.glass;
+        const hsl = {
+          h: Math.abs(noise.perlin3(x / 4096, y / 128, z / 4096)) * 360,
+          s: 60 * (1 - (y / maxHeight)),
+          l: 33,
+        };
+        if (isBlock && y <= waterLevel + 2) {
+          hsl.l -= (1 - (y / (waterLevel + 2))) * 33;
+        }
+        voxel.color = hsl2Rgb(hsl);
+        voxel.color.r += (Math.random() * 15) - 7.5;
+        voxel.color.r = Math.min(Math.max(voxel.color.r, 0), 0xFF);
+        voxel.color.g += (Math.random() * 15) - 7.5;
+        voxel.color.g = Math.min(Math.max(voxel.color.g, 0), 0xFF);
+        voxel.color.b += (Math.random() * 15) - 7.5;
+        voxel.color.b = Math.min(Math.max(voxel.color.b, 0), 0xFF);
+        if (!isBlock) {
+          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
+          voxel.color.r = avg;
+          voxel.color.g = avg;
+          voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
+        }
+      }
+      return voxel;
+    };
+  },
 };
