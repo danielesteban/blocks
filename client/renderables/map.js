@@ -65,7 +65,7 @@ class Map extends Panel {
           ],
         },
       ],
-      size: 0.5,
+      size: 0.4,
       textureWidth: 544,
       textureHeight: 544,
     });
