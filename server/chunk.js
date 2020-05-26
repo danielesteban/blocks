@@ -163,7 +163,7 @@ class Chunk {
     const isSunLight = key === 'sunlight';
     while (queue.length) {
       const { x, y, z } = queue.shift();
-      const voxel = this.get(x, y, z);
+      const { [key]: light } = this.get(x, y, z);
       voxelNeighbors.forEach((offset) => {
         const ny = y + offset.y;
         if (ny < 0 || ny >= maxHeight) {
@@ -172,12 +172,18 @@ class Chunk {
         const nx = x + offset.x;
         const nz = z + offset.z;
         const neighbor = this.get(nx, ny, nz);
-        const decay = (!isSunLight || offset.y !== -1 || voxel[key] !== maxLight) ? 1 : 0;
-        if (isTransparent(neighbor.type) && neighbor[key] + decay < voxel[key]) {
-          neighbor[key] = voxel[key] - decay;
-          neighbor.chunk.needsPersistence = true;
-          queue.push({ x: nx, y: ny, z: nz });
+        if (!isTransparent(neighbor.type)) {
+          return;
         }
+        if (isSunLight && light === maxLight && offset.y === -1) {
+          neighbor[key] = maxLight;
+        } else if (neighbor[key] < light - 1) {
+          neighbor[key] = light - 1;
+        } else {
+          return;
+        }
+        neighbor.chunk.needsPersistence = true;
+        queue.push({ x: nx, y: ny, z: nz });
       });
     }
   }
