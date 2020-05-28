@@ -37,8 +37,6 @@ module.exports = {
       const voxel = {
         type: types.air,
         color: { r: 0, g: 0, b: 0 },
-        light: 0,
-        sunlight: 0,
       };
       if (isBlock || y <= waterLevel) {
         voxel.type = isBlock ? types.block : types.glass;
@@ -54,15 +52,13 @@ module.exports = {
     };
   },
   flat(noise) {
-    const { maxLight, types } = Chunk;
+    const { types } = Chunk;
     const worldHeight = 3;
     return (x, y, z) => {
       const isBlock = y <= worldHeight;
       return {
         type: isBlock ? types.block : types.air,
         color: isBlock ? computeColor(noise, x, y, z) : { r: 0, g: 0, b: 0 },
-        light: 0,
-        sunlight: isBlock ? 0 : maxLight,
       };
     };
   },
@@ -71,7 +67,7 @@ module.exports = {
       console.error('Must provide a HEIGHTMAP if you want to use the heightmap generator.\n');
       process.exit(1);
     }
-    const { maxHeight, maxLight, types } = Chunk;
+    const { maxHeight, types } = Chunk;
     const waterLevel = 6;
     const heightmap = PNG.sync.read(fs.readFileSync(process.env.HEIGHTMAP));
     const offset = {
@@ -90,13 +86,10 @@ module.exports = {
       const voxel = {
         type: types.air,
         color: { r: 0, g: 0, b: 0 },
-        light: 0,
-        sunlight: maxLight,
       };
       if (isBlock || y <= waterLevel) {
         voxel.type = isBlock ? types.block : types.glass;
         voxel.color = computeColor(noise, x, y, z);
-        voxel.sunlight = 0;
         if (!isBlock) {
           const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
           voxel.color.r = avg;
@@ -121,8 +114,6 @@ module.exports = {
       const voxel = {
         type: types.air,
         color: { r: 0, g: 0, b: 0 },
-        light: 0,
-        sunlight: 0,
       };
       if (isBlock || y <= waterLevel) {
         voxel.type = isBlock ? types.block : types.glass;

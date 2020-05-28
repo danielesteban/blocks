@@ -33,11 +33,9 @@ class Chunk {
         voxels[x][y] = Array(size);
         for (let z = 0; z < size; z += 1) {
           voxels[x][y][z] = {
-            ...generator(
-              offset.x + x,
-              y,
-              offset.z + z
-            ),
+            ...generator(offset.x + x, y, offset.z + z),
+            light: 0,
+            sunlight: 0,
             chunk: this,
           };
         }
@@ -131,14 +129,14 @@ class Chunk {
 
   get(x, y, z) {
     const {
+      bottom,
       maxHeight,
-      maxLight,
       size,
-      types,
+      top,
     } = Chunk;
     const { world } = this;
-    if (y < 0) return { type: types.bedrock, light: 0, sunlight: 0 };
-    if (y >= maxHeight) return { type: types.air, light: 0, sunlight: maxLight };
+    if (y < 0) return bottom;
+    if (y >= maxHeight) return top;
     let chunk = this;
     const cx = (x < 0 || x >= size) ? Math.floor(x / size) : 0;
     const cz = (z < 0 || z >= size) ? Math.floor(z / size) : 0;
@@ -151,6 +149,23 @@ class Chunk {
       z -= size * cz;
     }
     return chunk.voxels[x][y][z];
+  }
+
+  getHeight(x, z) {
+    const { size } = Chunk;
+    const { world } = this;
+    let chunk = this;
+    const cx = (x < 0 || x >= size) ? Math.floor(x / size) : 0;
+    const cz = (z < 0 || z >= size) ? Math.floor(z / size) : 0;
+    if (cx || cz) {
+      chunk = world.getChunk({
+        x: this.x + cx,
+        z: this.z + cz,
+      });
+      x -= size * cx;
+      z -= size * cz;
+    }
+    return chunk.heightmap[x][z];
   }
 
   floodLight(queue, key = 'light') {
@@ -172,10 +187,17 @@ class Chunk {
         const nx = x + offset.x;
         const nz = z + offset.z;
         const neighbor = this.get(nx, ny, nz);
-        if (!isTransparent(neighbor.type)) {
+        if (
+          !isTransparent(neighbor.type)
+          || (
+            isSunLight
+            && offset.y !== -1
+            && ny > this.getHeight(nx, nz)
+          )
+        ) {
           return;
         }
-        if (isSunLight && light === maxLight && offset.y === -1) {
+        if (isSunLight && offset.y === -1 && light === maxLight) {
           neighbor[key] = maxLight;
         } else if (neighbor[key] < light - 1) {
           neighbor[key] = light - 1;
@@ -630,8 +652,9 @@ Chunk.types = {
   block: 0x01,
   glass: 0x02,
   light: 0x03,
-  bedrock: 0xFF,
 };
+Chunk.top = { type: Chunk.types.air, light: 0, sunlight: Chunk.maxLight };
+Chunk.bottom = { type: Chunk.types.block, light: 0, sunlight: 0 };
 Chunk.chunkNeighbors = [
   { x: -1, z: -1 },
   { x: 0, z: -1 },
