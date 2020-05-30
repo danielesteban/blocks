@@ -193,6 +193,7 @@ class UI extends Mesh {
   setPage(page) {
     const { pages } = this;
     this.page = {
+      back: this.page ? this.page.id : undefined,
       id: page,
       buttons: [],
       graphics: [],

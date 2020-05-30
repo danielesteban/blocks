@@ -21,6 +21,7 @@ class Menu extends Panel {
       width: width * 0.1,
       height: height * 0.75,
     };
+    const { pages } = Menu;
     super({
       handedness: 'left',
       pages: [
@@ -39,7 +40,7 @@ class Menu extends Panel {
             {
               label: 'Block',
               x: 8,
-              y: 20,
+              y: 8,
               width: 32,
               height: 24,
               onPointer: () => this.setBlock(0x01),
@@ -47,7 +48,7 @@ class Menu extends Panel {
             {
               label: 'Glass',
               x: 48,
-              y: 20,
+              y: 8,
               width: 32,
               height: 24,
               onPointer: () => this.setBlock(0x02),
@@ -56,31 +57,31 @@ class Menu extends Panel {
               background: '#393',
               label: 'Light',
               x: 88,
-              y: 20,
+              y: 8,
               width: 32,
               height: 24,
               onPointer: () => this.setBlock(0x03),
             },
             {
               x: 8,
-              y: 52,
+              y: 40,
               width: 24,
               height: 24,
-              onPointer: () => setTimeout(() => this.setPage(2), 0),
+              onPointer: () => setTimeout(() => this.setPage(pages.picker), 0),
             },
             {
               label: 'Color Picker',
               x: 32,
-              y: 52,
+              y: 40,
               width: 88,
               height: 24,
-              onPointer: () => setTimeout(() => this.setPage(2), 0),
+              onPointer: () => setTimeout(() => this.setPage(pages.picker), 0),
             },
             {
               background: '#393',
               label: 'Teleport',
               x: 8,
-              y: 84,
+              y: 72,
               width: 52,
               height: 24,
               onPointer: () => this.setLocomotion('teleport'),
@@ -88,15 +89,23 @@ class Menu extends Panel {
             {
               label: 'Fly',
               x: 68,
-              y: 84,
+              y: 72,
               width: 52,
               height: 24,
               onPointer: () => this.setLocomotion('fly'),
             },
+            {
+              label: 'Edit Avatar',
+              x: 16,
+              y: 104,
+              width: 96,
+              height: 16,
+              onPointer: () => this.setPage(pages.avatar),
+            },
           ],
           graphics: [
             ({ ctx }) => {
-              ctx.translate(8, 52);
+              ctx.translate(8, 40);
               ctx.fillStyle = `#${color.getHexString()}`;
               ctx.strokeStyle = '#000';
               ctx.beginPath();
@@ -161,8 +170,64 @@ class Menu extends Panel {
             },
           ],
         },
+        {
+          buttons: [
+            {
+              background: '#393',
+              label: 'Head',
+              x: 8,
+              y: 8,
+              width: 48,
+              height: 24,
+              onPointer: () => this.setLayer('head'),
+            },
+            {
+              label: 'Hair',
+              x: 72,
+              y: 8,
+              width: 48,
+              height: 24,
+              onPointer: () => this.setLayer('hair'),
+            },
+            {
+              x: 8,
+              y: 40,
+              width: 24,
+              height: 24,
+              onPointer: () => setTimeout(() => this.setPage(pages.picker), 0),
+            },
+            {
+              label: 'Color Picker',
+              x: 32,
+              y: 40,
+              width: 88,
+              height: 24,
+              onPointer: () => setTimeout(() => this.setPage(pages.picker), 0),
+            },
+            {
+              label: 'Save Avatar',
+              x: 16,
+              y: 104,
+              width: 96,
+              height: 16,
+              onPointer: () => this.setPage(pages.menu),
+            },
+          ],
+          graphics: [
+            ({ ctx }) => {
+              ctx.translate(8, 40);
+              ctx.fillStyle = `#${color.getHexString()}`;
+              ctx.strokeStyle = '#000';
+              ctx.beginPath();
+              ctx.rect(0, 0, 24, 24);
+              ctx.fill();
+              ctx.stroke();
+            },
+          ],
+        },
       ],
     });
+    this.avatarLayer = 'head';
     this.blockColor = color;
     this.blockType = 0x03;
     this.world = world;
@@ -178,7 +243,8 @@ class Menu extends Panel {
       pointer,
       picker: { area, strip },
     } = this;
-    if (page.id === 2 && (primary || secondary)) {
+    const { pages } = Menu;
+    if (page.id === pages.picker && (primary || secondary)) {
       for (let i = 0; i < 2; i += 1) {
         const {
           x,
@@ -198,14 +264,16 @@ class Menu extends Panel {
             imageData[1] / 0xFF,
             imageData[2] / 0xFF
           );
-          if (i === 1) {
+          if (i === 0) {
+            this.setPage(page.back);
+          } else {
             area.color.setRGB(
               imageData[0] / 0xFF,
               imageData[1] / 0xFF,
               imageData[2] / 0xFF
             );
+            this.draw();
           }
-          this.setPage(i === 0 ? 1 : 2);
           break;
         }
       }
@@ -216,13 +284,27 @@ class Menu extends Panel {
     const {
       pages: [/* toggle */, { buttons: [block, glass, light] }],
     } = this;
+    const { pages } = Menu;
     delete block.background;
     delete glass.background;
     delete light.background;
     const buttons = { 0x01: block, 0x02: glass, 0x03: light };
     buttons[type].background = '#393';
     this.blockType = type;
-    this.setPage(1);
+    this.setPage(pages.menu);
+  }
+
+  setLayer(layer) {
+    const {
+      pages: [/* toggle */, /* menu */, /* picker */, { buttons: [head, hair] }],
+    } = this;
+    const { pages } = Menu;
+    delete head.background;
+    delete hair.background;
+    const buttons = { head, hair };
+    buttons[layer].background = '#393';
+    this.avatarLayer = layer;
+    this.setPage(pages.avatar);
   }
 
   setLocomotion(type) {
@@ -242,14 +324,21 @@ class Menu extends Panel {
         },
       ],
     } = this;
+    const { pages } = Menu;
     delete fly.background;
     delete teleport.background;
     const buttons = { fly, teleport };
     buttons[type].background = '#393';
     const locomotions = { fly: 0, teleport: 1 };
     this.world.locomotion = locomotions[type];
-    this.setPage(1);
+    this.setPage(pages.menu);
   }
 }
+
+Menu.pages = {
+  menu: 1,
+  picker: 2,
+  avatar: 3,
+};
 
 export default Menu;
