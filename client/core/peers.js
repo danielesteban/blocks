@@ -35,12 +35,12 @@ class Peers extends Object3D {
     });
   }
 
-  broadcast({ controllers, head }) {
+  broadcast({ controllers, head, skin }) {
     const { peers } = this;
     const hands = controllers
       .filter(({ hand }) => (!!hand))
       .sort(({ hand: { handedness: a } }, { hand: { handedness: b } }) => b.localeCompare(a));
-    const payload = new Float32Array([
+    const update = new Float32Array([
       ...head.position.toArray(),
       ...head.quaternion.toArray(),
       ...(hands.length === 2 ? (
@@ -54,6 +54,9 @@ class Peers extends Object3D {
         }, [])
       ) : []),
     ]);
+    const payload = new Uint8Array(1 + update.byteLength);
+    payload[0] = 0x01;
+    payload.set(new Uint8Array(update.buffer), 1);
     peers.forEach(({ connection }) => {
       if (
         connection
@@ -61,6 +64,13 @@ class Peers extends Object3D {
         && connection._channel.readyState === 'open'
       ) {
         connection.send(payload);
+        if (!connection.hasSentSkin) {
+          connection.hasSentSkin = true;
+          const encoded = (new TextEncoder()).encode(skin);
+          const payload = new Uint8Array(1 + encoded.length);
+          payload.set(encoded, 1);
+          connection.send(payload);
+        }
       }
     });
   }
@@ -77,7 +87,7 @@ class Peers extends Object3D {
     });
     const peer = new Peer({ peer: id, connection, listener });
     connection.on('error', () => {});
-    connection.on('data', peer.onUpdate.bind(peer));
+    connection.on('data', peer.onData.bind(peer));
     connection.on('signal', (signal) => (
       server.send(JSON.stringify({
         type: 'SIGNAL',

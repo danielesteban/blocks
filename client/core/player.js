@@ -7,6 +7,7 @@ import {
   Vector3,
 } from './three.js';
 import DesktopControls from './desktop.js';
+import Head from '../renderables/head.js';
 import Hand from '../renderables/hand.js';
 import Marker from '../renderables/marker.js';
 import Pointer from '../renderables/pointer.js';
@@ -82,6 +83,14 @@ class Player extends Object3D {
       return controller;
     });
     this.desktopControls = new DesktopControls({ xr });
+    {
+      let skin = localStorage.getItem('blocks::skin');
+      if (!skin) {
+        skin = Head.generateTexture();
+        localStorage.setItem('blocks::skin', skin);
+      }
+      this.skin = skin;
+    }
   }
 
   onAnimationTick({ camera, delta }) {
