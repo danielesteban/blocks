@@ -122,7 +122,7 @@ module.exports = {
           s: 60 * (1 - (y / maxHeight)),
           l: 33,
         };
-        if (isBlock && y <= waterLevel + 2) {
+        if (y <= waterLevel + 2) {
           hsl.l -= (1 - (y / (waterLevel + 2))) * 33;
         }
         voxel.color = hsl2Rgb(hsl);
