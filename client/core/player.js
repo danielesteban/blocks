@@ -7,8 +7,8 @@ import {
   Vector3,
 } from './three.js';
 import DesktopControls from './desktop.js';
-import Head from '../renderables/head.js';
 import Hand from '../renderables/hand.js';
+import Head from '../renderables/head.js';
 import Marker from '../renderables/marker.js';
 import Pointer from '../renderables/pointer.js';
 

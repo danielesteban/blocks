@@ -1,6 +1,6 @@
 import { Object3D, PositionalAudio } from '../core/three.js';
-import Head from './head.js';
 import Hand from './hand.js';
+import Head from './head.js';
 
 // Peer head & hands
 

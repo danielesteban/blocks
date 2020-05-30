@@ -97,6 +97,7 @@ class Head extends Mesh {
     renderer.width = 64;
     renderer.height = 16;
     const ctx = renderer.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
     const size = 8;
     const skin = Math.floor(Math.random() * 150);
     const eyes = {
@@ -125,7 +126,7 @@ class Head extends Mesh {
             const px = offset.x * size + x;
             const py = offset.y * size + y;
             ctx.globalAlpha = (
-              Math.sqrt((px - 12) ** 2 + (py - 19) ** 2) > 10
+              Math.sqrt((px - 11.5) ** 2 + (py - 19) ** 2) > 10
               && Math.random() > 0.25
             ) ? 1 : 0;
             const l = Math.floor(Math.random() * 50);
@@ -141,13 +142,9 @@ class Head extends Mesh {
       ctx.fillStyle = `rgb(${eyes.r}, ${eyes.g}, ${eyes.b})`;
       [
         // r-eye
-        [1, 2],
-        [2, 2],
         [1, 3],
         [2, 3],
         // l-eye
-        [5, 2],
-        [6, 2],
         [5, 3],
         [6, 3],
       ].forEach(([x, y]) => (
