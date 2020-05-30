@@ -5,7 +5,7 @@ import {
   NearestFilter,
   PlaneBufferGeometry,
   Vector3,
-} from './three.js';
+} from '../core/three.js';
 
 // A general purpose UI class
 

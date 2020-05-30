@@ -1,4 +1,4 @@
-import UI from '../core/ui.js';
+import UI from './ui.js';
 
 // Panel UI
 
