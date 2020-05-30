@@ -1,5 +1,6 @@
 import {
   BufferGeometry,
+  BufferGeometryUtils,
   Mesh,
   MeshBasicMaterial,
   Object3D,
@@ -23,7 +24,7 @@ class Peer extends Object3D {
     const geometry = (new BufferGeometry()).fromGeometry(sphere);
     delete geometry.attributes.normal;
     delete geometry.attributes.uv;
-    Peer.geometry = geometry;
+    Peer.geometry = BufferGeometryUtils.mergeVertices(geometry);
   }
 
   static setupMaterial() {

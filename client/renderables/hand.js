@@ -4,6 +4,7 @@ import {
   Bone,
   BoxGeometry,
   BufferGeometry,
+  BufferGeometryUtils,
   Color,
   Euler,
   Geometry,
@@ -122,6 +123,9 @@ class Hand extends SkinnedMesh {
       geometry.skinWeights.push(new Vector4(1, 0, 0, 0));
     });
     Hand.geometry = (new BufferGeometry()).fromGeometry(geometry);
+    delete Hand.geometry.attributes.normal;
+    delete Hand.geometry.attributes.uv;
+    Hand.geometry = BufferGeometryUtils.mergeVertices(Hand.geometry);
     // Pre-computed bone origins
     Hand.bones = [new Vector3(0, 0, 0)];
     for (let f = 0; f < 5; f += 1) {

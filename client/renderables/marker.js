@@ -1,5 +1,6 @@
 import {
   BufferGeometry,
+  BufferGeometryUtils,
   Color,
   Line,
   LineBasicMaterial,
@@ -27,7 +28,7 @@ class Marker extends Object3D {
     const geometry = (new BufferGeometry()).fromGeometry(outer);
     delete geometry.attributes.normal;
     delete geometry.attributes.uv;
-    Marker.geometry = geometry;
+    Marker.geometry = BufferGeometryUtils.mergeVertices(geometry);
   }
 
   static setupMaterial() {
