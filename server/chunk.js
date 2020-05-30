@@ -347,6 +347,14 @@ class Chunk {
       this.removeLight(x, y, z);
     }
     if (isTransparent(type)) {
+      if (heightmap[x][z] === y) {
+        for (let i = y - 1; i >= 0; i -= 1) {
+          if (this.get(x, i, z).type !== types.air) {
+            heightmap[x][z] = i;
+            break;
+          }
+        }
+      }
       ['light', 'sunlight'].forEach((key) => {
         const queue = [];
         if (key === 'sunlight' && y === maxHeight - 1) {
@@ -368,24 +376,16 @@ class Chunk {
         }
         this.floodLight(queue, key);
       });
-      if (heightmap[x][z] === y) {
-        for (let i = y - 1; i >= 0; i -= 1) {
-          if (this.get(x, i, z).type !== types.air) {
-            heightmap[x][z] = i;
-            break;
-          }
-        }
-      }
     } else {
+      if (heightmap[x][z] < y) {
+        heightmap[x][z] = y;
+      }
       if (type === types.light) {
         voxel.color.r = 0xFF;
         voxel.color.g = 0xFF;
         voxel.color.b = 0xFF;
         voxel.light = maxLight;
         this.floodLight([{ x, y, z }]);
-      }
-      if (heightmap[x][z] < y) {
-        heightmap[x][z] = y;
       }
     }
     this.needsPersistence = true;
