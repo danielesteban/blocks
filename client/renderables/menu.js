@@ -238,11 +238,6 @@ class Menu extends Panel {
     this.blockType = 0x03;
     this.world = world;
     this.picker = { area, strip };
-
-    setTimeout(() => {
-      this.setPage(3);
-      this.world.player.editSkin();
-    }, 1000);
   }
 
   onPointer({ point, primary, secondary }) {
