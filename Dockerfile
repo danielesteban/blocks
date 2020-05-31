@@ -9,7 +9,7 @@ WORKDIR /usr/src/blocks
 # Install dependencies
 COPY package.json .
 COPY package-lock.json .
-RUN npm install
+RUN npm ci
 
 # Copy server & client
 COPY server/ server/
