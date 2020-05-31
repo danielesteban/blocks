@@ -100,7 +100,10 @@ class Menu extends Panel {
               y: 104,
               width: 96,
               height: 16,
-              onPointer: () => this.setPage(pages.avatar),
+              onPointer: () => {
+                this.setPage(pages.skin);
+                world.player.toggleSkinEditing();
+              },
             },
           ],
           graphics: [
@@ -210,7 +213,10 @@ class Menu extends Panel {
               y: 104,
               width: 96,
               height: 16,
-              onPointer: () => this.setPage(pages.menu),
+              onPointer: () => {
+                this.setPage(pages.menu);
+                world.player.toggleSkinEditing();
+              },
             },
           ],
           graphics: [
@@ -227,7 +233,7 @@ class Menu extends Panel {
         },
       ],
     });
-    this.avatarLayer = 'head';
+    this.skinLayer = 'head';
     this.blockColor = color;
     this.blockType = 0x03;
     this.world = world;
@@ -303,8 +309,8 @@ class Menu extends Panel {
     delete hair.background;
     const buttons = { head, hair };
     buttons[layer].background = '#393';
-    this.avatarLayer = layer;
-    this.setPage(pages.avatar);
+    this.skinLayer = layer;
+    this.setPage(pages.skin);
   }
 
   setLocomotion(type) {
@@ -338,7 +344,7 @@ class Menu extends Panel {
 Menu.pages = {
   menu: 1,
   picker: 2,
-  avatar: 3,
+  skin: 3,
 };
 
 export default Menu;

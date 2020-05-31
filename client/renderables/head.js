@@ -1,10 +1,11 @@
 import {
   BoxBufferGeometry,
-  Texture,
+  CanvasTexture,
   DoubleSide,
   Mesh,
   MeshBasicMaterial,
   NearestFilter,
+  Texture,
 } from '../core/three.js';
 
 // Textured mesh for the player/peer head
@@ -55,14 +56,21 @@ class Head extends Mesh {
   }
 
   dispose() {
-    const { material } = this;
-    material.forEach((material) => {
+    const {
+      material,
+      transparentMesh: { material: transparentMaterial },
+    } = this;
+    if (material.map) {
       material.map.dispose();
-      material.dispose();
-    });
+    }
+    material.dispose();
+    if (transparentMaterial.map) {
+      transparentMaterial.map.dispose();
+    }
+    transparentMaterial.dispose();
   }
 
-  updateTexture(url) {
+  updateTexture(url, editable) {
     const {
       material,
       transparentMesh: { material: transparentMaterial },
@@ -70,7 +78,18 @@ class Head extends Mesh {
     const image = new Image();
     image.src = url;
     image.onload = () => {
-      const opaque = new Texture(image);
+      let opaque;
+      if (editable) {
+        this.renderer = document.createElement('canvas');
+        this.renderer.width = image.width;
+        this.renderer.height = image.height;
+        this.context = this.renderer.getContext('2d');
+        this.context.imageSmoothingEnabled = false;
+        this.context.drawImage(image, 0, 0);
+        opaque = new CanvasTexture(this.renderer);
+      } else {
+        opaque = new Texture(image);
+      }
       opaque.needsUpdate = true;
       opaque.magFilter = NearestFilter;
       opaque.minFilter = NearestFilter;
