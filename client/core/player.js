@@ -170,10 +170,11 @@ class Player extends Object3D {
       return;
     }
     const mesh = new Head();
-    mesh.rotateY(Math.PI);
     mesh.updateTexture(skin, true);
-    this.worldToLocal(head.localToWorld(mesh.position.set(0, -0.15, -0.65)));
     this.add(mesh);
+    this.worldToLocal(head.localToWorld(mesh.position.set(0, 0, -0.65)));
+    mesh.lookAt(head.position);
+    mesh.rotateY(Math.PI);
     this.editingSkin = mesh;
   }
 
