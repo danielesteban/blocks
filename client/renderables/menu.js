@@ -102,7 +102,7 @@ class Menu extends Panel {
               height: 16,
               onPointer: () => {
                 this.setPage(pages.skin);
-                world.player.toggleSkinEditing();
+                world.player.editSkin();
               },
             },
           ],
@@ -182,7 +182,7 @@ class Menu extends Panel {
               y: 8,
               width: 48,
               height: 24,
-              onPointer: () => this.setLayer('head'),
+              onPointer: () => this.setLayer('opaque'),
             },
             {
               label: 'Hair',
@@ -190,7 +190,7 @@ class Menu extends Panel {
               y: 8,
               width: 48,
               height: 24,
-              onPointer: () => this.setLayer('hair'),
+              onPointer: () => this.setLayer('transparent'),
             },
             {
               x: 8,
@@ -215,7 +215,7 @@ class Menu extends Panel {
               height: 16,
               onPointer: () => {
                 this.setPage(pages.menu);
-                world.player.toggleSkinEditing();
+                world.player.saveSkin();
               },
             },
           ],
@@ -233,11 +233,16 @@ class Menu extends Panel {
         },
       ],
     });
-    this.skinLayer = 'head';
+    this.skinLayer = 'opaque';
     this.blockColor = color;
     this.blockType = 0x03;
     this.world = world;
     this.picker = { area, strip };
+
+    setTimeout(() => {
+      this.setPage(3);
+      this.world.player.editSkin();
+    }, 1000);
   }
 
   onPointer({ point, primary, secondary }) {
@@ -302,12 +307,12 @@ class Menu extends Panel {
 
   setLayer(layer) {
     const {
-      pages: [/* toggle */, /* menu */, /* picker */, { buttons: [head, hair] }],
+      pages: [/* toggle */, /* menu */, /* picker */, { buttons: [opaque, transparent] }],
     } = this;
     const { pages } = Menu;
-    delete head.background;
-    delete hair.background;
-    const buttons = { head, hair };
+    delete opaque.background;
+    delete transparent.background;
+    const buttons = { opaque, transparent };
     buttons[layer].background = '#393';
     this.skinLayer = layer;
     this.setPage(pages.skin);

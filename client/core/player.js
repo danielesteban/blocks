@@ -164,20 +164,29 @@ class Player extends Object3D {
     }
   }
 
-  toggleSkinEditing() {
+  editSkin() {
     const { editingSkin, head, skin } = this;
     if (editingSkin) {
-      this.remove(editingSkin);
-      editingSkin.dispose();
-      delete this.editingSkin;
       return;
     }
     const mesh = new Head();
     mesh.rotateY(Math.PI);
     mesh.updateTexture(skin, true);
-    this.worldToLocal(head.localToWorld(mesh.position.set(0, 0, -1)));
+    this.worldToLocal(head.localToWorld(mesh.position.set(0, -0.15, -0.65)));
     this.add(mesh);
     this.editingSkin = mesh;
+  }
+
+  saveSkin() {
+    const { editingSkin } = this;
+    if (!editingSkin) {
+      return;
+    }
+    delete this.editingSkin;
+    this.skin = editingSkin.renderer.toDataURL();
+    this.remove(editingSkin);
+    editingSkin.dispose();
+    localStorage.setItem('blocks::skin', this.skin);
   }
 
   fly({ delta, direction, movement }) {

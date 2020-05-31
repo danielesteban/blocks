@@ -81,7 +81,11 @@ class World extends Scene {
       ) {
         return;
       }
-      const hit = raycaster.intersectObjects(translocables)[0] || false;
+      const hit = (player.editingSkin ? (
+        raycaster.intersectObject(player.editingSkin.getLayer(menu.skinLayer))
+      ) : (
+        raycaster.intersectObjects(translocables)
+      ))[0] || false;
       if (!hit) {
         return;
       }
@@ -90,8 +94,17 @@ class World extends Scene {
         origin: raycaster.ray.origin,
       });
       if (gripUp || triggerUp) {
-        const { point, face: { normal } } = hit;
+        const { point, face: { normal }, uv } = hit;
         const remove = grip || gripUp;
+        if (player.editingSkin) {
+          player.editingSkin.updatePixel({
+            color: `#${menu.blockColor.getHexString()}`,
+            layer: menu.skinLayer,
+            remove,
+            uv,
+          });
+          return;
+        }
         point
           .addScaledVector(normal, (remove ? -1 : 1) * 0.25)
           .divideScalar(scale)
