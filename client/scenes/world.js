@@ -81,8 +81,8 @@ class World extends Scene {
       ) {
         return;
       }
-      const hit = (player.editingSkin ? (
-        raycaster.intersectObject(player.editingSkin.getLayer(menu.skinLayer))
+      const hit = (player.skinEditor ? (
+        raycaster.intersectObject(player.skinEditor.getLayer())
       ) : (
         raycaster.intersectObjects(translocables)
       ))[0] || false;
@@ -96,10 +96,9 @@ class World extends Scene {
       if (gripUp || triggerUp) {
         const { point, face: { normal }, uv } = hit;
         const remove = grip || gripUp;
-        if (player.editingSkin) {
-          player.editingSkin.updatePixel({
+        if (player.skinEditor) {
+          player.skinEditor.updatePixel({
             color: `#${menu.blockColor.getHexString()}`,
-            layer: menu.skinLayer,
             remove,
             uv,
           });

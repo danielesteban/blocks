@@ -101,8 +101,8 @@ class Menu extends Panel {
               width: 96,
               height: 16,
               onPointer: () => {
+                this.setLayer('transparent');
                 this.setPage(pages.skin);
-                world.player.editSkin();
               },
             },
           ],
@@ -176,7 +176,6 @@ class Menu extends Panel {
         {
           buttons: [
             {
-              background: '#393',
               label: 'Head',
               x: 8,
               y: 8,
@@ -236,7 +235,6 @@ class Menu extends Panel {
     this.blockColor = color;
     this.blockType = 0x03;
     this.picker = { area, strip };
-    this.skinLayer = 'opaque';
     this.world = world;
   }
 
@@ -303,13 +301,14 @@ class Menu extends Panel {
   setLayer(layer) {
     const {
       pages: [/* toggle */, /* menu */, /* picker */, { buttons: [opaque, transparent] }],
+      world,
     } = this;
     const { pages } = Menu;
     delete opaque.background;
     delete transparent.background;
     const buttons = { opaque, transparent };
     buttons[layer].background = '#393';
-    this.skinLayer = layer;
+    world.player.editSkin(layer);
     this.setPage(pages.skin);
   }
 

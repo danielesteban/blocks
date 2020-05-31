@@ -70,14 +70,18 @@ class Head extends Mesh {
     transparentMaterial.dispose();
   }
 
-  getLayer(layer) {
-    const { transparentMesh } = this;
-    switch (layer) {
-      case 'transparent':
-        return transparentMesh;
-      default:
-        return this;
+  getLayer() {
+    const { layer, transparentMesh } = this;
+    if (layer === 'transparent') {
+      return transparentMesh;
     }
+    return this;
+  }
+
+  setLayer(layer) {
+    const { transparentMesh } = this;
+    transparentMesh.visible = layer === 'transparent';
+    this.layer = layer;
   }
 
   updateTexture(url, editable) {
@@ -123,19 +127,19 @@ class Head extends Mesh {
 
   updatePixel({
     color,
-    layer,
     remove,
     uv,
   }) {
-    if (remove && layer !== 'transparent') {
-      return;
-    }
     const {
       context,
+      layer,
       renderer,
       material,
       transparentMesh: { material: transparentMaterial },
     } = this;
+    if (remove && layer !== 'transparent') {
+      return;
+    }
     uv.x = (uv.x * 0.5) + (layer === 'transparent' ? 0.5 : 0);
     uv.y = 1 - uv.y;
     context.fillStyle = color;
@@ -145,10 +149,13 @@ class Head extends Mesh {
       1,
       1
     );
-    material.map.needsUpdate = true;
-    material.needsUpdate = true;
-    transparentMaterial.map.needsUpdate = true;
-    transparentMaterial.needsUpdate = true;
+    if (layer === 'transparent') {
+      transparentMaterial.map.needsUpdate = true;
+      transparentMaterial.needsUpdate = true;
+    } else {
+      material.map.needsUpdate = true;
+      material.needsUpdate = true;
+    }
   }
 
   static generateTexture() {
