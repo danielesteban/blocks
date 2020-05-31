@@ -18,6 +18,16 @@
 GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
 ```
 
+#### Local development
+
+WebXR requires an HTTPS origin. To test with a headset on your local network:
+
+```bash
+# First generate a self-signed cert/key:
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
+# Then start the server with TLS
+TLS_CERT=server.crt TLS_KEY=server.key npm start
+```
 #### docker-compose
 
 ```yaml
