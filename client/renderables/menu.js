@@ -233,11 +233,11 @@ class Menu extends Panel {
         },
       ],
     });
-    this.skinLayer = 'opaque';
     this.blockColor = color;
     this.blockType = 0x03;
-    this.world = world;
     this.picker = { area, strip };
+    this.skinLayer = 'opaque';
+    this.world = world;
   }
 
   onPointer({ point, primary, secondary }) {
