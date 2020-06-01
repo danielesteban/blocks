@@ -19,6 +19,8 @@ const world = new World({
 const map = new Map({ world });
 
 const app = express();
+app.use(helmet());
+app.use(compression());
 const server = (process.env.TLS_KEY && process.env.TLS_CERT ? https : http).createServer({
   key: process.env.TLS_KEY ? fs.readFileSync(process.env.TLS_KEY) : undefined,
   cert: process.env.TLS_CERT ? fs.readFileSync(process.env.TLS_CERT) : undefined,
@@ -26,8 +28,7 @@ const server = (process.env.TLS_KEY && process.env.TLS_CERT ? https : http).crea
   console.log(`Listening on port: ${server.address().port}`)
 ));
 expressWS(app, server, { clientTracking: false, perMessageDeflate: true });
-app.use(helmet());
-app.use(compression());
+
 app.ws('/', world.onClient.bind(world));
 app.get(
   '/map/@:originX([\\-]?\\d+),:originZ([\\-]?\\d+)(,)?:radius([\\-]?\\d+)?',
