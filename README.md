@@ -7,11 +7,11 @@
 #### Server configuration
 
  * `GENERATOR` the world [generator](server/generators.js) function
- * `HEIGHTMAP` a png heightmap to drive the heightmap world generator function
+ * `HEIGHTMAP` a png to drive the heightmap world generator function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
  * `PRELOAD` a chunk radius around the spawn area to be preloaded
  * `SEED` 16bit world generation seed. (0 - 65535)
- * `STORAGE` absolute path in where to store the generated/modified chunks
+ * `STORAGE` directory in where to store the generated/modified chunks
 
 ```bash
 # random seed, no preload, 16 clients
