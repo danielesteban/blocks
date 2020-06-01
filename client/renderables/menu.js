@@ -38,6 +38,7 @@ class Menu extends Panel {
         {
           buttons: [
             {
+              background: '#393',
               label: 'Block',
               x: 8,
               y: 8,
@@ -54,7 +55,6 @@ class Menu extends Panel {
               onPointer: () => this.setBlock(0x02),
             },
             {
-              background: '#393',
               label: 'Light',
               x: 88,
               y: 8,
@@ -255,7 +255,7 @@ class Menu extends Panel {
       ],
     });
     this.blockColor = color;
-    this.blockType = 0x03;
+    this.blockType = 0x01;
     this.picker = { area, strip };
     this.world = world;
   }
