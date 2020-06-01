@@ -84,6 +84,19 @@ class Head extends Mesh {
     this.layer = layer;
   }
 
+  regenerate() {
+    const {
+      material,
+      renderer,
+      transparentMesh: { material: transparentMaterial },
+    } = this;
+    Head.generateTexture(renderer);
+    material.map.needsUpdate = true;
+    material.needsUpdate = true;
+    transparentMaterial.map.needsUpdate = true;
+    transparentMaterial.needsUpdate = true;
+  }
+
   updateTexture(url, editable) {
     const {
       material,
@@ -158,8 +171,7 @@ class Head extends Mesh {
     }
   }
 
-  static generateTexture() {
-    const renderer = document.createElement('canvas');
+  static generateTexture(renderer = document.createElement('canvas')) {
     renderer.width = 64;
     renderer.height = 16;
     const ctx = renderer.getContext('2d');
@@ -240,7 +252,7 @@ class Head extends Mesh {
         )
       ));
     });
-    return renderer.toDataURL();
+    return renderer;
   }
 }
 

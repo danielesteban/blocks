@@ -179,15 +179,15 @@ class Menu extends Panel {
               label: 'Head',
               x: 8,
               y: 8,
-              width: 48,
+              width: 52,
               height: 24,
               onPointer: () => this.setLayer('opaque'),
             },
             {
               label: 'Hair',
-              x: 72,
+              x: 68,
               y: 8,
-              width: 48,
+              width: 52,
               height: 24,
               onPointer: () => this.setLayer('transparent'),
             },
@@ -207,11 +207,33 @@ class Menu extends Panel {
               onPointer: () => setTimeout(() => this.setPage(pages.picker), 0),
             },
             {
-              label: 'Save Avatar',
+              label: 'Randomize',
               x: 16,
-              y: 104,
+              y: 72,
               width: 96,
               height: 16,
+              onPointer: () => (
+                world.player.skinEditor.regenerate()
+              ),
+            },
+            {
+              label: 'Cancel',
+              x: 8,
+              y: 96,
+              width: 48,
+              height: 24,
+              onPointer: () => {
+                this.setPage(pages.menu);
+                world.player.disposeSkinEditor();
+              },
+            },
+            {
+              background: '#393',
+              label: 'Save',
+              x: 72,
+              y: 96,
+              width: 48,
+              height: 24,
               onPointer: () => {
                 this.setPage(pages.menu);
                 world.player.saveSkin();

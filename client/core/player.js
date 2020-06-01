@@ -86,7 +86,7 @@ class Player extends Object3D {
     {
       let skin = localStorage.getItem('blocks::skin');
       if (!skin) {
-        skin = Head.generateTexture();
+        skin = Head.generateTexture().toDataURL();
         localStorage.setItem('blocks::skin', skin);
       }
       this.skin = skin;
@@ -180,16 +180,24 @@ class Player extends Object3D {
     this.skinEditor = mesh;
   }
 
-  saveSkin() {
+  disposeSkinEditor() {
     const { skinEditor } = this;
     if (!skinEditor) {
       return;
     }
     delete this.skinEditor;
-    this.skin = skinEditor.renderer.toDataURL();
     this.remove(skinEditor);
     skinEditor.dispose();
+  }
+
+  saveSkin() {
+    const { skinEditor } = this;
+    if (!skinEditor) {
+      return;
+    }
+    this.skin = skinEditor.renderer.toDataURL();
     localStorage.setItem('blocks::skin', this.skin);
+    this.disposeSkinEditor();
   }
 
   fly({ delta, direction, movement }) {
