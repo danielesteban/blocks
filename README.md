@@ -9,9 +9,9 @@
  * `GENERATOR` the world [generator](server/generators.js) function
  * `HEIGHTMAP` a png heightmap to drive the heightmap world generator function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
- * `PRELOAD` a radius of chunks around the spawn area to preload
+ * `PRELOAD` a chunk radius around the spawn area to be preloaded
  * `SEED` 16bit world generation seed. (0 - 65535)
- * `STORAGE` Absolute path in where to store the generated/modified chunks
+ * `STORAGE` absolute path in where to store the generated/modified chunks
 
 ```bash
 # random seed, no preload, 16 clients
@@ -26,12 +26,12 @@ HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
 
 #### Local development
 
-WebXR requires an HTTPS origin. To test with a headset on your local network:
+webxr requires an https origin. to test with headsets on your local network:
 
 ```bash
-# First generate a self-signed cert/key:
+# generate a self-signed cert/key:
 openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout server.key -out server.crt
-# Then start the server with TLS
+# start the server with TLS
 TLS_CERT=server.crt TLS_KEY=server.key npm start
 ```
 #### docker-compose
