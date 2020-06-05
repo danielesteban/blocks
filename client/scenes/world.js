@@ -307,6 +307,6 @@ World.renderGrid = (() => {
   return grid;
 })();
 World.scale = 0.5;
-World.subchunks = 3;
+World.subchunks = 4;
 
 export default World;

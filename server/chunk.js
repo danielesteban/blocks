@@ -1,3 +1,4 @@
+const { hsl2Rgb } = require('colorsys');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
@@ -23,7 +24,7 @@ class Chunk {
   }
 
   generate() {
-    const { maxHeight, size } = Chunk;
+    const { maxHeight, size, types } = Chunk;
     const { world: { generator } } = this;
     const offset = { x: this.x * size, z: this.z * size };
     const voxels = Array(size);
@@ -33,7 +34,7 @@ class Chunk {
         voxels[x][y] = Array(size);
         for (let z = 0; z < size; z += 1) {
           voxels[x][y][z] = {
-            ...generator(offset.x + x, y, offset.z + z),
+            ...generator.terrain(offset.x + x, y, offset.z + z),
             light: 0,
             sunlight: 0,
             chunk: this,
@@ -41,10 +42,23 @@ class Chunk {
         }
       }
     }
-    this.needsLightPropagation = true;
+    this.needsPropagation = true;
     this.needsPersistence = true;
     this.voxels = voxels;
     this.generateHeightmap();
+    if (generator.saplings) {
+      for (let x = 0; x < size; x += 1) {
+        for (let z = 0; z < size; z += 1) {
+          const y = this.heightmap[x][z] + 1;
+          const sapling = generator.saplings(offset.x + x, y, offset.z + z);
+          if (sapling) {
+            const voxel = voxels[x][y][z];
+            voxel.type = types.sapling;
+            voxel.color = sapling;
+          }
+        }
+      }
+    }
   }
 
   generateHeightmap() {
@@ -72,86 +86,128 @@ class Chunk {
     this.heightmap = heightmap;
   }
 
+  propagate() {
+    const {
+      isTransparent,
+      maxHeight,
+      maxLight,
+      size,
+      types,
+    } = Chunk;
+    this.needsPropagation = false;
+    const { voxels } = this;
+    const lightQueue = [];
+    const sunlightQueue = [];
+    const trees = [];
+    for (let x = 0; x < size; x += 1) {
+      for (let y = 0; y < maxHeight; y += 1) {
+        for (let z = 0; z < size; z += 1) {
+          const voxel = voxels[x][y][z];
+          switch (voxel.type) {
+            case types.light:
+              voxel.light = maxLight;
+              voxel.color.r = 0xFF;
+              voxel.color.g = 0xFF;
+              voxel.color.b = 0xFF;
+              lightQueue.push({ x, y, z });
+              break;
+            case types.sapling:
+              trees.push({
+                sapling: { x, y, z },
+                height: voxel.color.r,
+                hue: voxel.color.g,
+                radius: voxel.color.b,
+              });
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+    trees.forEach((sapling) => this.growTree(sapling));
+    const top = maxHeight - 1;
+    for (let x = 0; x < size; x += 1) {
+      for (let z = 0; z < size; z += 1) {
+        const voxel = voxels[x][top][z];
+        if (isTransparent(voxel.type)) {
+          voxel.sunlight = maxLight;
+          sunlightQueue.push({ x, y: top, z });
+        }
+      }
+    }
+    this.floodLight(lightQueue, 'light');
+    this.floodLight(sunlightQueue, 'sunlight');
+    this.needsPersistence = true;
+  }
+
   load() {
+    const { maxHeight, size } = Chunk;
     const { x, z, world } = this;
     const {
-      needsLightPropagation,
+      needsPropagation,
       voxels,
-    } = JSON.parse(zlib.inflateSync(fs.readFileSync(path.join(world.storage, `${x}_${z}.json.gz`))));
-    this.needsLightPropagation = needsLightPropagation;
+    } = JSON.parse(fs.readFileSync(path.join(world.storage, `${x}_${z}.json`)));
+    this.needsPropagation = needsPropagation;
     this.needsPersistence = false;
-    this.voxels = voxels.map((x) => x.map((y) => y.map(([
-      type,
-      color,
-      light,
-      sunlight,
-    ]) => ({
-      type,
-      color: {
-        r: (color >> 16) & 0xFF,
-        g: (color >> 8) & 0xFF,
-        b: color & 0xFF,
-      },
-      light,
-      sunlight,
-      chunk: this,
-    }))));
+    const buffer = zlib.inflateSync(Buffer.from(voxels, 'base64'));
+    this.voxels = [];
+    for (let x = 0, i = 0; x < size; x += 1) {
+      this.voxels[x] = Array(maxHeight);
+      for (let y = 0; y < maxHeight; y += 1) {
+        this.voxels[x][y] = Array(size);
+        for (let z = 0; z < size; z += 1, i += 6) {
+          this.voxels[x][y][z] = {
+            type: buffer[i],
+            color: {
+              r: buffer[i + 1],
+              g: buffer[i + 2],
+              b: buffer[i + 3],
+            },
+            light: buffer[i + 4],
+            sunlight: buffer[i + 5],
+            chunk: this,
+          };
+        }
+      }
+    }
     this.generateHeightmap();
   }
 
   persist() {
+    const { maxHeight, size } = Chunk;
     const {
       x,
       z,
-      needsLightPropagation,
+      needsPropagation,
       voxels,
       world: { storage },
     } = this;
     if (!storage) {
       return;
     }
-    fs.writeFileSync(path.join(storage, `${x}_${z}.json.gz`), zlib.deflateSync(JSON.stringify({
-      needsLightPropagation,
-      voxels: voxels.map((z) => z.map((y) => y.map(({
-        type,
-        color,
-        light,
-        sunlight,
-      }) => ([
-        type,
-        (color.r << 16) | (color.g << 8) | color.b,
-        light,
-        sunlight,
-      ])))),
-    })));
+    const buffer = Buffer.allocUnsafe(size * maxHeight * size * 6);
+    for (let x = 0, i = 0; x < size; x += 1) {
+      for (let y = 0; y < maxHeight; y += 1) {
+        for (let z = 0; z < size; z += 1, i += 6) {
+          const voxel = voxels[x][y][z];
+          buffer[i] = voxel.type;
+          buffer[i + 1] = voxel.color.r;
+          buffer[i + 2] = voxel.color.g;
+          buffer[i + 3] = voxel.color.b;
+          buffer[i + 4] = voxel.light;
+          buffer[i + 5] = voxel.sunlight;
+        }
+      }
+    }
+    fs.writeFileSync(path.join(storage, `${x}_${z}.json`), JSON.stringify({
+      needsPropagation,
+      voxels: zlib.deflateSync(buffer).toString('base64'),
+    }));
     this.needsPersistence = false;
   }
 
-  get(x, y, z) {
-    const {
-      bottom,
-      maxHeight,
-      size,
-      top,
-    } = Chunk;
-    const { world } = this;
-    if (y < 0) return bottom;
-    if (y >= maxHeight) return top;
-    let chunk = this;
-    const cx = (x < 0 || x >= size) ? Math.floor(x / size) : 0;
-    const cz = (z < 0 || z >= size) ? Math.floor(z / size) : 0;
-    if (cx || cz) {
-      chunk = world.getChunk({
-        x: this.x + cx,
-        z: this.z + cz,
-      });
-      x -= size * cx;
-      z -= size * cz;
-    }
-    return chunk.voxels[x][y][z];
-  }
-
-  getHeight(x, z) {
+  getChunk(x, z) {
     const { size } = Chunk;
     const { world } = this;
     let chunk = this;
@@ -165,7 +221,15 @@ class Chunk {
       x -= size * cx;
       z -= size * cz;
     }
-    return chunk.heightmap[x][z];
+    return { chunk, cx: x, cz: z };
+  }
+
+  get(x, y, z) {
+    const { bottom, maxHeight, top } = Chunk;
+    if (y < 0) return bottom;
+    if (y >= maxHeight) return top;
+    const { chunk, cx, cz } = this.getChunk(x, z);
+    return chunk.voxels[cx][y][cz];
   }
 
   floodLight(queue, key = 'light') {
@@ -186,27 +250,109 @@ class Chunk {
         }
         const nx = x + offset.x;
         const nz = z + offset.z;
-        const neighbor = this.get(nx, ny, nz);
+        const nl = light - ((isSunLight && offset.y === -1 && light === maxLight) ? 0 : 1);
+        const { chunk, cx, cz } = this.getChunk(nx, nz);
+        const voxel = chunk.voxels[cx][ny][cz];
         if (
-          !isTransparent(neighbor.type)
+          !isTransparent(voxel.type)
           || (
             isSunLight
             && offset.y !== -1
-            && ny > this.getHeight(nx, nz)
+            && light === maxLight
+            && ny > chunk.heightmap[cx][cz]
           )
+          || voxel[key] >= nl
         ) {
           return;
         }
-        if (isSunLight && offset.y === -1 && light === maxLight) {
-          neighbor[key] = maxLight;
-        } else if (neighbor[key] < light - 1) {
-          neighbor[key] = light - 1;
-        } else {
-          return;
-        }
-        neighbor.chunk.needsPersistence = true;
+        voxel[key] = nl;
+        chunk.needsPersistence = true;
         queue.push({ x: nx, y: ny, z: nz });
       });
+    }
+  }
+
+  growTree({
+    sapling,
+    height,
+    hue,
+    radius,
+  }) {
+    const { maxHeight, types, voxelNeighbors } = Chunk;
+    const { world: { generator: { noise } } } = this;
+    const queue = [sapling];
+    while (queue.length) {
+      const {
+        x,
+        y,
+        z,
+        distance = 0,
+      } = queue.shift();
+      if (y < 0 || y >= maxHeight) {
+        return;
+      }
+      const isTrunk = distance < height;
+      const { chunk, cx, cz } = this.getChunk(x, z);
+      const colorOffset = isTrunk ? -10 : (Math.max(distance - height, 0) / radius) * 10;
+      const hsl = {
+        h: (hue / 0xFF) * 360,
+        s: 60 + colorOffset,
+        l: 30 + colorOffset,
+      };
+      const color = hsl2Rgb(hsl);
+      color.r += Math.floor(Math.random() * hsl.l) - hsl.l * 0.5;
+      color.r = Math.min(Math.max(color.r, 0), 0xFF);
+      color.g += Math.floor(Math.random() * hsl.l) - hsl.l * 0.5;
+      color.g = Math.min(Math.max(color.g, 0), 0xFF);
+      color.b += Math.floor(Math.random() * hsl.l) - hsl.l * 0.5;
+      color.b = Math.min(Math.max(color.b, 0), 0xFF);
+      chunk.update({
+        x: cx,
+        y,
+        z: cz,
+        color,
+        type: types.block,
+      });
+      const pushNeighbor = (offset) => {
+        const nx = x + offset.x;
+        const ny = y + offset.y;
+        const nz = z + offset.z;
+        if (this.get(nx, ny, nz).type === types.air) {
+          queue.push({
+            x: nx,
+            y: ny,
+            z: nz,
+            distance: distance + 1,
+          });
+          return true;
+        }
+        return false;
+      };
+      if (isTrunk) {
+        pushNeighbor({ x: 0, y: 1, z: 0 });
+      } else if (distance === height) {
+        voxelNeighbors.forEach((offset) => {
+          if (offset.y !== -1) {
+            pushNeighbor(offset);
+          }
+        });
+      } else if (distance < (height + radius)) {
+        let count = 0;
+        for (let i = 0; i < voxelNeighbors.length; i += 1) {
+          const neighbor = voxelNeighbors[
+            Math.floor(
+              Math.abs(noise.GetWhiteNoise((x + i) * 2, (y - i) / 2, (z + i) * 2))
+              * voxelNeighbors.length
+            )
+          ];
+          if (pushNeighbor(neighbor)) {
+            count += 1;
+            if (count >= 2) {
+              break;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -271,50 +417,6 @@ class Chunk {
     this.floodLight(fill, key);
   }
 
-  propagateLight() {
-    const {
-      isTransparent,
-      maxHeight,
-      maxLight,
-      size,
-      types,
-    } = Chunk;
-    this.needsLightPropagation = false;
-    const { voxels } = this;
-    const lightQueue = [];
-    const sunlightQueue = [];
-    const top = maxHeight - 1;
-    for (let x = 0; x < size; x += 1) {
-      for (let y = 0; y < maxHeight; y += 1) {
-        for (let z = 0; z < size; z += 1) {
-          const voxel = voxels[x][y][z];
-          if (y === top && isTransparent(voxel.type)) {
-            voxel.sunlight = maxLight;
-            sunlightQueue.push({
-              x,
-              y,
-              z,
-            });
-          }
-          if (voxel.type === types.light) {
-            voxel.light = maxLight;
-            voxel.color.r = 0xFF;
-            voxel.color.g = 0xFF;
-            voxel.color.b = 0xFF;
-            lightQueue.push({
-              x,
-              y,
-              z,
-            });
-          }
-        }
-      }
-    }
-    this.floodLight(lightQueue, 'light');
-    this.floodLight(sunlightQueue, 'sunlight');
-    this.needsPersistence = true;
-  }
-
   update({
     x,
     y,
@@ -329,24 +431,14 @@ class Chunk {
       types,
       voxelNeighbors,
     } = Chunk;
-    const { heightmap } = this;
+    const { heightmap, needsPropagation } = this;
     const voxel = this.get(x, y, z);
     const { type: current } = voxel;
     voxel.type = type;
     voxel.color.r = color.r;
     voxel.color.g = color.g;
     voxel.color.b = color.b;
-    if (isTransparent(current)) {
-      ['light', 'sunlight'].forEach((key) => {
-        if (voxel[key] !== 0) {
-          this.removeLight(x, y, z, key);
-        }
-      });
-    }
-    if (current === types.light) {
-      this.removeLight(x, y, z);
-    }
-    if (isTransparent(type)) {
+    if (type === types.air) {
       if (heightmap[x][z] === y) {
         for (let i = y - 1; i >= 0; i -= 1) {
           if (this.get(x, i, z).type !== types.air) {
@@ -355,32 +447,42 @@ class Chunk {
           }
         }
       }
-      ['light', 'sunlight'].forEach((key) => {
-        const queue = [];
-        if (key === 'sunlight' && y === maxHeight - 1) {
-          voxel.sunlight = maxLight;
-          queue.push({ x, y, z });
-        } else {
-          voxelNeighbors.forEach((offset) => {
-            const ny = y + offset.y;
-            if (ny < 0 || ny >= maxHeight) {
-              return;
-            }
-            const nx = x + offset.x;
-            const nz = z + offset.z;
-            const neighbor = this.get(nx, ny, nz);
-            if (isTransparent(neighbor.type) && neighbor[key] !== 0) {
-              queue.push({ x: nx, y: ny, z: nz });
-            }
-          });
-        }
-        this.floodLight(queue, key);
-      });
-    } else {
-      if (heightmap[x][z] < y) {
-        heightmap[x][z] = y;
+    } else if (heightmap[x][z] < y) {
+      heightmap[x][z] = y;
+    }
+    if (!needsPropagation) {
+      if (isTransparent(current)) {
+        ['light', 'sunlight'].forEach((key) => {
+          if (voxel[key] !== 0) {
+            this.removeLight(x, y, z, key);
+          }
+        });
+      } else if (current === types.light) {
+        this.removeLight(x, y, z);
       }
-      if (type === types.light) {
+      if (isTransparent(type)) {
+        ['light', 'sunlight'].forEach((key) => {
+          const queue = [];
+          if (key === 'sunlight' && y === maxHeight - 1) {
+            voxel.sunlight = maxLight;
+            queue.push({ x, y, z });
+          } else {
+            voxelNeighbors.forEach((offset) => {
+              const ny = y + offset.y;
+              if (ny < 0 || ny >= maxHeight) {
+                return;
+              }
+              const nx = x + offset.x;
+              const nz = z + offset.z;
+              const neighbor = this.get(nx, ny, nz);
+              if (isTransparent(neighbor.type) && neighbor[key] !== 0) {
+                queue.push({ x: nx, y: ny, z: nz });
+              }
+            });
+          }
+          this.floodLight(queue, key);
+        });
+      } else if (type === types.light) {
         voxel.color.r = 0xFF;
         voxel.color.g = 0xFF;
         voxel.color.b = 0xFF;
@@ -408,13 +510,13 @@ class Chunk {
     const { chunkNeighbors, subchunks } = Chunk;
     const { world } = this;
     this.meshes = [];
-    if (this.needsLightPropagation) {
-      this.propagateLight();
+    if (this.needsPropagation) {
+      this.propagate();
     }
     chunkNeighbors.forEach(({ x, z }) => {
       const neighbor = world.getChunk({ x: this.x + x, z: this.z + z });
-      if (neighbor.needsLightPropagation) {
-        neighbor.propagateLight();
+      if (neighbor.needsPropagation) {
+        neighbor.propagate();
       }
     });
     for (let subchunk = 0; subchunk < subchunks; subchunk += 1) {
@@ -644,7 +746,7 @@ class Chunk {
 }
 
 Chunk.size = 16;
-Chunk.subchunks = 3;
+Chunk.subchunks = 4;
 Chunk.maxHeight = Chunk.size * Chunk.subchunks;
 Chunk.maxLight = 15;
 Chunk.types = {
@@ -652,6 +754,7 @@ Chunk.types = {
   block: 0x01,
   glass: 0x02,
   light: 0x03,
+  sapling: 0x04,
 };
 Chunk.top = { type: Chunk.types.air, light: 0, sunlight: Chunk.maxLight };
 Chunk.bottom = { type: Chunk.types.block, light: 0, sunlight: 0 };

@@ -6,12 +6,12 @@ const Chunk = require('./chunk.js');
 const computeColor = (noise, x, y, z) => {
   const { maxHeight } = Chunk;
   const hsl = {
-    h: Math.abs(noise.perlin3(z / 128, y / 64, x / 128)) * 360,
-    s: (
-      1 - Math.abs(noise.simplex3(x / 64, y / 32, z / 64))
-    ) * (1 - (y / maxHeight)) * 80,
+    h: Math.abs(noise.GetPerlin(x, y * 2, z)) * 360,
+    s: 30 + (
+      Math.abs(noise.GetSimplex(x * 2, y, z * 2))
+    ) * (1 - (y / maxHeight)) * 60,
     l: 30 + (
-      Math.abs(noise.perlin3(x / 256, y / 64, z / 256))
+      Math.abs(noise.GetPerlin(x, y * 2, z))
     ) * 60,
   };
   const color = hsl2Rgb(hsl);
@@ -24,42 +24,69 @@ const computeColor = (noise, x, y, z) => {
   return color;
 };
 
+const treeSaplings = ({ noise, from, to }) => (x, y, z) => {
+  if (
+    y < from
+    || y > to
+    || (Math.abs(noise.GetPerlin(x / 4, y / 4, z / 4))) > 0.1
+    || (Math.abs(noise.GetSimplex(z * 4, y * 4, x * 4))) > 0.005
+  ) {
+    return false;
+  }
+  const n = Math.abs(noise.GetSimplex(z / 8, x / 8));
+  const height = 5 + Math.floor(Math.abs(noise.GetWhiteNoise(x / 2, z / 2)) * 16);
+  const hue = Math.floor(n * 0x100);
+  const radius = 7 + Math.floor(n * height * 0.5);
+  return {
+    r: height,
+    g: hue,
+    b: radius,
+  };
+};
+
 module.exports = {
   default(noise) {
-    const { maxHeight, types } = Chunk;
-    const waterLevel = 6;
-    return (x, y, z) => {
-      const isBlock = y <= Math.abs(
-        (noise.perlin2(z / 1024, x / 1024) * 0.3)
-        + (noise.simplex2(x / 512, z / 512) * 0.3)
-        + (noise.perlin3(z / 32, y / 24, x / 32) * 0.3)
-      ) * maxHeight * 2;
-      const voxel = {
-        type: types.air,
-        color: { r: 0, g: 0, b: 0 },
-      };
-      if (isBlock || y <= waterLevel) {
-        voxel.type = isBlock ? types.block : types.glass;
-        voxel.color = computeColor(noise, x, y, z);
-        if (!isBlock) {
-          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
-          voxel.color.r = avg;
-          voxel.color.g = avg;
-          voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
+    const { maxHeight, size, types } = Chunk;
+    const waterLevel = 8;
+    return {
+      noise,
+      saplings: treeSaplings({ noise, from: waterLevel + 3, to: waterLevel + size }),
+      terrain: (x, y, z) => {
+        const isBlock = y <= (
+          Math.abs(noise.GetSimplexFractal(x / 1.5, y, z / 1.5))
+          * maxHeight
+        );
+        const voxel = {
+          type: types.air,
+          color: { r: 0, g: 0, b: 0 },
+        };
+        if (isBlock || y <= waterLevel) {
+          voxel.type = isBlock ? types.block : types.glass;
+          voxel.color = computeColor(noise, x, y, z);
+          if (!isBlock) {
+            const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
+            voxel.color.r = avg;
+            voxel.color.g = avg;
+            voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
+          }
         }
-      }
-      return voxel;
+        return voxel;
+      },
     };
   },
   flat(noise) {
     const { types } = Chunk;
     const worldHeight = 3;
-    return (x, y, z) => {
-      const isBlock = y <= worldHeight;
-      return {
-        type: isBlock ? types.block : types.air,
-        color: isBlock ? computeColor(noise, x, y, z) : { r: 0, g: 0, b: 0 },
-      };
+    return {
+      noise,
+      saplings: treeSaplings({ noise, from: worldHeight + 1, to: worldHeight + 1 }),
+      terrain: (x, y, z) => {
+        const isBlock = y <= worldHeight;
+        return {
+          type: isBlock ? types.block : types.air,
+          color: isBlock ? computeColor(noise, x, y, z) : { r: 0, g: 0, b: 0 },
+        };
+      },
     };
   },
   heightmap(noise) {
@@ -67,7 +94,7 @@ module.exports = {
       console.error('Must provide a HEIGHTMAP if you want to use the heightmap generator.\n');
       process.exit(1);
     }
-    const { maxHeight, types } = Chunk;
+    const { maxHeight, size, types } = Chunk;
     const waterLevel = 6;
     const heightmap = PNG.sync.read(fs.readFileSync(process.env.HEIGHTMAP));
     const offset = {
@@ -75,71 +102,33 @@ module.exports = {
       z: Math.floor(heightmap.height * 0.5),
     };
     const scale = maxHeight / 0xFF;
-    return (x, y, z) => {
-      const hx = offset.x + x;
-      const hz = offset.z + z;
-      let height = 0;
-      if (hx >= 0 && hx < heightmap.width && hz >= 0 && hz < heightmap.height) {
-        height = Math.floor(heightmap.data[((heightmap.width * hz) + hx) * 4] * scale);
-      }
-      const isBlock = y <= height;
-      const voxel = {
-        type: types.air,
-        color: { r: 0, g: 0, b: 0 },
-      };
-      if (isBlock || y <= waterLevel) {
-        voxel.type = isBlock ? types.block : types.glass;
-        voxel.color = computeColor(noise, x, y, z);
-        if (!isBlock) {
-          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
-          voxel.color.r = avg;
-          voxel.color.g = avg;
-          voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
+    return {
+      noise,
+      saplings: treeSaplings({ noise, from: waterLevel + 3, to: maxHeight - size }),
+      terrain: (x, y, z) => {
+        const hx = offset.x + x;
+        const hz = offset.z + z;
+        let height = 0;
+        if (hx >= 0 && hx < heightmap.width && hz >= 0 && hz < heightmap.height) {
+          height = Math.floor(heightmap.data[((heightmap.width * hz) + hx) * 4] * scale);
         }
-      }
-      return voxel;
-    };
-  },
-  legacy(noise) {
-    const { maxHeight, types } = Chunk;
-    const waterLevel = 10;
-    return (x, y, z) => {
-      const isBlock = y <= Math.max((
-        Math.abs(
-          (noise.simplex2(x / 1024, z / 1024) * 0.6)
-          + (noise.perlin2(x / 512, z / 512) * 0.2)
-          + (noise.perlin3(x / 32, y / 16, z / 32) * 0.2)
-        ) * 120
-      ) - 8, 0);
-      const voxel = {
-        type: types.air,
-        color: { r: 0, g: 0, b: 0 },
-      };
-      if (isBlock || y <= waterLevel) {
-        voxel.type = isBlock ? types.block : types.glass;
-        const hsl = {
-          h: Math.abs(noise.perlin3(x / 4096, y / 128, z / 4096)) * 360,
-          s: 60 * (1 - (y / maxHeight)),
-          l: 33,
+        const isBlock = y <= height;
+        const voxel = {
+          type: types.air,
+          color: { r: 0, g: 0, b: 0 },
         };
-        if (y <= waterLevel + 2) {
-          hsl.l -= (1 - (y / (waterLevel + 2))) * 33;
+        if (isBlock || y <= waterLevel) {
+          voxel.type = isBlock ? types.block : types.glass;
+          voxel.color = computeColor(noise, x, y, z);
+          if (!isBlock) {
+            const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
+            voxel.color.r = avg;
+            voxel.color.g = avg;
+            voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
+          }
         }
-        voxel.color = hsl2Rgb(hsl);
-        voxel.color.r += (Math.random() * 15) - 7.5;
-        voxel.color.r = Math.min(Math.max(voxel.color.r, 0), 0xFF);
-        voxel.color.g += (Math.random() * 15) - 7.5;
-        voxel.color.g = Math.min(Math.max(voxel.color.g, 0), 0xFF);
-        voxel.color.b += (Math.random() * 15) - 7.5;
-        voxel.color.b = Math.min(Math.max(voxel.color.b, 0), 0xFF);
-        if (!isBlock) {
-          const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
-          voxel.color.r = avg;
-          voxel.color.g = avg;
-          voxel.color.b = Math.min(Math.floor(avg * 1.5), 0xFF);
-        }
-      }
-      return voxel;
+        return voxel;
+      },
     };
   },
 };

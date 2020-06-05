@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Noise } = require('noisejs');
+const fastnoise = require('fastnoisejs');
 const Chunk = require('./chunk');
 const Generators = require('./generators');
 const Room = require('./room');
@@ -24,11 +24,10 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.storage = storage;
-    const noise = new Noise();
-    noise.seed(this.seed);
+    const noise = fastnoise.Create(this.seed);
     this.generator = Generators[generator](noise);
     this.spawnOffset = generator === 'default' ? (
-      Math.floor(Math.abs(noise.simplex2(this.seed, this.seed)) * 100) - 50
+      Math.floor(noise.GetWhiteNoise(this.seed, this.seed) * 50)
     ) : (
       0
     );
@@ -226,6 +225,6 @@ class World extends Room {
   }
 }
 
-World.maxLoadedChunks = 1024;
+World.maxLoadedChunks = 512;
 
 module.exports = World;
