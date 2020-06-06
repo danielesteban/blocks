@@ -47,14 +47,15 @@ class Ambient {
   }
 
   updateEffect({ name, enabled }) {
-    const { effects, gain, sounds } = this;
+    const { gain } = Ambient;
+    const { effects, sounds } = this;
     effects[name] = enabled;
     if (!sounds) {
       return;
     }
     const effect = sounds.find(({ effect }) => (effect === name));
     if (effect) {
-      effect.audio.setVolume(enabled ? gain * 0.5 : 0);
+      effect.audio.setVolume(enabled ? (gain * 0.5) : 0);
     }
   }
 }
