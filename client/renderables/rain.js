@@ -2,7 +2,7 @@ import {
   BoxGeometry,
   BufferGeometry,
   BufferGeometryUtils,
-  StreamDrawUsage,
+  DynamicDrawUsage,
   InstancedBufferGeometry,
   InstancedBufferAttribute,
   Mesh,
@@ -66,7 +66,7 @@ class Rain extends Mesh {
     const geometry = new InstancedBufferGeometry();
     geometry.setIndex(Rain.geometry.index);
     geometry.setAttribute('position', Rain.geometry.position);
-    geometry.setAttribute('offset', (new InstancedBufferAttribute(new Float32Array(Rain.numDrops * 3), 3).setUsage(StreamDrawUsage)));
+    geometry.setAttribute('offset', (new InstancedBufferAttribute(new Float32Array(Rain.numDrops * 3), 3).setUsage(DynamicDrawUsage)));
     super(
       geometry,
       Rain.material
