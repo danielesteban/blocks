@@ -26,6 +26,29 @@ canvas {
   color: inherit;
 }
 
+#github > svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+#github > svg .octo-arm {
+  transform-origin: 130px 106px;
+}
+
+@keyframes octocat-wave {
+  0% {transform: rotate(0deg)}
+  20% {transform: rotate(-25deg)}
+  40% {transform: rotate(10deg)}
+  60% {transform: rotate(-25deg)}
+  80% {transform: rotate(10deg)}
+  100% {transform: rotate(0deg)}
+}
+
+#github > svg:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
+
 #info {
   right: 1rem;
   text-align: right;

@@ -15,7 +15,7 @@ import Pointer from '../renderables/pointer.js';
 // Player controller
 
 class Player extends Object3D {
-  constructor({ camera, xr }) {
+  constructor({ camera, mount, xr }) {
     super();
     this.add(camera);
     this.auxMatrixA = new Matrix4();
@@ -26,13 +26,13 @@ class Player extends Object3D {
     this.direction = new Vector3();
     this.head = new AudioListener();
     const onFirstInteraction = () => {
-      window.removeEventListener('mousedown', onFirstInteraction);
+      document.removeEventListener('mousedown', onFirstInteraction);
       const { context } = this.head;
       if (context.state === 'suspended') {
         context.resume();
       }
     };
-    window.addEventListener('mousedown', onFirstInteraction);
+    document.addEventListener('mousedown', onFirstInteraction);
     this.controllers = [...Array(2)].map((v, i) => {
       const controller = xr.getController(i);
       this.add(controller);
@@ -82,7 +82,7 @@ class Player extends Object3D {
       });
       return controller;
     });
-    this.desktopControls = new DesktopControls({ xr });
+    this.desktopControls = new DesktopControls({ mount, xr });
     {
       let skin = localStorage.getItem('blocks::skin');
       if (!skin) {

@@ -6,13 +6,18 @@ import Player from './player.js';
 // A multiplayer VR scene base class
 
 class Scene extends ThreeScene {
-  constructor({ camera, debug, renderer: { xr } }) {
+  constructor({
+    camera,
+    debug,
+    mount,
+    renderer: { xr },
+  }) {
     super();
 
     this.locomotion = Scene.locomotions.teleport;
     this.debug = debug;
 
-    this.player = new Player({ camera, xr });
+    this.player = new Player({ camera, mount, xr });
     this.player.controllers.forEach(({ marker }) => (
       this.add(marker)
     ));

@@ -3,7 +3,7 @@ import { Euler, Vector2, Vector3 } from './three.js';
 // Player desktop controls
 
 class DesktopControls {
-  constructor({ xr }) {
+  constructor({ mount, xr }) {
     this.aux = {
       euler: new Euler(0, 0, 0, 'YXZ'),
       direction: new Vector3(),
@@ -13,6 +13,7 @@ class DesktopControls {
     };
     this.keyboard = new Vector3(0, 0, 0);
     this.pointer = new Vector2(0, 0);
+    this.mount = mount;
     this.xr = xr;
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
@@ -21,16 +22,16 @@ class DesktopControls {
     this.onPointerLock = this.onPointerLock.bind(this);
     document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('keyup', this.onKeyUp);
-    document.addEventListener('mousedown', this.onMouseDown);
+    mount.addEventListener('mousedown', this.onMouseDown);
     document.addEventListener('mousemove', this.onMouseMove);
     document.addEventListener('pointerlockchange', this.onPointerLock);
   }
 
   dispose() {
-    const { isLocked } = this;
+    const { isLocked, mount } = this;
     document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('keyup', this.onKeyUp);
-    document.removeEventListener('mousedown', this.onMouseDown);
+    mount.removeEventListener('mousedown', this.onMouseDown);
     document.removeEventListener('mousemove', this.onMouseMove);
     document.removeEventListener('pointerlockchange', this.onPointerLock);
     if (isLocked) {
