@@ -130,16 +130,10 @@ class Rain extends Mesh {
     offsets.needsUpdate = true;
   }
 
-  setState(enabled) {
+  reset() {
     const { numDrops } = Rain;
-    if (this.visible === enabled) {
-      return;
-    }
-    this.visible = enabled;
-    if (enabled) {
-      for (let i = 0; i < numDrops; i += 1) {
-        this.resetDrop(i);
-      }
+    for (let i = 0; i < numDrops; i += 1) {
+      this.resetDrop(i);
     }
   }
 }

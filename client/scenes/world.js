@@ -4,6 +4,7 @@ import {
   Vector2,
   Vector3,
 } from '../core/three.js';
+import Ambient from '../core/ambient.js';
 import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
@@ -26,6 +27,7 @@ class World extends Scene {
       voxels: new Map(),
     };
 
+    this.ambient = new Ambient({ listener: this.player.head });
     this.background = new Color();
     this.fog = new FogExp2(0, 0.02);
     this.clouds = new Clouds({ anchor: this.player });
@@ -55,6 +57,7 @@ class World extends Scene {
       scale,
     } = World;
     const {
+      ambient,
       chunks,
       clouds,
       debug,
@@ -172,6 +175,7 @@ class World extends Scene {
       this.updateTranslocables();
     }
 
+    ambient.updateAltitude(player.position.y);
     this.updateTime(renderer.animation.time);
     clouds.onAnimationTick(renderer.animation);
     rain.onAnimationTick(renderer.animation);
@@ -280,6 +284,7 @@ class World extends Scene {
   updateTime(time) {
     const { dayDuration, rainInterval, rainDuration } = World;
     const {
+      ambient,
       background,
       fog,
       rain,
@@ -293,8 +298,12 @@ class World extends Scene {
     Clouds.updateMaterial(intensity);
     Sun.updateMaterial({ intensity, time: dayTime });
     Voxels.updateMaterial(intensity);
-    const rainTime = (time % rainInterval) / rainDuration;
-    rain.setState(rainTime < 1);
+    const isRaining = (time % rainInterval) < rainDuration;
+    if (rain.visible !== isRaining) {
+      rain.reset();
+      rain.visible = isRaining;
+      ambient.updateEffect({ name: 'rain', enabled: isRaining });
+    }
   }
 
   updateTranslocables() {
