@@ -99,7 +99,7 @@ class Sun extends Mesh {
     );
     this.anchor = anchor;
     this.matrixAutoUpdate = false;
-    this.scale.set(1, 6, 6);
+    this.scale.set(1, 8, 8);
     this.renderOrder = -1;
   }
 
