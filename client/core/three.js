@@ -1,4 +1,4 @@
 /* eslint-disable import/no-unresolved */
-export * from 'https://unpkg.com/three@0.117.1/build/three.module.js';
-export { BufferGeometryUtils } from 'https://unpkg.com/three@0.117.1/examples/jsm/utils/BufferGeometryUtils.js';
-export { SimplexNoise } from 'https://unpkg.com/three@0.117.1/examples/jsm/math/SimplexNoise.js';
+export * from 'https://cdn.jsdelivr.net/npm/three@0.117.1/build/three.module.js';
+export { BufferGeometryUtils } from 'https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/utils/BufferGeometryUtils.js';
+export { SimplexNoise } from 'https://cdn.jsdelivr.net/npm/three@0.117.1/examples/jsm/math/SimplexNoise.js';
