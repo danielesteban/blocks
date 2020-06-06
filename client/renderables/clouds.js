@@ -140,7 +140,7 @@ class Clouds extends Object3D {
           geometry,
           Clouds.material
         );
-        cloud.position.set(gx * 20, Math.random(), gy * 20);
+        cloud.position.set(gx * 20, Math.random() * depth * 2, gy * 20);
         cloud.speed = 0.025 + Math.random() * 0.05;
         cloud.matrixAutoUpdate = false;
         this.add(cloud);

@@ -5,11 +5,12 @@ import {
   Vector3,
 } from '../core/three.js';
 import Ambient from '../core/ambient.js';
-import Scene from '../core/scene.js';
+import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu.js';
 import Rain from '../renderables/rain.js';
+import Scene from '../core/scene.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
@@ -29,6 +30,8 @@ class World extends Scene {
 
     this.ambient = new Ambient({ listener: this.player.head });
     this.background = new Color();
+    this.birds = new Birds({ anchor: this.player });
+    this.add(this.birds);
     this.fog = new FogExp2(0, 0.02);
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
@@ -58,6 +61,7 @@ class World extends Scene {
     } = World;
     const {
       ambient,
+      birds,
       chunks,
       clouds,
       debug,
@@ -175,8 +179,9 @@ class World extends Scene {
       this.updateTranslocables();
     }
 
-    ambient.updateAltitude(player.position.y);
     this.updateTime(renderer.animation.time);
+    ambient.updateAltitude(player.position.y);
+    birds.onAnimationTick(renderer.animation);
     clouds.onAnimationTick(renderer.animation);
     rain.onAnimationTick(renderer.animation);
     sun.onAnimationTick(renderer.animation);
@@ -295,6 +300,7 @@ class World extends Scene {
     const intensity = (dayTime > 0.5 ? (1 - dayTime) : dayTime) * 2;
     background.setHSL(0.55, 0.4, Math.max(intensity, 0.1) * 0.5);
     fog.color.copy(background);
+    Birds.updateMaterial(intensity);
     Clouds.updateMaterial(intensity);
     Sun.updateMaterial({ intensity, time: dayTime });
     Voxels.updateMaterial(intensity);

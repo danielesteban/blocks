@@ -13,12 +13,16 @@ import {
 
 class Rain extends Mesh {
   static setupGeometry() {
-    const geometry = (new BufferGeometry()).fromGeometry(
+    let geometry = (new BufferGeometry()).fromGeometry(
       (new BoxGeometry(0.01, 0.5, 0.01)).translate(0, 0.25, 0)
     );
     delete geometry.attributes.normal;
     delete geometry.attributes.uv;
-    Rain.geometry = BufferGeometryUtils.mergeVertices(geometry);
+    geometry = BufferGeometryUtils.mergeVertices(geometry);
+    Rain.geometry = {
+      index: geometry.getIndex(),
+      position: geometry.getAttribute('position'),
+    };
   }
 
   static setupMaterial() {
@@ -55,8 +59,8 @@ class Rain extends Mesh {
       Rain.setupMaterial();
     }
     const geometry = new InstancedBufferGeometry();
-    geometry.setIndex(Rain.geometry.getIndex());
-    geometry.addAttribute('position', Rain.geometry.getAttribute('position'));
+    geometry.setIndex(Rain.geometry.index);
+    geometry.addAttribute('position', Rain.geometry.position);
     geometry.addAttribute('offset', (new InstancedBufferAttribute(new Float32Array(Rain.numDrops * 3), 3).setDynamic(true)));
     super(
       geometry,
@@ -90,7 +94,6 @@ class Rain extends Mesh {
       if (y > height) {
         offsets.setY(i, y);
       } else {
-        offsets.setY(i, height);
         this.resetDrop(i);
       }
     }
