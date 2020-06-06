@@ -29,7 +29,6 @@ class Rain extends Mesh {
     Rain.material = new ShaderMaterial({
       name: 'rain-material',
       fog: true,
-      transparent: true,
       fragmentShader: ShaderLib.basic.fragmentShader,
       vertexShader: ShaderLib.basic.vertexShader
         .replace(
@@ -47,8 +46,13 @@ class Rain extends Mesh {
         ),
       uniforms: UniformsUtils.clone(ShaderLib.basic.uniforms),
     });
-    Rain.material.uniforms.diffuse.value.setHex(0xAAAADD).convertGammaToLinear(2.2);
-    Rain.material.uniforms.opacity.value = 0.8;
+  }
+
+  static updateMaterial(intensity) {
+    if (!Rain.material) {
+      Rain.setupMaterial();
+    }
+    Rain.material.uniforms.diffuse.value.setHSL(0.65, 0.4, intensity);
   }
 
   constructor({ anchor, heightmaps }) {

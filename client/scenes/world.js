@@ -302,6 +302,7 @@ class World extends Scene {
     fog.color.copy(background);
     Birds.updateMaterial(intensity);
     Clouds.updateMaterial(intensity);
+    Rain.updateMaterial(intensity);
     Sun.updateMaterial({ intensity, time: dayTime });
     Voxels.updateMaterial(intensity);
     const isRaining = (time % rainInterval) < rainDuration;
