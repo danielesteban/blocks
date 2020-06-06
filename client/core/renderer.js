@@ -1,4 +1,5 @@
 import {
+  ACESFilmicToneMapping,
   Clock,
   PerspectiveCamera,
   ShaderChunk,
@@ -33,7 +34,7 @@ class Renderer {
       });
     }
     this.renderer.outputEncoding = sRGBEncoding;
-    this.renderer.gammaFactor = 2.2;
+    this.renderer.toneMapping = ACESFilmicToneMapping;
     // this.renderer.setPixelRatio(window.devicePixelRatio || 1);
     this.renderer.setAnimationLoop(this.onAnimationTick.bind(this));
     this.mount.appendChild(this.renderer.domElement);
