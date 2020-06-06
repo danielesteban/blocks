@@ -8,6 +8,7 @@ import Scene from '../core/scene.js';
 import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu.js';
+import Rain from '../renderables/rain.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
@@ -15,12 +16,25 @@ class World extends Scene {
   constructor(renderer) {
     super(renderer);
 
+    this.chunks = {
+      aux: new Vector3(),
+      heightmaps: new Map(),
+      loaded: new Map(),
+      requested: new Map(),
+      player: new Vector3(),
+      pool: [...Array(World.renderGrid.length * World.subchunks)].map(() => new Voxels()),
+      voxels: new Map(),
+    };
+
     this.background = new Color();
     this.fog = new FogExp2(0, 0.02);
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
+    this.rain = new Rain({ anchor: this.player, heightmaps: this.chunks.heightmaps });
+    this.add(this.rain);
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
+    this.timeOffset = Date.now() / 1000;
 
     this.map = new MapUI();
     this.menu = new Menu({ world: this });
@@ -31,16 +45,6 @@ class World extends Scene {
       ...attachments.left,
       ...attachments.right
     );
-
-    this.chunks = {
-      aux: new Vector3(),
-      loaded: new Map(),
-      requested: new Map(),
-      player: new Vector3(),
-      pool: [...Array(World.renderGrid.length * World.subchunks)].map(() => new Voxels()),
-      voxels: new Map(),
-    };
-    this.timeOffset = Date.now() / 1000;
   }
 
   onBeforeRender(renderer, scene, camera) {
@@ -57,6 +61,7 @@ class World extends Scene {
       map,
       menu,
       player,
+      rain,
       server,
       sun,
       translocables,
@@ -169,6 +174,7 @@ class World extends Scene {
 
     this.updateTime(renderer.animation.time);
     clouds.onAnimationTick(renderer.animation);
+    rain.onAnimationTick(renderer.animation);
     sun.onAnimationTick(renderer.animation);
   }
 
@@ -216,6 +222,8 @@ class World extends Scene {
       if (!chunks.loaded.has(key) && !chunks.requested.has(key)) {
         return;
       }
+      const heightmap = new Uint8Array(256);
+      chunks.heightmaps.set(key, heightmap);
       meshes.forEach(([opaque, transparent], subchunk) => {
         const key = `${chunk.x}:${chunk.z}:${subchunk}`;
         let mesh = chunks.voxels.get(key);
@@ -229,6 +237,7 @@ class World extends Scene {
         }
         mesh.update({
           chunk: { ...chunk, y: subchunk },
+          heightmap,
           opaque,
           transparent,
         });
@@ -254,28 +263,38 @@ class World extends Scene {
 
   unloadChunk(chunk) {
     const { chunks } = this;
-    chunks.loaded.delete(`${chunk.x}:${chunk.z}`);
+    const key = `${chunk.x}:${chunk.z}`;
+    chunks.heightmaps.delete(key);
+    chunks.loaded.delete(key);
     for (let subchunk = 0; subchunk < World.subchunks; subchunk += 1) {
-      const key = `${chunk.x}:${chunk.z}:${subchunk}`;
-      const mesh = chunks.voxels.get(key);
+      const subchunkKey = `${key}:${subchunk}`;
+      const mesh = chunks.voxels.get(subchunkKey);
       if (mesh) {
         this.remove(mesh);
-        chunks.voxels.delete(key);
+        chunks.voxels.delete(subchunkKey);
         chunks.pool.push(mesh);
       }
     }
   }
 
   updateTime(time) {
-    const { dayDuration } = World;
-    const { background, fog, timeOffset } = this;
-    time = ((timeOffset + time) % dayDuration) / dayDuration;
-    const intensity = (time > 0.5 ? (1 - time) : time) * 2;
+    const { dayDuration, rainInterval, rainDuration } = World;
+    const {
+      background,
+      fog,
+      rain,
+      timeOffset,
+    } = this;
+    time = timeOffset + time;
+    const dayTime = (time % dayDuration) / dayDuration;
+    const intensity = (dayTime > 0.5 ? (1 - dayTime) : dayTime) * 2;
     background.setHSL(0.55, 0.4, Math.max(intensity, 0.1) * 0.5);
     fog.color.copy(background);
     Clouds.updateMaterial(intensity);
-    Sun.updateMaterial({ intensity, time });
+    Sun.updateMaterial({ intensity, time: dayTime });
     Voxels.updateMaterial(intensity);
+    const rainTime = (time % rainInterval) / rainDuration;
+    rain.setState(rainTime < 1);
   }
 
   updateTranslocables() {
@@ -291,6 +310,8 @@ class World extends Scene {
 }
 
 World.dayDuration = 600;
+World.rainInterval = 1000;
+World.rainDuration = 300;
 World.renderRadius = 10;
 World.renderGrid = (() => {
   const grid = [];

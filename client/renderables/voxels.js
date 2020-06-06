@@ -102,15 +102,16 @@ class Voxels extends Mesh {
 
   update({
     chunk,
+    heightmap,
     opaque,
     transparent,
   }) {
-    const { decodeBase64 } = Voxels;
+    const { decodeBase64, updateHeightmap } = Voxels;
 
     this.chunk = chunk;
     this.position
       .set(chunk.x, 0, chunk.z)
-      .multiply({ x: 8, y: 8, z: 8 });
+      .multiplyScalar(8);
     this.scale.set(0.5, 0.5, 0.5);
     this.updateMatrix();
 
@@ -158,11 +159,37 @@ class Voxels extends Mesh {
       geometry.deleteAttribute('normal');
       geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
+      updateHeightmap({ geometry, heightmap });
 
       mesh.visible = true;
     });
 
     this.updateMatrixWorld();
+  }
+
+  static updateHeightmap({ geometry, heightmap }) {
+    const aux = { x: 0, y: 0, z: 0 };
+    const normal = geometry.getAttribute('normal');
+    const position = geometry.getAttribute('position');
+    const { count } = normal;
+    for (let i = 0; i < count; i += 4) {
+      if (
+        normal.getX(i) === 0
+        && normal.getY(i) === 1
+        && normal.getZ(i) === 0
+      ) {
+        aux.x = 0xFF;
+        aux.y = 0;
+        aux.z = 0xFF;
+        for (let j = 0; j < 4; j += 1) {
+          aux.x = Math.min(aux.x, position.getX(i + j));
+          aux.y = Math.max(aux.y, position.getY(i + j));
+          aux.z = Math.min(aux.z, position.getZ(i + j));
+        }
+        const index = (aux.x * 16) + aux.z;
+        heightmap[index] = Math.max(heightmap[index], aux.y);
+      }
+    }
   }
 }
 
