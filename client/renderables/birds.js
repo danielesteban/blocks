@@ -104,11 +104,11 @@ class Birds extends InstancedMesh {
       Birds.setupMaterial();
     }
     const geometry = new InstancedBufferGeometry();
-    geometry.addAttribute('position', Birds.geometry.position);
-    geometry.addAttribute('bone', Birds.geometry.bone);
-    geometry.addAttribute('color', Birds.geometry.color);
-    geometry.addAttribute('tint', new InstancedBufferAttribute(new Float32Array(Birds.count * 3), 3));
-    geometry.addAttribute('velocity', new InstancedBufferAttribute(new Float32Array(Birds.count), 1));
+    geometry.setAttribute('position', Birds.geometry.position);
+    geometry.setAttribute('bone', Birds.geometry.bone);
+    geometry.setAttribute('color', Birds.geometry.color);
+    geometry.setAttribute('tint', new InstancedBufferAttribute(new Float32Array(Birds.count * 3), 3));
+    geometry.setAttribute('velocity', new InstancedBufferAttribute(new Float32Array(Birds.count), 1));
     super(
       geometry,
       Birds.material,

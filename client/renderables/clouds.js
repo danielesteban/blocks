@@ -134,8 +134,8 @@ class Clouds extends Object3D {
           }
         }
         geometry.setIndex(new BufferAttribute(new Uint16Array(index), 1));
-        geometry.addAttribute('position', new BufferAttribute(new Float32Array(position), 3));
-        geometry.addAttribute('color', new BufferAttribute(new Float32Array(color), 3));
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array(position), 3));
+        geometry.setAttribute('color', new BufferAttribute(new Float32Array(color), 3));
         const cloud = new Mesh(
           geometry,
           Clouds.material
