@@ -17,7 +17,7 @@ class Clouds extends Object3D {
       vertexColors: VertexColors,
     });
     Clouds.material.defines = {
-      FOG_DENSITY: 0.009,
+      FOG_DENSITY: 0.01,
     };
   }
 
