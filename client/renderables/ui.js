@@ -188,7 +188,7 @@ class UI extends Mesh {
         && pointer.y >= y
         && pointer.y <= y + height
       ) {
-        onPointer({ primary, secondary, target: this });
+        onPointer({ primary, secondary });
         break;
       }
     }

@@ -93,7 +93,7 @@ class World extends Scene {
       ) {
         return;
       }
-      const hit = (player.skinEditor ? (
+      const hit = (player.skinEditor && !menu.picker.isPicking ? (
         raycaster.intersectObject(player.skinEditor.getLayer())
       ) : (
         raycaster.intersectObjects(translocables)
@@ -110,7 +110,7 @@ class World extends Scene {
         const remove = grip || gripUp;
         if (menu.picker.isPicking) {
           point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
-          menu.setColor({ r: point.x, g: point.y, b: point.z });
+          menu.picker.setColor({ r: point.x, g: point.y, b: point.z });
           return;
         }
         if (player.skinEditor) {
@@ -132,7 +132,7 @@ class World extends Scene {
             y: point.y,
             z: point.z,
             color: menu.picker.color.getHex(),
-            type: remove ? 0 : menu.blockType,
+            type: remove ? 0 : menu.options.blockType,
           },
         }));
       }

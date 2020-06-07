@@ -4,7 +4,7 @@ import { Color } from '../../core/three.js';
 
 const PaletteStorageKey = 'blocks::palette';
 
-const ColorPicker = ({ width, height }) => {
+const ColorPicker = ({ menu, width, height }) => {
   const aux = new Color();
   const color = new Color(Math.random() * 0xFFFFFF);
   const area = {
@@ -46,19 +46,20 @@ const ColorPicker = ({ width, height }) => {
     y: palette.y,
     width: palette.size,
     height: palette.size,
-    onPointer: ({ target }) => {
+    onPointer: () => {
       color.setHex(palette.colors[i]);
       area.color.copy(color);
       palette.update();
-      target.setPage(target.page.back);
+      menu.setPage(menu.page.back);
     },
   }));
   const state = {
     color,
-    update: ({ r, g, b }) => {
+    setColor: ({ r, g, b }) => {
       color.setRGB(r, g, b);
       area.color.copy(color);
       palette.update();
+      menu.setPage(menu.page.back);
     },
   };
   const strip = {
@@ -77,9 +78,9 @@ const ColorPicker = ({ width, height }) => {
       state.isPicking = !state.isPicking;
       picker.background = state.isPicking ? '#393' : undefined;
     },
-    onPointer({ target }) {
+    onPointer() {
       picker.toggle();
-      target.draw();
+      menu.draw();
     },
   };
   const graphics = [
@@ -133,8 +134,8 @@ const ColorPicker = ({ width, height }) => {
       width,
       height,
       isVisible: false,
-      onPointer: ({ target }) => {
-        const { context: ctx, page, pointer } = target;
+      onPointer: () => {
+        const { context: ctx, page, pointer } = menu;
         for (let i = 0; i < 2; i += 1) {
           const {
             x,
@@ -156,14 +157,14 @@ const ColorPicker = ({ width, height }) => {
             );
             palette.update();
             if (i === 0) {
-              target.setPage(page.back);
+              menu.setPage(page.back);
             } else {
               area.color.setRGB(
                 imageData[0] / 0xFF,
                 imageData[1] / 0xFF,
                 imageData[2] / 0xFF
               );
-              target.draw();
+              menu.draw();
             }
             break;
           }
