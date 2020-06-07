@@ -107,7 +107,11 @@ class UI extends Mesh {
       textAlign,
       textBaseline,
       isDisabled,
+      isVisible,
     }) => {
+      if (isVisible === false) {
+        return;
+      }
       const button = isDisabled ? styles.button.disabled : styles.button;
       ctx.save();
       ctx.translate(x, y);
@@ -184,7 +188,7 @@ class UI extends Mesh {
         && pointer.y >= y
         && pointer.y <= y + height
       ) {
-        onPointer({ primary, secondary });
+        onPointer({ primary, secondary, target: this });
         break;
       }
     }

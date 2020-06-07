@@ -8,7 +8,7 @@ import Ambient from '../core/ambient.js';
 import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
-import Menu from '../renderables/menu.js';
+import Menu from '../renderables/menu/index.js';
 import Rain from '../renderables/rain.js';
 import Scene from '../core/scene.js';
 import Sun from '../renderables/sun.js';
@@ -106,18 +106,23 @@ class World extends Scene {
         origin: raycaster.ray.origin,
       });
       if (gripUp || triggerUp) {
-        const { point, face: { normal }, uv } = hit;
+        const { point, face, uv } = hit;
         const remove = grip || gripUp;
+        if (menu.picker.isPicking) {
+          point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
+          menu.setColor({ r: point.x, g: point.y, b: point.z });
+          return;
+        }
         if (player.skinEditor) {
           player.skinEditor.updatePixel({
-            color: `#${menu.blockColor.getHexString()}`,
+            color: `#${menu.picker.color.getHexString()}`,
             remove,
             uv,
           });
           return;
         }
         point
-          .addScaledVector(normal, (remove ? -1 : 1) * 0.25)
+          .addScaledVector(face.normal, (remove ? -1 : 1) * 0.25)
           .divideScalar(scale)
           .floor();
         server.send(JSON.stringify({
@@ -126,7 +131,7 @@ class World extends Scene {
             x: point.x,
             y: point.y,
             z: point.z,
-            color: menu.blockColor.getHex(),
+            color: menu.picker.color.getHex(),
             type: remove ? 0 : menu.blockType,
           },
         }));
