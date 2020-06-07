@@ -35,7 +35,7 @@ class UI extends Mesh {
       textBaseline: 'middle',
       ...styles,
       button: {
-        background: '#111',
+        background: '#333',
         border: '#000',
         color: '#fff',
         ...(styles.button || {}),
