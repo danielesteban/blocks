@@ -1,6 +1,11 @@
 // Options UI
 
-const Options = ({ menu, pages }) => {
+const Options = ({
+  menu,
+  pages,
+  width,
+  height,
+}) => {
   const state = { blockType: 0x01 };
   const setBlock = (type) => {
     const [block, glass, light] = buttons; // eslint-disable-line no-use-before-define
@@ -34,76 +39,76 @@ const Options = ({ menu, pages }) => {
     {
       background: '#393',
       label: 'Block',
-      x: 8,
-      y: 8,
-      width: 32,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.0625,
+      width: width * 0.25,
+      height: height * 0.1875,
       onPointer: () => setBlock(0x01),
     },
     {
       label: 'Glass',
-      x: 48,
-      y: 8,
-      width: 32,
-      height: 24,
+      x: width * 0.375,
+      y: height * 0.0625,
+      width: width * 0.25,
+      height: height * 0.1875,
       onPointer: () => setBlock(0x02),
     },
     {
       label: 'Light',
-      x: 88,
-      y: 8,
-      width: 32,
-      height: 24,
+      x: width * 0.6875,
+      y: height * 0.0625,
+      width: width * 0.25,
+      height: height * 0.1875,
       onPointer: () => setBlock(0x03),
     },
     {
-      x: 8,
-      y: 40,
-      width: 24,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.3125,
+      width: width * 0.1875,
+      height: width * 0.1875,
       onPointer: () => menu.setPage(pages.picker),
     },
     {
       label: 'Color Picker',
-      x: 32,
-      y: 40,
-      width: 88,
-      height: 24,
+      x: width * 0.25,
+      y: height * 0.3125,
+      width: width * 0.6875,
+      height: height * 0.1875,
       onPointer: () => menu.setPage(pages.picker),
     },
     {
       background: '#393',
       label: 'Teleport',
-      x: 8,
-      y: 72,
-      width: 52,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.5625,
+      width: width * 0.40625,
+      height: height * 0.1875,
       onPointer: () => setLocomotion('teleport'),
     },
     {
       label: 'Fly',
-      x: 68,
-      y: 72,
-      width: 52,
-      height: 24,
+      x: width * 0.53125,
+      y: height * 0.5625,
+      width: width * 0.40625,
+      height: height * 0.1875,
       onPointer: () => setLocomotion('fly'),
     },
     {
       label: 'Edit Avatar',
-      x: 16,
-      y: 104,
-      width: 96,
-      height: 16,
+      x: width * 0.125,
+      y: height * 0.8125,
+      width: width * 0.75,
+      height: height * 0.125,
       onPointer: () => menu.skin.setLayer('transparent'),
     },
   ];
   const graphics = [
     ({ ctx }) => {
-      ctx.translate(8, 40);
+      ctx.translate(width * 0.0625, height * 0.3125);
       ctx.fillStyle = `#${menu.picker.color.getHexString()}`;
       ctx.strokeStyle = '#000';
       ctx.beginPath();
-      ctx.rect(0, 0, 24, 24);
+      ctx.rect(0, 0, width * 0.1875, width * 0.1875);
       ctx.fill();
       ctx.stroke();
     },

@@ -5,7 +5,6 @@ import {
   BoxGeometry,
   BufferGeometry,
   BufferGeometryUtils,
-  Color,
   Euler,
   Geometry,
   LoopOnce,
@@ -150,7 +149,7 @@ class Hand extends SkinnedMesh {
 
   static setupMaterial() {
     Hand.material = new MeshBasicMaterial({
-      color: (new Color(0xffe0bd)).convertGammaToLinear(2.2),
+      color: 0x0A0A0A,
       skinning: true,
       vertexColors: VertexColors,
     });

@@ -33,8 +33,18 @@ class Menu extends Panel {
       width,
       height,
     });
-    const options = Options({ menu: this, pages });
-    const skin = Skin({ menu: this, pages });
+    const options = Options({
+      menu: this,
+      pages,
+      width,
+      height,
+    });
+    const skin = Skin({
+      menu: this,
+      pages,
+      width,
+      height,
+    });
     this.pages.push(
       options.page,
       picker.page,
@@ -44,7 +54,6 @@ class Menu extends Panel {
     this.picker = picker.state;
     this.skin = skin.state;
     this.world = world;
-    this.setPage(2);
   }
 }
 
