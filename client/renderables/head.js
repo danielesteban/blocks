@@ -5,6 +5,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   NearestFilter,
+  sRGBEncoding,
   Texture,
 } from '../core/three.js';
 
@@ -117,6 +118,7 @@ class Head extends Mesh {
       } else {
         opaque = new Texture(image);
       }
+      opaque.encoding = sRGBEncoding;
       opaque.needsUpdate = true;
       opaque.magFilter = NearestFilter;
       opaque.minFilter = NearestFilter;

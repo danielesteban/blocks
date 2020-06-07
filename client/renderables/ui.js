@@ -4,6 +4,7 @@ import {
   MeshBasicMaterial,
   NearestFilter,
   PlaneBufferGeometry,
+  sRGBEncoding,
   Vector3,
 } from '../core/three.js';
 
@@ -50,6 +51,7 @@ class UI extends Mesh {
     renderer.width = textureWidth;
     renderer.height = textureHeight;
     const texture = new CanvasTexture(renderer);
+    texture.encoding = sRGBEncoding;
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
     super(
