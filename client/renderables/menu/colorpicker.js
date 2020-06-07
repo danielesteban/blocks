@@ -4,7 +4,12 @@ import { Color } from '../../core/three.js';
 
 const PaletteStorageKey = 'blocks::palette';
 
-const ColorPicker = ({ menu, width, height }) => {
+const ColorPicker = ({
+  menu,
+  pages,
+  width,
+  height,
+}) => {
   const aux = new Color();
   const color = new Color(Math.random() * 0xFFFFFF);
   const area = {
@@ -59,7 +64,9 @@ const ColorPicker = ({ menu, width, height }) => {
       color.setRGB(r, g, b);
       area.color.copy(color);
       palette.update();
-      menu.setPage(menu.page.back);
+      if (menu.page.id === pages.picker) {
+        menu.setPage(menu.page.back);
+      }
     },
   };
   const strip = {

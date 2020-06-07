@@ -27,7 +27,12 @@ class Menu extends Panel {
         },
       ],
     });
-    const picker = ColorPicker({ menu: this, width, height });
+    const picker = ColorPicker({
+      menu: this,
+      pages,
+      width,
+      height,
+    });
     const options = Options({ menu: this, pages });
     const skin = Skin({ menu: this, pages });
     this.pages.push(
@@ -39,6 +44,7 @@ class Menu extends Panel {
     this.picker = picker.state;
     this.skin = skin.state;
     this.world = world;
+    this.setPage(2);
   }
 }
 

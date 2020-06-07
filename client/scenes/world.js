@@ -79,6 +79,8 @@ class World extends Scene {
         buttons: {
           grip,
           gripUp,
+          primary,
+          primaryUp,
           trigger,
           triggerUp,
         },
@@ -88,12 +90,20 @@ class World extends Scene {
       } = controller;
       if (
         !hand
-        || !(grip || gripUp || trigger || triggerUp)
         || pointer.visible
+        || !(
+          grip
+          || gripUp
+          || primary
+          || primaryUp
+          || trigger
+          || triggerUp
+        )
       ) {
         return;
       }
-      const hit = (player.skinEditor && !menu.picker.isPicking ? (
+      const isPicking = menu.picker.isPicking || primary || primaryUp;
+      const hit = (!isPicking && player.skinEditor ? (
         raycaster.intersectObject(player.skinEditor.getLayer())
       ) : (
         raycaster.intersectObjects(translocables)
@@ -105,10 +115,10 @@ class World extends Scene {
         distance: hit.distance,
         origin: raycaster.ray.origin,
       });
-      if (gripUp || triggerUp) {
+      if (gripUp || primaryUp || triggerUp) {
         const { point, face, uv } = hit;
         const remove = grip || gripUp;
-        if (menu.picker.isPicking) {
+        if (isPicking) {
           point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
           menu.picker.setColor({ r: point.x, g: point.y, b: point.z });
           return;
