@@ -127,10 +127,9 @@ class Player extends Object3D {
         ['backwards', gamepad.axes[3] >= 0.5],
         ['leftwards', gamepad.axes[2] <= -0.5],
         ['rightwards', gamepad.axes[2] >= 0.5],
-        // ['trigger', gamepad.buttons[0] && gamepad.buttons[0].pressed],
-        ['primary', gamepad.buttons[0] && gamepad.buttons[0].pressed],
+        ['trigger', gamepad.buttons[0] && gamepad.buttons[0].pressed],
         ['grip', gamepad.buttons[1] && gamepad.buttons[1].pressed],
-        // ['primary', gamepad.buttons[4] && gamepad.buttons[4].pressed],
+        ['primary', gamepad.buttons[4] && gamepad.buttons[4].pressed],
         ['secondary', gamepad.buttons[5] && gamepad.buttons[5].pressed],
       ].forEach(([key, value]) => {
         buttons[`${key}Down`] = value && buttons[key] !== value;

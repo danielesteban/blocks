@@ -35,12 +35,12 @@ class Panel extends UI {
     }
   }
 
-  onPointer({ point, primary, secondary }) {
+  onPointer({ point, primary }) {
     const { page } = this;
     if (page.id === 0) {
       this.setPage(1);
     }
-    super.onPointer({ point, primary, secondary });
+    super.onPointer({ point, primary });
   }
 
   setPage(page) {

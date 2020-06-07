@@ -49,8 +49,6 @@ class Scene extends ThreeScene {
           backwards,
           forwards,
           forwardsUp,
-          grip,
-          gripUp,
           leftwards,
           leftwardsDown,
           rightwards,
@@ -119,7 +117,7 @@ class Scene extends ThreeScene {
           movement,
         });
       }
-      if (trigger || triggerUp || grip || gripUp) {
+      if (trigger || triggerUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
         if (hit) {
           pointer.update({
@@ -129,7 +127,6 @@ class Scene extends ThreeScene {
           hit.object.onPointer({
             point: hit.point,
             primary: triggerUp,
-            secondary: gripUp,
           });
         }
       }
