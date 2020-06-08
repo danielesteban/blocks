@@ -740,7 +740,7 @@ class Chunk {
     ].map(({ color, light, position }) => ({
       color: Buffer.from((new Uint8Array(color)).buffer),
       light: Buffer.from((new Uint8Array(light)).buffer),
-      position: Buffer.from((new Int16Array(position)).buffer),
+      position: Buffer.from((new Uint8Array(position)).buffer),
     }));
   }
 }

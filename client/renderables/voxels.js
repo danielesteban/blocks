@@ -129,7 +129,7 @@ class Voxels extends Mesh {
       const { geometry } = mesh;
 
       light = decodeBase64(Uint8Array, light);
-      position = new Float32Array(decodeBase64(Int16Array, position));
+      position = new Float32Array(decodeBase64(Uint8Array, position));
       color = new Float32Array(decodeBase64(Uint8Array, color))
         .map((c) => (
           c / 0xFF
