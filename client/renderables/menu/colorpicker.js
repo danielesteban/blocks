@@ -20,12 +20,12 @@ const ColorPicker = ({
     height: height * 0.75,
   };
   const palette = {
-    count: 5,
+    count: 7,
     colors: JSON.parse(localStorage.getItem(PaletteStorageKey) || '[]'),
     x: width * 0.05,
     y: height * 0.85,
     size: width * 0.1,
-    spacing: width * 0.03,
+    spacing: width * 0.033,
     update() {
       const { buttons, colors } = this;
       const hex = color.getHex();
@@ -38,11 +38,6 @@ const ColorPicker = ({
       buttons.forEach(((button, i) => {
         button.background = `#${aux.setHex(colors[i] || 0).getHexString()}`;
       }));
-      /* eslint-disable no-use-before-define */
-      if (state.isPicking) {
-        picker.toggle();
-      }
-      /* eslint-enable no-use-before-define */
     },
   };
   palette.buttons = [...Array(palette.count)].map((v, i) => ({
@@ -65,7 +60,7 @@ const ColorPicker = ({
       area.color.copy(color);
       palette.update();
       if (menu.page.id === pages.picker) {
-        menu.setPage(menu.page.back);
+        menu.draw();
       }
     },
   };
@@ -74,21 +69,6 @@ const ColorPicker = ({
     y: height * 0.05,
     width: width * 0.1,
     height: height * 0.75,
-  };
-  const picker = {
-    label: 'Block',
-    x: width - palette.x - (palette.size * 2.5),
-    y: palette.y,
-    width: palette.size * 2.5,
-    height: palette.size,
-    toggle: () => {
-      state.isPicking = !state.isPicking;
-      picker.background = state.isPicking ? '#393' : undefined;
-    },
-    onPointer() {
-      picker.toggle();
-      menu.draw();
-    },
   };
   const graphics = [
     ({ ctx }) => {
@@ -183,7 +163,6 @@ const ColorPicker = ({
       },
     },
     ...palette.buttons,
-    picker,
   ];
   return {
     page: { buttons, graphics },

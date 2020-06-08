@@ -102,8 +102,8 @@ class World extends Scene {
       ) {
         return;
       }
-      const isPicking = menu.picker.isPicking || primary || primaryUp;
-      const hit = (!isPicking && player.skinEditor ? (
+      const isPicking = primary || primaryUp;
+      const hit = (player.skinEditor ? (
         raycaster.intersectObject(player.skinEditor.getLayer())
       ) : (
         raycaster.intersectObjects(translocables)
@@ -119,8 +119,12 @@ class World extends Scene {
         const { point, face, uv } = hit;
         const remove = grip || gripUp;
         if (isPicking) {
-          point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
-          menu.picker.setColor({ r: point.x, g: point.y, b: point.z });
+          if (player.skinEditor) {
+            // @incomplete: Sample color from texture
+          } else {
+            point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
+            menu.picker.setColor({ r: point.x, g: point.y, b: point.z });
+          }
           return;
         }
         if (player.skinEditor) {
