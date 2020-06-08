@@ -261,6 +261,7 @@ class Player extends Object3D {
   }
 
   setWelcome(mesh) {
+    this.disposeWelcome();
     this.add(mesh);
     this.welcome = mesh;
   }
