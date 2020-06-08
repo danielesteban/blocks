@@ -202,6 +202,7 @@ class Player extends Object3D {
 
   fly({ delta, direction, movement }) {
     const {
+      help,
       auxVector: vector,
       position,
     } = this;
@@ -212,6 +213,9 @@ class Player extends Object3D {
         .applyQuaternion(direction),
       delta * 4
     );
+    if (help) {
+      help.dispose();
+    }
   }
 
   rotate(radians) {
@@ -254,6 +258,21 @@ class Player extends Object3D {
       .copy(destination)
       .sub(position)
       .normalize();
+  }
+
+  setWelcome(mesh) {
+    this.add(mesh);
+    this.welcome = mesh;
+  }
+
+  removeWelcome() {
+    const { welcome } = this;
+    if (!welcome) {
+      return;
+    }
+    this.remove(welcome);
+    welcome.dispose();
+    delete this.welcome;
   }
 }
 

@@ -9,6 +9,7 @@ import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu/index.js';
+import Help from '../renderables/help.js';
 import Rain from '../renderables/rain.js';
 import Scene from '../core/scene.js';
 import Sun from '../renderables/sun.js';
@@ -50,6 +51,7 @@ class World extends Scene {
       ...attachments.left,
       ...attachments.right
     );
+    this.player.setWelcome(new Help());
   }
 
   onBeforeRender(renderer, scene, camera) {
