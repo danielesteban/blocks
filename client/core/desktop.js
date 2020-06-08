@@ -79,6 +79,7 @@ class DesktopControls {
         .addScaledVector(forward, keyboard.z)
         .normalize();
       player.position.addScaledVector(direction, delta * 6);
+      player.disposeWelcome();
     }
   }
 
