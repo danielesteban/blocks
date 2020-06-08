@@ -265,14 +265,14 @@ class Player extends Object3D {
     this.welcome = mesh;
   }
 
-  removeWelcome() {
+  disposeWelcome() {
     const { welcome } = this;
     if (!welcome) {
       return;
     }
+    delete this.welcome;
     this.remove(welcome);
     welcome.dispose();
-    delete this.welcome;
   }
 }
 

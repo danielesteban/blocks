@@ -92,7 +92,7 @@ class Scene extends ThreeScene {
             marker.update({ hit, points });
           }
         }
-        player.removeWelcome();
+        player.disposeWelcome();
       }
       if (
         locomotion === locomotions.fly
@@ -117,7 +117,7 @@ class Scene extends ThreeScene {
           direction: worldspace.quaternion,
           movement,
         });
-        player.removeWelcome();
+        player.disposeWelcome();
       }
       if (trigger || triggerUp) {
         const hit = raycaster.intersectObjects(ui)[0] || false;
