@@ -91,13 +91,14 @@ class Voxels extends Mesh {
     geometry.dispose();
   }
 
-  static decodeBase64(Type, buffer) {
+  static decodeBase64(buffer, Type = Uint8Array, map = (v) => (v)) {
     buffer = atob(buffer);
-    return new Type(
-      (new Uint8Array([...Array(buffer.length)].map((v, i) => (
-        buffer.charCodeAt(i)
-      )))).buffer
-    );
+    const len = buffer.length;
+    const array = new Type(len);
+    for (let i = 0; i < len; i += 1) {
+      array[i] = map(buffer.charCodeAt(i));
+    }
+    return array;
   }
 
   update({
@@ -128,33 +129,41 @@ class Voxels extends Mesh {
 
       const { geometry } = mesh;
 
-      light = decodeBase64(Uint8Array, light);
-      position = new Float32Array(decodeBase64(Uint8Array, position));
-      color = new Float32Array(decodeBase64(Uint8Array, color))
-        .map((c) => (
-          c / 0xFF
-        ));
-
-      const index = new Uint16Array((position.length / 3 / 4) * 6);
-      const l = index.length;
-      for (let i = 0, v = 0; i < l; i += 6, v += 4) {
-        index[i] = v;
-        index[i + 1] = v + 1;
-        index[i + 2] = v + 2;
-        index[i + 3] = v + 2;
-        index[i + 4] = v + 3;
-        index[i + 5] = v;
-      }
-      geometry.setIndex(new BufferAttribute(index, 1));
+      light = decodeBase64(light);
+      position = decodeBase64(position, Float32Array);
+      color = decodeBase64(color, Float32Array, (v) => (v / 0xFF));
 
       geometry.setAttribute('position', new BufferAttribute(position, 3));
       geometry.setAttribute('color', new BufferAttribute(color, 3));
-      geometry.setAttribute('light', new BufferAttribute(new Float32Array(light).map((v) => (
-        ((v >> 4) & 0xF) / 0xF
-      )), 1));
-      geometry.setAttribute('sunlight', new BufferAttribute(new Float32Array(light).map((v) => (
-        (v & 0xF) / 0xF
-      )), 1));
+
+      {
+        const len = light.length;
+        const lights = {
+          light: new Float32Array(len),
+          sun: new Float32Array(len),
+        };
+        for (let i = 0; i < len; i += 1) {
+          const v = light[i];
+          lights.light[i] = ((v >> 4) & 0xF) / 0xF;
+          lights.sun[i] = (v & 0xF) / 0xF;
+        }
+        geometry.setAttribute('light', new BufferAttribute(lights.light, 1));
+        geometry.setAttribute('sunlight', new BufferAttribute(lights.sun, 1));
+      }
+
+      {
+        const len = (position.length / 3 / 4) * 6;
+        const index = new Uint16Array(len);
+        for (let i = 0, v = 0; i < len; i += 6, v += 4) {
+          index[i] = v;
+          index[i + 1] = v + 1;
+          index[i + 2] = v + 2;
+          index[i + 3] = v + 2;
+          index[i + 4] = v + 3;
+          index[i + 5] = v;
+        }
+        geometry.setIndex(new BufferAttribute(index, 1));
+      }
 
       geometry.deleteAttribute('normal');
       geometry.computeVertexNormals();
