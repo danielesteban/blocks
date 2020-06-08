@@ -54,7 +54,6 @@ class Menu extends Panel {
     this.picker = picker.state;
     this.skin = skin.state;
     this.world = world;
-    this.setPage(2);
   }
 }
 
