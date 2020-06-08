@@ -7,7 +7,6 @@ import Skin from './skin.js';
 
 class Menu extends Panel {
   constructor({ world }) {
-    const { pages } = Menu;
     const width = 128;
     const height = 128;
     super({
@@ -27,26 +26,24 @@ class Menu extends Panel {
         },
       ],
     });
-    const pageIds = {};
-    pages.forEach((Page, index) => {
+    const pages = {};
+    [
+      Options,
+      Skin,
+      ColorPicker,
+    ].forEach((Page) => {
       const { key, page, state } = Page({
         menu: this,
-        pages: pageIds,
+        pages,
         width,
         height,
       });
+      pages[key] = this.pages.length;
       this.pages.push(page);
-      pageIds[key] = (index + 1);
       this[key] = state;
     });
     this.world = world;
   }
 }
-
-Menu.pages = [
-  Options,
-  Skin,
-  ColorPicker,
-];
 
 export default Menu;
