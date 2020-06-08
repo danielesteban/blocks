@@ -1,6 +1,6 @@
 {
   "name": "blocks",
-  "description": "A voxels thingy",
+  "description": "webxr multiplayer voxels engine",
   "author": "Daniel Esteban Nombela",
   "license": "MIT",
   "version": "1.0.0",
@@ -8,6 +8,7 @@
     "run": "lint",
     "silent": true
   },
+  "private": true,
   "scripts": {
     "lint": "eslint --cache --ext .js client server",
     "start": "cross-env PRELOAD=10 SEED=34653 STORAGE=./data nodemon --watch server server/main.js"
