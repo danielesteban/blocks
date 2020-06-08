@@ -129,12 +129,12 @@ class Voxels extends Mesh {
 
       const { geometry } = mesh;
 
-      light = decodeBase64(light);
-      position = decodeBase64(position, Float32Array);
       color = decodeBase64(color, Float32Array, (v) => (v / 0xFF));
+      position = decodeBase64(position, Float32Array);
+      light = decodeBase64(light);
 
-      geometry.setAttribute('position', new BufferAttribute(position, 3));
       geometry.setAttribute('color', new BufferAttribute(color, 3));
+      geometry.setAttribute('position', new BufferAttribute(position, 3));
 
       {
         const len = light.length;
