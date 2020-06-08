@@ -1,6 +1,11 @@
 // Skin UI
 
-const Skin = ({ menu, pages }) => {
+const Skin = ({
+  menu,
+  pages,
+  width,
+  height,
+}) => {
   const setLayer = (layer) => {
     const [opaque, transparent] = buttons; // eslint-disable-line no-use-before-define
     delete opaque.background;
@@ -13,51 +18,51 @@ const Skin = ({ menu, pages }) => {
   const buttons = [
     {
       label: 'Head',
-      x: 8,
-      y: 8,
-      width: 52,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.0625,
+      width: width * 0.40625,
+      height: height * 0.1875,
       onPointer: () => setLayer('opaque'),
     },
     {
       label: 'Hair',
-      x: 68,
-      y: 8,
-      width: 52,
-      height: 24,
+      x: width * 0.53125,
+      y: height * 0.0625,
+      width: width * 0.40625,
+      height: height * 0.1875,
       onPointer: () => setLayer('transparent'),
     },
     {
-      x: 8,
-      y: 40,
-      width: 24,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.3125,
+      width: width * 0.1875,
+      height: height * 0.1875,
       onPointer: () => setTimeout(() => menu.setPage(pages.picker), 0),
     },
     {
       label: 'Color Picker',
-      x: 32,
-      y: 40,
-      width: 88,
-      height: 24,
+      x: width * 0.25,
+      y: height * 0.3125,
+      width: width * 0.6875,
+      height: height * 0.1875,
       onPointer: () => setTimeout(() => menu.setPage(pages.picker), 0),
     },
     {
       label: 'Randomize',
-      x: 16,
-      y: 72,
-      width: 96,
-      height: 16,
+      x: width * 0.125,
+      y: height * 0.5625,
+      width: width * 0.75,
+      height: height * 0.125,
       onPointer: () => (
         menu.world.player.skinEditor.regenerate()
       ),
     },
     {
       label: 'Cancel',
-      x: 8,
-      y: 96,
-      width: 48,
-      height: 24,
+      x: width * 0.0625,
+      y: height * 0.75,
+      width: width * 0.375,
+      height: height * 0.1875,
       onPointer: () => {
         menu.setPage(pages.options);
         menu.world.player.disposeSkinEditor();
@@ -66,10 +71,10 @@ const Skin = ({ menu, pages }) => {
     {
       background: '#393',
       label: 'Save',
-      x: 72,
-      y: 96,
-      width: 48,
-      height: 24,
+      x: width * 0.5625,
+      y: height * 0.75,
+      width: width * 0.375,
+      height: height * 0.1875,
       onPointer: () => {
         menu.setPage(pages.options);
         menu.world.player.saveSkin();
@@ -78,16 +83,17 @@ const Skin = ({ menu, pages }) => {
   ];
   const graphics = [
     ({ ctx }) => {
-      ctx.translate(8, 40);
+      ctx.translate(width * 0.0625, height * 0.3125);
       ctx.fillStyle = `#${menu.picker.color.getHexString()}`;
       ctx.strokeStyle = '#000';
       ctx.beginPath();
-      ctx.rect(0, 0, 24, 24);
+      ctx.rect(0, 0, width * 0.1875, width * 0.1875);
       ctx.fill();
       ctx.stroke();
     },
   ];
   return {
+    key: 'skin',
     page: { buttons, graphics },
     state: { setLayer },
   };

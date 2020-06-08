@@ -27,40 +27,26 @@ class Menu extends Panel {
         },
       ],
     });
-    const picker = ColorPicker({
-      menu: this,
-      pages,
-      width,
-      height,
+    const pageIds = {};
+    pages.forEach((Page, index) => {
+      const { key, page, state } = Page({
+        menu: this,
+        pages: pageIds,
+        width,
+        height,
+      });
+      this.pages.push(page);
+      pageIds[key] = (index + 1);
+      this[key] = state;
     });
-    const options = Options({
-      menu: this,
-      pages,
-      width,
-      height,
-    });
-    const skin = Skin({
-      menu: this,
-      pages,
-      width,
-      height,
-    });
-    this.pages.push(
-      options.page,
-      picker.page,
-      skin.page
-    );
-    this.options = options.state;
-    this.picker = picker.state;
-    this.skin = skin.state;
     this.world = world;
   }
 }
 
-Menu.pages = {
-  options: 1,
-  picker: 2,
-  skin: 3,
-};
+Menu.pages = [
+  Options,
+  Skin,
+  ColorPicker,
+];
 
 export default Menu;

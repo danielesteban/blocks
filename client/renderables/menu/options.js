@@ -114,6 +114,7 @@ const Options = ({
     },
   ];
   return {
+    key: 'options',
     page: { buttons, graphics },
     state,
   };

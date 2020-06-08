@@ -165,6 +165,7 @@ const ColorPicker = ({
     ...palette.buttons,
   ];
   return {
+    key: 'picker',
     page: { buttons, graphics },
     state,
   };
