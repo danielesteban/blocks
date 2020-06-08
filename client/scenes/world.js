@@ -121,12 +121,14 @@ class World extends Scene {
         const { point, face, uv } = hit;
         const remove = grip || gripUp;
         if (isPicking) {
+          let color;
           if (player.skinEditor) {
-            // @incomplete: Sample color from texture
+            color = player.skinEditor.getColor(uv);
           } else {
             point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
-            menu.picker.setColor({ r: point.x, g: point.y, b: point.z });
+            color = { r: point.x, g: point.y, b: point.z };
           }
+          menu.picker.setColor(color);
           return;
         }
         if (player.skinEditor) {

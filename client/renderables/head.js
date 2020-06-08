@@ -71,6 +71,23 @@ class Head extends Mesh {
     transparentMaterial.dispose();
   }
 
+  getColor(uv) {
+    const {
+      context,
+      layer,
+      renderer,
+    } = this;
+    uv.x = (uv.x * 0.5) + (layer === 'transparent' ? 0.5 : 0);
+    uv.y = 1 - uv.y;
+    const [r, g, b] = context.getImageData(
+      Math.floor(renderer.width * uv.x),
+      Math.floor(renderer.height * uv.y),
+      1,
+      1
+    ).data;
+    return { r: r / 0xFF, g: g / 0xFF, b: b / 0xFF };
+  }
+
   getLayer() {
     const { layer, transparentMesh } = this;
     if (layer === 'transparent') {
