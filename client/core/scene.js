@@ -184,7 +184,7 @@ class Scene extends ThreeScene {
       this.server.close();
     }
     const socket = new URL(url);
-    socket.protocol = url.protocol.replace(/http/, 'ws');
+    socket.protocol = socket.protocol.replace(/http/, 'ws');
     socket.hash = '';
     const server = new WebSocket(socket.toString());
     server.onclose = () => {

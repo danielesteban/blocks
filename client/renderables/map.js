@@ -142,7 +142,7 @@ class Map extends Panel {
     const { displayedServer, servers, world } = this;
     this.connectedServer = displayedServer;
     this.setDisplayedServer(displayedServer);
-    world.connect(new URL(servers[displayedServer].url));
+    world.connect(servers[displayedServer].url);
   }
 
   loadImage() {
