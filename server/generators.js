@@ -79,7 +79,6 @@ module.exports = {
     const worldHeight = 3;
     return {
       noise,
-      saplings: treeSaplings({ noise, from: worldHeight + 1, to: worldHeight + 1 }),
       terrain: (x, y, z) => {
         const isBlock = y <= worldHeight;
         return {
