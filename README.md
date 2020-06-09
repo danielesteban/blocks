@@ -24,6 +24,10 @@ CLIENT=false GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data no
 HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
 ```
 
+#### Did you deployed a server and want it to appear on the public list?
+
+Add it to [servers.json](servers.json) and make a PR or drop me a line on [twitter](https://twitter.com/DaniGatunes)
+
 #### Local development
 
 webxr requires an https origin. to test with headsets on your local network:
