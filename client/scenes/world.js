@@ -52,7 +52,6 @@ class World extends Scene {
       ...attachments.right
     );
     this.player.setWelcome(new Help());
-    this.player.head.setMasterVolume(0);
   }
 
   onBeforeRender(renderer, scene, camera) {
