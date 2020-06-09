@@ -96,6 +96,11 @@ class UI extends Mesh {
     ctx.clearRect(0, 0, renderer.width, renderer.height);
     ctx.fillStyle = styles.background;
     ctx.fillRect(0, 0, renderer.width, renderer.height);
+    graphics.forEach((draw) => {
+      ctx.save();
+      draw({ ctx, styles });
+      ctx.restore();
+    });
     buttons.forEach(({
       label,
       x,
@@ -151,11 +156,6 @@ class UI extends Mesh {
       ctx.textAlign = textAlign || styles.textAlign;
       ctx.textBaseline = textBaseline || styles.textBaseline;
       ctx.fillText(text, x, y);
-      ctx.restore();
-    });
-    graphics.forEach((draw) => {
-      ctx.save();
-      draw({ ctx, styles });
       ctx.restore();
     });
     texture.needsUpdate = true;

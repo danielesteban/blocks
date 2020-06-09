@@ -29,7 +29,7 @@ class Scene extends ThreeScene {
     this.translocables = [];
     this.ui = [];
 
-    this.connect();
+    this.connect(window.location);
   }
 
   onBeforeRender({ animation: { delta }, xr }, scene, camera) {
@@ -174,13 +174,20 @@ class Scene extends ThreeScene {
     this.onEvent(event);
   }
 
-  connect() {
+  connect(url) {
     const { peers } = this;
-    const url = new URL(window.location);
-    url.protocol = url.protocol.replace(/http/, 'ws');
-    url.hash = '';
-    const server = new WebSocket(url.toString());
-    server.addEventListener('close', () => {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
+    if (this.server) {
+      this.server.onclose = null;
+      this.server.close();
+    }
+    const socket = new URL(url);
+    socket.protocol = url.protocol.replace(/http/, 'ws');
+    socket.hash = '';
+    const server = new WebSocket(socket.toString());
+    server.onclose = () => {
       peers.reset();
       if (server.error) {
         const dialog = document.createElement('div');
@@ -189,8 +196,8 @@ class Scene extends ThreeScene {
         document.body.appendChild(dialog);
         return;
       }
-      setTimeout(() => this.connect(), 1000);
-    });
+      this.reconnectTimer = setTimeout(() => this.connect(url), 1000);
+    };
     server.addEventListener('error', () => {});
     server.addEventListener('message', this.onMessage.bind(this));
     this.server = server;

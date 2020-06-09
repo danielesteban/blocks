@@ -3,7 +3,9 @@ import Panel from './panel.js';
 // Map UI
 
 class Map extends Panel {
-  constructor() {
+  constructor({ world }) {
+    const width = 544;
+    const height = 544;
     super({
       handedness: 'right',
       pages: [
@@ -20,13 +22,60 @@ class Map extends Panel {
         {
           buttons: [
             {
-              background: '#555',
-              border: 'transparent',
               x: 0,
               y: 0,
-              width: 544,
-              height: 544,
+              width,
+              height,
+              isVisible: false,
               onPointer: () => this.setPage(0),
+            },
+            {
+              label: 'Connect',
+              font: '700 24px monospace',
+              x: width * 0.35,
+              y: height * 0.828,
+              width: width * 0.3,
+              height: width * 0.05,
+              isVisible: false,
+              onPointer: () => this.connectToServer(),
+            },
+            {
+              label: '<',
+              x: width * 0.03,
+              y: height * 0.91,
+              width: width * 0.06,
+              height: width * 0.06,
+              onPointer: () => {
+                const { displayedServer, servers } = this;
+                if (servers) {
+                  this.setDisplayedServer(
+                    (displayedServer > 0 ? displayedServer : servers.length) - 1
+                  );
+                }
+              },
+            },
+            {
+              label: '>',
+              x: width * 0.91,
+              y: height * 0.91,
+              width: width * 0.06,
+              height: width * 0.06,
+              onPointer: () => {
+                const { displayedServer, servers } = this;
+                if (servers) {
+                  this.setDisplayedServer(
+                    (displayedServer + 1) % servers.length
+                  );
+                }
+              },
+            },
+          ],
+          labels: [
+            {
+              text: '',
+              font: '700 32px monospace',
+              x: width * 0.5,
+              y: height * 0.94,
             },
           ],
           graphics: [
@@ -34,8 +83,9 @@ class Map extends Panel {
               const {
                 chunk,
                 image,
-                renderer: { width, height },
               } = this;
+              ctx.fillStyle = '#555';
+              ctx.fillRect(0, 0, width, height);
               if (!chunk) {
                 return;
               }
@@ -66,8 +116,8 @@ class Map extends Panel {
         },
       ],
       size: 0.4,
-      textureWidth: 544,
-      textureHeight: 544,
+      textureWidth: width,
+      textureHeight: height,
     });
     const image = new Image();
     image.crossOrigin = 'anonymous';
@@ -78,6 +128,8 @@ class Map extends Panel {
       }
     };
     this.image = image;
+    this.world = world;
+    this.loadServers();
   }
 
   dispose() {
@@ -86,9 +138,46 @@ class Map extends Panel {
     image.onload = null;
   }
 
+  connectToServer() {
+    const { displayedServer, servers, world } = this;
+    this.connectedServer = displayedServer;
+    this.setDisplayedServer(displayedServer);
+    world.connect(new URL(servers[displayedServer].url));
+  }
+
   loadImage() {
-    const { chunk, image } = this;
-    image.src = `/map/@${chunk.x},${chunk.z}`;
+    const {
+      chunk,
+      connectedServer,
+      displayedServer,
+      image,
+      servers,
+    } = this;
+    if (!servers) {
+      return;
+    }
+    const isConnected = connectedServer === displayedServer;
+    image.src = `${servers[displayedServer].url}map${isConnected ? `/@${chunk.x},${chunk.z}` : ''}`;
+  }
+
+  loadServers() {
+    fetch(Map.servers)
+      .then((res) => res.json())
+      .then((list) => {
+        const client = window.location.toString();
+        const hasClientLocation = list.findIndex(({ url }) => (url === client));
+        if (~hasClientLocation) {
+          list.unshift(list.splice(hasClientLocation, 1));
+        } else {
+          list.unshift({
+            name: new URL(client).hostname,
+            url: client,
+          });
+        }
+        this.connectedServer = 0;
+        this.servers = list;
+        this.setDisplayedServer(0);
+      });
   }
 
   setChunk({ x, z }) {
@@ -96,6 +185,25 @@ class Map extends Panel {
     this.chunk = { x, z };
     delete image.loaded;
     if (page.id === 1) {
+      this.loadImage();
+    }
+  }
+
+  setDisplayedServer(index) {
+    const {
+      chunk,
+      connectedServer,
+      image,
+      page,
+      pages,
+      servers,
+    } = this;
+    const [/* toggle */, { buttons: [/* back */, connect], labels: [name] }] = pages;
+    connect.isVisible = index !== connectedServer;
+    name.text = servers[index].name;
+    delete image.loaded;
+    this.displayedServer = index;
+    if (chunk && page.id === 1) {
       this.loadImage();
     }
   }
@@ -108,5 +216,7 @@ class Map extends Panel {
     super.setPage(page);
   }
 }
+
+Map.servers = 'https://raw.githubusercontent.com/danielesteban/blocks/master/servers.json';
 
 export default Map;

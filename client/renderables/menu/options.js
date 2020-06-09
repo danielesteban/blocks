@@ -62,6 +62,7 @@ const Options = ({
       onPointer: () => setBlock(0x03),
     },
     {
+      background: 'transparent',
       x: width * 0.0625,
       y: height * 0.3125,
       width: width * 0.1875,

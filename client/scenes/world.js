@@ -42,7 +42,7 @@ class World extends Scene {
     this.add(this.sun);
     this.timeOffset = Date.now() / 1000;
 
-    this.map = new MapUI();
+    this.map = new MapUI({ world: this });
     this.menu = new Menu({ world: this });
     const { attachments } = this.player;
     attachments.left = [this.menu];
@@ -52,6 +52,7 @@ class World extends Scene {
       ...attachments.right
     );
     this.player.setWelcome(new Help());
+    this.player.head.setMasterVolume(0);
   }
 
   onBeforeRender(renderer, scene, camera) {
@@ -242,7 +243,7 @@ class World extends Scene {
         y: 0.5,
         z: 0.25,
       });
-    chunks.loaded.clear();
+    chunks.loaded.forEach((chunk) => this.unloadChunk(chunk));
     chunks.requested.clear();
     chunks.player.set(Infinity, Infinity, Infinity);
   }
