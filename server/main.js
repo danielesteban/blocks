@@ -37,5 +37,7 @@ app.get(
   cors(),
   map.onRequest.bind(map)
 );
-app.use(express.static(path.join(__dirname, '..', 'client')));
+if (process.env.CLIENT !== 'false') {
+  app.use(express.static(path.join(__dirname, '..', 'client')));
+}
 app.use((req, res) => res.status(404).end());
