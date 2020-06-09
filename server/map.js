@@ -13,10 +13,13 @@ class Map {
       size,
     } = Chunk;
     const { getGrid, maxRadius } = Map;
-    const origin = {
+    const origin = (req.params.originX !== undefined && req.params.originZ !== undefined) ? ({
       x: parseInt(req.params.originX, 10),
       z: parseInt(req.params.originZ, 10),
-    };
+    }) : ({
+      x: world.spawnOffset,
+      z: world.spawnOffset,
+    });
     const radius = Math.min(
       Math.max(
         parseInt(req.params.radius || 8, 10),

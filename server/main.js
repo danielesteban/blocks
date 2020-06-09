@@ -29,7 +29,10 @@ expressWS(app, server, { clientTracking: false });
 
 app.ws('/', world.onClient.bind(world));
 app.get(
-  '/map/@:originX([\\-]?\\d+),:originZ([\\-]?\\d+)(,)?:radius([\\-]?\\d+)?',
+  [
+    '/map',
+    '/map/@:originX([\\-]?\\d+),:originZ([\\-]?\\d+)(,)?:radius([\\-]?\\d+)?',
+  ],
   map.onRequest.bind(map)
 );
 app.use(express.static(path.join(__dirname, '..', 'client')));
