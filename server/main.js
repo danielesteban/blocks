@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const expressWS = require('express-ws');
 const fs = require('fs');
@@ -33,6 +34,7 @@ app.get(
     '/map',
     '/map/@:originX([\\-]?\\d+),:originZ([\\-]?\\d+)(,)?:radius([\\-]?\\d+)?',
   ],
+  cors(),
   map.onRequest.bind(map)
 );
 app.use(express.static(path.join(__dirname, '..', 'client')));
