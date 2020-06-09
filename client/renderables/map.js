@@ -139,9 +139,15 @@ class Map extends Panel {
   }
 
   connectToServer() {
-    const { displayedServer, servers, world } = this;
+    const {
+      displayedServer,
+      pages,
+      servers,
+      world,
+    } = this;
+    const [/* toggle */, { buttons: [/* back */, connect] }] = pages;
+    connect.isVisible = false;
     this.connectedServer = displayedServer;
-    this.setDisplayedServer(displayedServer);
     this.draw();
     world.connect(servers[displayedServer].url);
   }
