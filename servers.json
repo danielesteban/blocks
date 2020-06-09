@@ -1,6 +1,10 @@
 [
   {
-    "name": "[EU] Gatunes",
+    "name": "[EU] Public test server",
     "url": "https://blocks.gatunes.com/"
+  },
+  {
+    "name": "[EU] Legacy import test",
+    "url": "https://projects.gatunes.com/legacy-blocks/"
   }
 ]
