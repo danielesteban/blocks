@@ -161,17 +161,18 @@ class Map extends Panel {
   }
 
   loadServers() {
+    const { world } = this;
     fetch(Map.servers)
       .then((res) => res.json())
       .then((list) => {
-        const client = window.location.toString();
-        const hasClientLocation = list.findIndex(({ url }) => (url === client));
-        if (~hasClientLocation) {
-          list.unshift(list.splice(hasClientLocation, 1));
+        const connectedServer = world.server.serverURL;
+        const isOnList = list.findIndex(({ url }) => (url === connectedServer));
+        if (~isOnList) {
+          list.unshift(list.splice(isOnList, 1)[0]);
         } else {
           list.unshift({
-            name: new URL(client).hostname,
-            url: client,
+            name: new URL(connectedServer).hostname,
+            url: connectedServer,
           });
         }
         this.connectedServer = 0;

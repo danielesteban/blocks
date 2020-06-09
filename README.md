@@ -6,6 +6,7 @@
 
 #### Server configuration
 
+ * `CLIENT` serve the client (boolean, defaults to true)
  * `GENERATOR` the world [generator](server/generators.js) function
  * `HEIGHTMAP` a png to drive the heightmap world generator function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
@@ -18,8 +19,8 @@
 node server/main.js
 # same, but preloading a 10 chunk radius around the spawn area
 PRELOAD=10 node server/main.js
-# flat world for only 4 clients with persistence
-GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
+# flat world for only 4 clients with persistence and no client
+CLIENT=false GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
 # heightmap driven world generator
 HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
 ```
