@@ -41,7 +41,6 @@ class World extends Scene {
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
     this.timeOffset = Date.now() / 1000;
-    this.timeOffset = 300;
 
     this.map = new MapUI({ world: this });
     this.menu = new Menu({ world: this });
