@@ -91,23 +91,13 @@ class Voxels extends Mesh {
     geometry.dispose();
   }
 
-  static decodeBase64(buffer, Type = Uint8Array, map = (v) => (v)) {
-    buffer = atob(buffer);
-    const len = buffer.length;
-    const array = new Type(len);
-    for (let i = 0; i < len; i += 1) {
-      array[i] = map(buffer.charCodeAt(i));
-    }
-    return array;
-  }
-
   update({
     chunk,
     heightmap,
     opaque,
     transparent,
   }) {
-    const { decodeBase64, updateHeightmap } = Voxels;
+    const { updateHeightmap } = Voxels;
 
     this.chunk = chunk;
     this.position
@@ -129,12 +119,16 @@ class Voxels extends Mesh {
 
       const { geometry } = mesh;
 
-      color = decodeBase64(color, Float32Array, (v) => (v / 0xFF));
-      position = decodeBase64(position, Float32Array);
-      light = decodeBase64(light);
-
-      geometry.setAttribute('color', new BufferAttribute(color, 3));
       geometry.setAttribute('position', new BufferAttribute(position, 3));
+
+      {
+        const len = color.length;
+        const fcolor = new Float32Array(len);
+        for (let i = 0; i < len; i += 1) {
+          fcolor[i] = color[i] / 0xFF;
+        }
+        geometry.setAttribute('color', new BufferAttribute(fcolor, 3));
+      }
 
       {
         const len = light.length;

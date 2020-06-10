@@ -85,7 +85,7 @@ class World extends Room {
         let {
           x,
           z,
-        } = request.data;
+        } = request.json || {};
         x = parseInt(x, 10);
         z = parseInt(z, 10);
         if (
@@ -100,12 +100,7 @@ class World extends Room {
         }
         this.broadcast({
           type: 'UPDATE',
-          data: {
-            chunks: [{
-              chunk: { x: chunk.x, z: chunk.z },
-              meshes: chunk.getSerializedMeshes(),
-            }],
-          },
+          chunks: [chunk],
         });
         this.unloadChunks();
         break;
@@ -117,7 +112,7 @@ class World extends Room {
           z,
           color,
           type,
-        } = request.data;
+        } = request.json || {};
         x = parseInt(x, 10);
         y = parseInt(y, 10);
         z = parseInt(z, 10);
@@ -170,20 +165,15 @@ class World extends Room {
         });
         this.broadcast({
           type: 'UPDATE',
-          data: {
-            chunks: [
-              chunk,
-              ...Chunk.chunkNeighbors.map(({ x, z }) => (
-                this.getChunk({ x: chunk.x + x, z: chunk.z + z })
-              )),
-            ].map((chunk) => {
-              chunk.remesh();
-              return {
-                chunk: { x: chunk.x, z: chunk.z },
-                meshes: chunk.getSerializedMeshes(),
-              };
-            }),
-          },
+          chunks: [
+            chunk,
+            ...Chunk.chunkNeighbors.map(({ x, z }) => (
+              this.getChunk({ x: chunk.x + x, z: chunk.z + z })
+            )),
+          ].map((chunk) => {
+            chunk.remesh();
+            return chunk;
+          }),
         });
         break;
       }

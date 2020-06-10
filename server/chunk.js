@@ -493,19 +493,6 @@ class Chunk {
     this.needsPersistence = true;
   }
 
-  getSerializedMeshes() {
-    const { meshes } = this;
-    return meshes.map((geometry) => geometry.map(({
-      color,
-      light,
-      position,
-    }) => ({
-      color: color.toString('base64'),
-      light: light.toString('base64'),
-      position: position.toString('base64'),
-    })));
-  }
-
   remesh() {
     const { chunkNeighbors, subchunks } = Chunk;
     const { world } = this;
@@ -734,14 +721,15 @@ class Chunk {
         }
       }
     }
-    this.meshes[subchunk] = [
-      geometry.opaque,
-      geometry.transparent,
-    ].map(({ color, light, position }) => ({
-      color: Buffer.from((new Uint8Array(color)).buffer),
-      light: Buffer.from((new Uint8Array(light)).buffer),
-      position: Buffer.from((new Uint8Array(position)).buffer),
-    }));
+    this.meshes[subchunk] = ['opaque', 'transparent'].reduce((meshes, key) => {
+      const { color, light, position } = geometry[key];
+      meshes[key] = {
+        color: new Uint8Array(color),
+        light: new Uint8Array(light),
+        position: new Uint8Array(position),
+      };
+      return meshes;
+    }, {});
   }
 }
 

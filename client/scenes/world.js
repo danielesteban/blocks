@@ -143,16 +143,16 @@ class World extends Scene {
           .addScaledVector(face.normal, (remove ? -1 : 1) * 0.25)
           .divideScalar(scale)
           .floor();
-        server.send(JSON.stringify({
+        server.sendEvent({
           type: 'UPDATE',
-          data: {
+          json: {
             x: point.x,
             y: point.y,
             z: point.z,
             color: menu.picker.color.getHex(),
             type: remove ? 0 : menu.options.blockType,
           },
-        }));
+        });
       }
     });
 
@@ -212,18 +212,18 @@ class World extends Scene {
 
   onEvent(event) {
     super.onEvent(event);
-    const { type, data } = event;
+    const { type } = event;
     switch (type) {
       case 'INIT':
       case 'JOIN':
       case 'LEAVE':
         this.debug.players.innerText = this.peers.peers.length + 1;
         if (type === 'INIT') {
-          this.onInit(data);
+          this.onInit(event.json);
         }
         break;
       case 'UPDATE':
-        this.onUpdate(data);
+        this.onUpdate(event.chunks);
         break;
       default:
         break;
@@ -249,15 +249,15 @@ class World extends Scene {
 
   onUpdate(data) {
     const { chunks } = this;
-    data.chunks.forEach(({ chunk, meshes }) => {
-      const key = `${chunk.x}:${chunk.z}`;
+    data.forEach(({ x, z, meshes }) => {
+      const key = `${x}:${z}`;
       if (!chunks.loaded.has(key) && !chunks.requested.has(key)) {
         return;
       }
       const heightmap = new Uint8Array(256);
       chunks.heightmaps.set(key, heightmap);
-      meshes.forEach(([opaque, transparent], subchunk) => {
-        const key = `${chunk.x}:${chunk.z}:${subchunk}`;
+      meshes.forEach(({ opaque, transparent }, subchunk) => {
+        const key = `${x}:${z}:${subchunk}`;
         let mesh = chunks.voxels.get(key);
         if (!mesh) {
           mesh = chunks.pool.shift();
@@ -268,13 +268,13 @@ class World extends Scene {
           chunks.voxels.set(key, mesh);
         }
         mesh.update({
-          chunk: { ...chunk, y: subchunk },
+          chunk: { x, y: subchunk, z },
           heightmap,
           opaque,
           transparent,
         });
       });
-      chunks.loaded.set(key, chunk);
+      chunks.loaded.set(key, { x, z });
       chunks.requested.delete(key);
     });
     this.needsTranslocablesUpdate = true;
@@ -287,10 +287,10 @@ class World extends Scene {
       return;
     }
     chunks.requested.set(key, chunk);
-    server.send(JSON.stringify({
+    server.sendEvent({
       type: 'LOAD',
-      data: chunk,
-    }));
+      json: chunk,
+    });
   }
 
   unloadChunk(chunk) {

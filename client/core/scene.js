@@ -2,6 +2,7 @@ import { Scene as ThreeScene } from './three.js';
 import CurveCast from './curvecast.js';
 import Peers from './peers.js';
 import Player from './player.js';
+import { protocol } from './protocol.js';
 
 // A multiplayer VR scene base class
 
@@ -145,26 +146,31 @@ class Scene extends ThreeScene {
     });
   }
 
-  onEvent({ type, data }) {
+  onEvent({
+    type,
+    text,
+    json,
+    signal,
+  }) {
     const { peers, server } = this;
     switch (type) {
       case 'ERROR':
-        server.error = data.message;
+        server.error = text;
         break;
       case 'INIT':
         peers.init({
           server,
-          peers: data.peers,
+          peers: json.peers,
         });
         break;
       case 'JOIN':
-        peers.join(data);
+        peers.join(text);
         break;
       case 'LEAVE':
-        peers.leave(data);
+        peers.leave(text);
         break;
       case 'SIGNAL':
-        peers.signal(data);
+        peers.signal(signal);
         break;
       default:
         break;
@@ -174,7 +180,7 @@ class Scene extends ThreeScene {
   onMessage({ data }) {
     let event;
     try {
-      event = JSON.parse(data);
+      event = Scene.decode(new Uint8Array(data));
     } catch (e) {
       return;
     }
@@ -195,6 +201,10 @@ class Scene extends ThreeScene {
     socket.protocol = socket.protocol.replace(/http/, 'ws');
     socket.hash = '';
     const server = new WebSocket(socket.toString());
+    server.binaryType = 'arraybuffer';
+    server.sendEvent = (event) => (
+      server.send(Scene.encode(event))
+    );
     server.onerror = () => {};
     server.onclose = () => {
       peers.reset();
@@ -210,6 +220,21 @@ class Scene extends ThreeScene {
     server.onmessage = this.onMessage.bind(this);
     server.serverURL = url;
     this.server = server;
+  }
+
+  static decode(buffer) {
+    const message = protocol.Message.decode(buffer);
+    if (message.json) {
+      message.json = JSON.parse(message.json);
+    }
+    return message;
+  }
+
+  static encode(message) {
+    if (message.json) {
+      message.json = JSON.stringify(message.json);
+    }
+    return protocol.Message.encode(protocol.Message.create(message)).finish();
   }
 }
 

@@ -1,0 +1,32 @@
+package protocol;
+syntax = "proto3";
+
+message Geometry {
+  bytes color = 1;
+  bytes light = 2;
+  bytes position = 3;
+}
+
+message Mesh {
+  Geometry opaque = 1;
+  Geometry transparent = 2;
+}
+
+message Chunk {
+  int32 x = 1;
+  int32 z = 2;
+  repeated Mesh meshes = 3;
+}
+
+message Signal {
+  string peer = 1;
+  string signal = 2;
+}
+
+message Message {
+  string type = 1;
+  string json = 2;
+  string text = 3;
+  repeated Chunk chunks = 4;
+  Signal signal = 5;
+}

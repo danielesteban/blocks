@@ -1,9 +1,30 @@
+const path = require('path');
+const protobuf = require('protobufjs');
 const { v4: uuid } = require('uuid');
+
+const Message = protobuf
+  .loadSync(path.join(__dirname, 'messages.proto'))
+  .lookupType('protocol.Message');
 
 class Room {
   constructor({ maxClients }) {
     this.clients = [];
     this.maxClients = maxClients;
+  }
+
+  static decode(buffer) {
+    const message = Message.decode(buffer);
+    if (message.json) {
+      message.json = JSON.parse(message.json);
+    }
+    return message;
+  }
+
+  static encode(message) {
+    if (message.json) {
+      message.json = JSON.stringify(message.json);
+    }
+    return Message.encode(Message.create(message)).finish();
   }
 
   onClose(client) {
@@ -13,7 +34,7 @@ class Room {
       clients.splice(index, 1);
       this.broadcast({
         type: 'LEAVE',
-        data: client.id,
+        text: client.id,
       });
       if (!clients.length && pingInterval) {
         clearInterval(pingInterval);
@@ -25,26 +46,24 @@ class Room {
   onClient(client) {
     const { clients, maxClients, pingInterval } = this;
     if (clients.length >= maxClients) {
-      client.send(JSON.stringify({
+      client.send(Room.encode({
         type: 'ERROR',
-        data: {
-          message: 'Server is full. Try again later.',
-        },
+        text: 'Server is full. Try again later.',
       }), () => {});
       client.terminate();
       return;
     }
     client.id = uuid();
-    client.send(JSON.stringify({
+    client.send(Room.encode({
       type: 'INIT',
-      data: {
+      json: {
         peers: clients.map(({ id }) => (id)),
         ...(this.onInit ? this.onInit(client) : {}),
       },
     }), () => {});
     this.broadcast({
       type: 'JOIN',
-      data: client.id,
+      text: client.id,
     });
     clients.push(client);
     client.isAlive = true;
@@ -61,7 +80,7 @@ class Room {
   onMessage(client, data) {
     let request;
     try {
-      request = JSON.parse(data);
+      request = Room.decode(data);
     } catch (e) {
       return;
     }
@@ -72,7 +91,7 @@ class Room {
     const { clients } = this;
     switch (request.type) {
       case 'SIGNAL': {
-        let { peer, signal } = request.data;
+        let { peer, signal } = request.signal || {};
         peer = `${peer}`;
         signal = `${signal}`;
         if (!(
@@ -83,7 +102,7 @@ class Room {
           if (client) {
             this.broadcast({
               type: 'SIGNAL',
-              data: {
+              signal: {
                 peer: client.id,
                 signal,
               },
@@ -101,7 +120,7 @@ class Room {
 
   broadcast(event, { exclude, include } = {}) {
     const { clients } = this;
-    const encoded = JSON.stringify(event);
+    const encoded = Room.encode(event);
     if (exclude && !Array.isArray(exclude)) {
       exclude = [exclude];
     }

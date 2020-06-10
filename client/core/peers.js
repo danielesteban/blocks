@@ -89,13 +89,13 @@ class Peers extends Object3D {
     connection.on('error', () => {});
     connection.on('data', peer.onData.bind(peer));
     connection.on('signal', (signal) => (
-      server.send(JSON.stringify({
+      server.sendEvent({
         type: 'SIGNAL',
-        data: {
+        signal: {
           peer: id,
           signal: JSON.stringify(signal),
         },
-      }))
+      })
     ));
     connection.on('track', peer.onTrack.bind(peer));
     this.add(peer);
