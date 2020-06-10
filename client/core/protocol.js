@@ -514,7 +514,7 @@ export const protocol = $root.protocol = (() => {
                         this[keys[i]] = properties[keys[i]];
         }
 
-        Message.prototype.type = "";
+        Message.prototype.type = 1;
         Message.prototype.json = "";
         Message.prototype.text = "";
         Message.prototype.chunks = $util.emptyArray;
@@ -528,7 +528,7 @@ export const protocol = $root.protocol = (() => {
             if (!writer)
                 writer = $Writer.create();
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                writer.uint32(10).string(message.type);
+                writer.uint32(8).int32(message.type);
             if (message.json != null && Object.hasOwnProperty.call(message, "json"))
                 writer.uint32(18).string(message.json);
             if (message.text != null && Object.hasOwnProperty.call(message, "text"))
@@ -553,7 +553,7 @@ export const protocol = $root.protocol = (() => {
                 let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.type = reader.string();
+                    message.type = reader.int32();
                     break;
                 case 2:
                     message.json = reader.string();
@@ -587,8 +587,18 @@ export const protocol = $root.protocol = (() => {
             if (typeof message !== "object" || message === null)
                 return "object expected";
             if (message.type != null && message.hasOwnProperty("type"))
-                if (!$util.isString(message.type))
-                    return "type: string expected";
+                switch (message.type) {
+                default:
+                    return "type: enum value expected";
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    break;
+                }
             if (message.json != null && message.hasOwnProperty("json"))
                 if (!$util.isString(message.json))
                     return "json: string expected";
@@ -616,8 +626,36 @@ export const protocol = $root.protocol = (() => {
             if (object instanceof $root.protocol.Message)
                 return object;
             let message = new $root.protocol.Message();
-            if (object.type != null)
-                message.type = String(object.type);
+            switch (object.type) {
+            case "ERROR":
+            case 1:
+                message.type = 1;
+                break;
+            case "INIT":
+            case 2:
+                message.type = 2;
+                break;
+            case "JOIN":
+            case 3:
+                message.type = 3;
+                break;
+            case "LEAVE":
+            case 4:
+                message.type = 4;
+                break;
+            case "LOAD":
+            case 5:
+                message.type = 5;
+                break;
+            case "SIGNAL":
+            case 6:
+                message.type = 6;
+                break;
+            case "UPDATE":
+            case 7:
+                message.type = 7;
+                break;
+            }
             if (object.json != null)
                 message.json = String(object.json);
             if (object.text != null)
@@ -647,13 +685,13 @@ export const protocol = $root.protocol = (() => {
             if (options.arrays || options.defaults)
                 object.chunks = [];
             if (options.defaults) {
-                object.type = "";
+                object.type = options.enums === String ? "ERROR" : 1;
                 object.json = "";
                 object.text = "";
                 object.signal = null;
             }
             if (message.type != null && message.hasOwnProperty("type"))
-                object.type = message.type;
+                object.type = options.enums === String ? $root.protocol.Message.Type[message.type] : message.type;
             if (message.json != null && message.hasOwnProperty("json"))
                 object.json = message.json;
             if (message.text != null && message.hasOwnProperty("text"))
@@ -671,6 +709,18 @@ export const protocol = $root.protocol = (() => {
         Message.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
         };
+
+        Message.Type = (function() {
+            const valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[1] = "ERROR"] = 1;
+            values[valuesById[2] = "INIT"] = 2;
+            values[valuesById[3] = "JOIN"] = 3;
+            values[valuesById[4] = "LEAVE"] = 4;
+            values[valuesById[5] = "LOAD"] = 5;
+            values[valuesById[6] = "SIGNAL"] = 6;
+            values[valuesById[7] = "UPDATE"] = 7;
+            return values;
+        })();
 
         return Message;
     })();

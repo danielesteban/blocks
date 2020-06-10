@@ -24,7 +24,16 @@ message Signal {
 }
 
 message Message {
-  string type = 1;
+  enum Type {
+    ERROR = 1;
+    INIT = 2;
+    JOIN = 3;
+    LEAVE = 4;
+    LOAD = 5;
+    SIGNAL = 6;
+    UPDATE = 7;
+  }
+  Type type = 1;
   string json = 2;
   string text = 3;
   repeated Chunk chunks = 4;

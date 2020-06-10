@@ -224,6 +224,7 @@ class Scene extends ThreeScene {
 
   static decode(buffer) {
     const message = protocol.Message.decode(buffer);
+    message.type = protocol.Message.Type[message.type];
     if (message.json) {
       message.json = JSON.parse(message.json);
     }
@@ -231,6 +232,7 @@ class Scene extends ThreeScene {
   }
 
   static encode(message) {
+    message.type = protocol.Message.Type[message.type];
     if (message.json) {
       message.json = JSON.stringify(message.json);
     }

@@ -12,21 +12,6 @@ class Room {
     this.maxClients = maxClients;
   }
 
-  static decode(buffer) {
-    const message = Message.decode(buffer);
-    if (message.json) {
-      message.json = JSON.parse(message.json);
-    }
-    return message;
-  }
-
-  static encode(message) {
-    if (message.json) {
-      message.json = JSON.stringify(message.json);
-    }
-    return Message.encode(Message.create(message)).finish();
-  }
-
   onClose(client) {
     const { clients, pingInterval } = this;
     const index = clients.findIndex(({ id }) => (id === client.id));
@@ -147,6 +132,23 @@ class Room {
       client.isAlive = false;
       client.ping(() => {});
     });
+  }
+
+  static decode(buffer) {
+    const message = Message.decode(buffer);
+    message.type = Message.Type[message.type];
+    if (message.json) {
+      message.json = JSON.parse(message.json);
+    }
+    return message;
+  }
+
+  static encode(message) {
+    message.type = Message.Type[message.type];
+    if (message.json) {
+      message.json = JSON.stringify(message.json);
+    }
+    return Message.encode(Message.create(message)).finish();
   }
 }
 
