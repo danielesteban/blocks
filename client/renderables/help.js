@@ -1,3 +1,4 @@
+import { Vector2 } from '../core/three.js';
 import UI from './ui.js';
 
 // Help UI
@@ -7,7 +8,7 @@ class Help extends UI {
     const width = 256;
     const height = 512;
     const fonts = {
-      default: `700 ${Math.max(width, height) * 0.03}px monospace`,
+      default: `700 ${Math.max(width, height) * 0.025}px monospace`,
       heading: `700 ${Math.max(width, height) * 0.05}px monospace`,
     };
     super({
@@ -46,7 +47,7 @@ class Help extends UI {
               text: 'Controls',
               font: fonts.heading,
               x: width * 0.5,
-              y: height * 0.1,
+              y: height * 0.125,
             },
             {
               text: 'RIGHT JOYSTICK: Teleport',
@@ -81,7 +82,7 @@ class Help extends UI {
               text: 'Menu and Map',
               font: fonts.heading,
               x: width * 0.5,
-              y: height * 0.1,
+              y: height * 0.125,
             },
             {
               text: 'Hold TRIGGER and point',
@@ -111,6 +112,34 @@ class Help extends UI {
       textureWidth: width,
       textureHeight: height,
     });
+    const cornersCells = 16;
+    const cornersSize = cornersCells * 8;
+    const cornersCell = cornersSize / cornersCells;
+    const cornersHCell = cornersCell * 0.5;
+    const cornersOffsets = [
+      { x: 0, y: height - cornersSize },
+      { x: width - cornersSize, y: height - cornersSize },
+      { x: width - cornersSize, y: 0 },
+      { x: 0, y: 0 },
+    ];
+    const aux = new Vector2();
+    const center = new Vector2(width * 0.5, height * 0.5);
+    const radius = Math.min(width, height) - 2;
+    const corners = ({ ctx }) => {
+      cornersOffsets.forEach((offset) => {
+        for (let y = 0; y < cornersCells; y += 1) {
+          for (let x = 0; x < cornersCells; x += 1) {
+            aux.set(
+              offset.x + (x * cornersCell) + cornersHCell,
+              offset.y + (y * cornersCell) + cornersHCell
+            );
+            if (aux.distanceTo(center) > radius) {
+              ctx.clearRect(aux.x - cornersHCell, aux.y - cornersHCell, cornersCell, cornersCell);
+            }
+          }
+        }
+      });
+    };
     const pagination = ({ ctx }) => {
       ctx.translate(width * 0.5, height * 0.925);
       const size = width * 0.05;
@@ -126,6 +155,7 @@ class Help extends UI {
         page.graphics = [];
       }
       page.graphics.push(pagination);
+      page.graphics.push(corners);
     });
     this.position.set(-1.5, 1.75, -2.5);
     this.updateMatrix();
