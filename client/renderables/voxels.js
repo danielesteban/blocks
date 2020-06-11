@@ -27,9 +27,10 @@ class Voxels extends Mesh {
           ].join('\n')
         )
         .replace(
-          'vec4 diffuseColor = vec4( diffuse, opacity );',
+          '#include <envmap_fragment>',
           [
-            'vec4 diffuseColor = vec4( diffuse * (vlight + max(vsunlight * sunlightIntensity, 0.05)) * 0.5, opacity );',
+            '#include <envmap_fragment>',
+            'outgoingLight *= (vlight + max(vsunlight * sunlightIntensity, 0.05)) * 0.5;',
           ].join('\n')
         ),
       vertexShader: ShaderLib.basic.vertexShader
@@ -37,18 +38,19 @@ class Voxels extends Mesh {
           '#include <common>',
           [
             'attribute float light;',
-            'attribute float sunlight;',
             'varying float vlight;',
             'varying float vsunlight;',
             '#include <common>',
           ].join('\n')
         )
         .replace(
-          '#include <begin_vertex>',
+          '#include <color_vertex>',
           [
-            '#include <begin_vertex>',
-            'vlight = light;',
-            'vsunlight = sunlight;',
+            '#ifdef USE_COLOR',
+            '  vColor.xyz = color.xyz / 255.0;',
+            '#endif',
+            'vlight = float((int(light) >> 4) & 15) / 15.0;',
+            'vsunlight = float(int(light) & 15) / 15.0;',
           ].join('\n')
         ),
       uniforms: {
@@ -119,31 +121,9 @@ class Voxels extends Mesh {
 
       const { geometry } = mesh;
 
+      geometry.setAttribute('color', new BufferAttribute(color, 3));
+      geometry.setAttribute('light', new BufferAttribute(light, 1));
       geometry.setAttribute('position', new BufferAttribute(position, 3));
-
-      {
-        const len = color.length;
-        const fcolor = new Float32Array(len);
-        for (let i = 0; i < len; i += 1) {
-          fcolor[i] = color[i] / 0xFF;
-        }
-        geometry.setAttribute('color', new BufferAttribute(fcolor, 3));
-      }
-
-      {
-        const len = light.length;
-        const lights = {
-          light: new Float32Array(len),
-          sun: new Float32Array(len),
-        };
-        for (let i = 0; i < len; i += 1) {
-          const v = light[i];
-          lights.light[i] = ((v >> 4) & 0xF) / 0xF;
-          lights.sun[i] = (v & 0xF) / 0xF;
-        }
-        geometry.setAttribute('light', new BufferAttribute(lights.light, 1));
-        geometry.setAttribute('sunlight', new BufferAttribute(lights.sun, 1));
-      }
 
       {
         const len = (position.length / 3 / 4) * 6;
