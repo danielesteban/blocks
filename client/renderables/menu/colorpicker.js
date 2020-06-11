@@ -56,7 +56,7 @@ const ColorPicker = ({
   const state = {
     color,
     setColor: ({ r, g, b }) => {
-      color.setHex((r << 16) | (g << 8) | b);
+      color.setRGB(r / 0xFF, g / 0xFF, b / 0xFF);
       area.color.copy(color);
       palette.update();
       if (menu.page.id === pages.picker) {
