@@ -1,6 +1,7 @@
 const path = require('path');
 const protobuf = require('protobufjs');
 const { v4: uuid } = require('uuid');
+const zlib = require('zlib');
 
 const Message = protobuf
   .loadSync(path.join(__dirname, 'messages.proto'))
@@ -148,7 +149,11 @@ class Room {
     if (message.json) {
       message.json = JSON.stringify(message.json);
     }
-    return Message.encode(Message.create(message)).finish();
+    const buffer = Message.encode(Message.create(message)).finish();
+    if (buffer.length > 1024) {
+      return zlib.deflateSync(buffer);
+    }
+    return buffer;
   }
 }
 

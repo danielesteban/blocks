@@ -1,8 +1,9 @@
-import { Scene as ThreeScene } from './three.js';
 import CurveCast from './curvecast.js';
+import Pako from './pako.js';
 import Peers from './peers.js';
 import Player from './player.js';
 import { protocol } from './protocol.js';
+import { Scene as ThreeScene } from './three.js';
 
 // A multiplayer VR scene base class
 
@@ -223,6 +224,9 @@ class Scene extends ThreeScene {
   }
 
   static decode(buffer) {
+    if (buffer[0] === 0x78 && buffer[1] === 0x9c) {
+      buffer = Pako.inflate(buffer);
+    }
     const message = protocol.Message.decode(buffer);
     message.type = protocol.Message.Type[message.type];
     if (message.json) {
