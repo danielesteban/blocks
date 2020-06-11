@@ -1,7 +1,7 @@
 {
   "recommendations": [
-    "mgmcdermott.vscode-language-babel",
     "dbaeumer.vscode-eslint",
-    "jedmao.tabsanity"
+    "jedmao.tabsanity",
+    "zxh404.vscode-proto3"
   ]
 }
