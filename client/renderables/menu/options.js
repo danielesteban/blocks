@@ -1,3 +1,5 @@
+import { Color } from '../../core/three.js';
+
 // Options UI
 
 const Options = ({
@@ -6,6 +8,7 @@ const Options = ({
   width,
   height,
 }) => {
+  const color = new Color();
   const state = { blockType: 0x01 };
   const setBlock = (type) => {
     const [block, glass, light] = buttons; // eslint-disable-line no-use-before-define
@@ -106,7 +109,7 @@ const Options = ({
   const graphics = [
     ({ ctx }) => {
       ctx.translate(width * 0.0625, height * 0.3125);
-      ctx.fillStyle = `#${menu.picker.color.getHexString()}`;
+      ctx.fillStyle = `#${color.copy(menu.picker.color).convertLinearToGamma().getHexString()}`;
       ctx.strokeStyle = '#000';
       ctx.beginPath();
       ctx.rect(0, 0, width * 0.1875, width * 0.1875);

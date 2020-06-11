@@ -36,12 +36,12 @@ const ColorPicker = ({
       colors.unshift(hex);
       localStorage.setItem(PaletteStorageKey, JSON.stringify(colors));
       buttons.forEach(((button, i) => {
-        button.background = `#${aux.setHex(colors[i] || 0).getHexString()}`;
+        button.background = `#${aux.setHex(colors[i] || 0).convertLinearToGamma().getHexString()}`;
       }));
     },
   };
   palette.buttons = [...Array(palette.count)].map((v, i) => ({
-    background: `#${aux.setHex(palette.colors[i] || 0).getHexString()}`,
+    background: `#${aux.setHex(palette.colors[i] || 0).convertLinearToGamma().getHexString()}`,
     x: palette.x + ((palette.size + palette.spacing) * i),
     y: palette.y,
     width: palette.size,
@@ -79,7 +79,7 @@ const ColorPicker = ({
         height,
       } = area;
       ctx.translate(x, y);
-      ctx.fillStyle = `#${area.color.getHexString()}`;
+      ctx.fillStyle = `#${aux.copy(area.color).convertLinearToGamma().getHexString()}`;
       ctx.fillRect(0, 0, width, height);
 
       const grdWhite = ctx.createLinearGradient(0, 0, width, 0);
@@ -141,20 +141,24 @@ const ColorPicker = ({
             && pointer.y <= y + height
           ) {
             const imageData = ctx.getImageData(pointer.x, pointer.y, 1, 1).data;
-            color.setRGB(
-              imageData[0] / 0xFF,
-              imageData[1] / 0xFF,
-              imageData[2] / 0xFF
-            );
+            color
+              .setRGB(
+                imageData[0] / 0xFF,
+                imageData[1] / 0xFF,
+                imageData[2] / 0xFF
+              )
+              .convertGammaToLinear();
             palette.update();
             if (i === 0) {
               menu.setPage(page.back);
             } else {
-              area.color.setRGB(
-                imageData[0] / 0xFF,
-                imageData[1] / 0xFF,
-                imageData[2] / 0xFF
-              );
+              area.color
+                .setRGB(
+                  imageData[0] / 0xFF,
+                  imageData[1] / 0xFF,
+                  imageData[2] / 0xFF
+                )
+                .convertGammaToLinear();
               menu.draw();
             }
             break;
