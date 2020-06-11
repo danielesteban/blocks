@@ -1,5 +1,3 @@
-import { Color } from '../../core/three.js';
-
 // Skin UI
 
 const Skin = ({
@@ -8,7 +6,6 @@ const Skin = ({
   width,
   height,
 }) => {
-  const color = new Color();
   const setLayer = (layer) => {
     const [opaque, transparent] = buttons; // eslint-disable-line no-use-before-define
     delete opaque.background;
@@ -88,7 +85,7 @@ const Skin = ({
   const graphics = [
     ({ ctx }) => {
       ctx.translate(width * 0.0625, height * 0.3125);
-      ctx.fillStyle = `#${color.copy(menu.picker.color).convertLinearToGamma().getHexString()}`;
+      ctx.fillStyle = `#${menu.picker.color.getHexString()}`;
       ctx.strokeStyle = '#000';
       ctx.beginPath();
       ctx.rect(0, 0, width * 0.1875, width * 0.1875);
