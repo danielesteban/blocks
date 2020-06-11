@@ -85,7 +85,7 @@ class Head extends Mesh {
       1,
       1
     ).data;
-    return { r: r / 0xFF, g: g / 0xFF, b: b / 0xFF };
+    return { r, g, b };
   }
 
   getLayer() {
