@@ -341,7 +341,12 @@ class World extends Scene {
     translocables.length = 0;
     chunks.voxels.forEach((mesh) => {
       if (chunks.player.distanceTo(mesh.chunk) <= 4) {
-        translocables.push(mesh, mesh.transparentMesh);
+        if (mesh.visible) {
+          translocables.push(mesh);
+        }
+        if (mesh.transparentMesh.visible) {
+          translocables.push(mesh.transparentMesh);
+        }
       }
     });
     this.needsTranslocablesUpdate = false;
