@@ -20,7 +20,7 @@
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "fastnoisejs": "^1.0.1",
-    "helmet": "^3.22.0",
+    "helmet": "^3.22.1",
     "pngjs": "^5.0.0",
     "protobufjs": "^6.9.0",
     "uuid": "^8.1.0",
@@ -28,9 +28,9 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.1",
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2",
     "nodemon": "^2.0.4",
     "pre-commit": "^1.2.2"
   }

@@ -1,4 +1,3 @@
-
 import SimplePeer from './simplepeer.js';
 import { Object3D } from './three.js';
 import Peer from '../renderables/peer.js';
