@@ -144,11 +144,13 @@ class World extends Room {
         x -= Chunk.size * chunk.x;
         z -= Chunk.size * chunk.z;
         chunk = this.getChunk(chunk);
+        if (chunk.needsPropagation) {
+          return;
+        }
         const { type: current } = chunk.get(x, y, z);
         if (
-          chunk.needsPropagation
+          (current !== Chunk.types.air && type !== Chunk.types.air)
           || (current === Chunk.types.air && type === Chunk.types.air)
-          || (current === Chunk.types.light && type === Chunk.types.light)
         ) {
           return;
         }
