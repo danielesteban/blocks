@@ -190,13 +190,17 @@ class Scene extends ThreeScene {
 
   connect(url) {
     const { peers } = this;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-    }
     if (this.server) {
       this.server.onclose = null;
       this.server.onmessage = null;
       this.server.close();
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+      }
+      const error = document.getElementById('error');
+      if (error) {
+        error.parentNode.removeChild(error);
+      }
     }
     const socket = new URL(url);
     socket.protocol = socket.protocol.replace(/http/, 'ws');
