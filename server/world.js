@@ -146,7 +146,7 @@ class World extends Room {
         chunk = this.getChunk(chunk);
         const { type: current } = chunk.get(x, y, z);
         if (
-          !chunk.meshes
+          chunk.needsPropagation
           || (current === Chunk.types.air && type === Chunk.types.air)
           || (current === Chunk.types.light && type === Chunk.types.light)
         ) {
