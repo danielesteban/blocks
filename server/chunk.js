@@ -475,7 +475,13 @@ class Chunk {
               const nx = x + offset.x;
               const nz = z + offset.z;
               const neighbor = this.get(nx, ny, nz);
-              if (isTransparent(neighbor.type) && neighbor[key] !== 0) {
+              if (
+                neighbor[key] !== 0
+                && (
+                  isTransparent(neighbor.type)
+                  || (key === 'light' && neighbor.type === types.light)
+                )
+              ) {
                 queue.push({ x: nx, y: ny, z: nz });
               }
             });
