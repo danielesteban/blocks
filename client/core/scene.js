@@ -201,6 +201,7 @@ class Scene extends ThreeScene {
       if (error) {
         error.parentNode.removeChild(error);
       }
+      peers.reset();
     }
     const socket = new URL(url);
     socket.protocol = socket.protocol.replace(/http/, 'ws');
