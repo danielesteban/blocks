@@ -53,16 +53,19 @@ class Map {
         (x < 0 || x >= size || z < 0 || z >= size) ? (
           0xFF
         ) : (
-          heightmap[x][z]
+          heightmap[(x * size) + z]
         )
       );
       for (let x = 0; x < size; x += 1) {
         for (let z = 0; z < size; z += 1) {
           const y = Math.min(height(x, z), maxHeight - 1);
-          const voxel = voxels[x][y][z];
+          const voxel = Chunk.getVoxel(x, y, z);
           const pixel = {
             x: (map.x + x) * 2,
             z: (map.z + z) * 2,
+            r: voxels[voxel + Chunk.fields.r],
+            g: voxels[voxel + Chunk.fields.g],
+            b: voxels[voxel + Chunk.fields.b],
           };
           for (let v = 0; v < 4; v += 1) {
             let ao = 1;
@@ -94,9 +97,9 @@ class Map {
               (image.width * (pixel.z + Math.floor(v / 2)))
               + (pixel.x + (v % 2))
             ) * 3;
-            image.data[offset] = voxel.color.r * ao;
-            image.data[offset + 1] = voxel.color.g * ao;
-            image.data[offset + 2] = voxel.color.b * ao;
+            image.data[offset] = pixel.r * ao;
+            image.data[offset + 1] = pixel.g * ao;
+            image.data[offset + 2] = pixel.b * ao;
           }
         }
       }

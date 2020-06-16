@@ -72,7 +72,7 @@ class World extends Room {
       x: Math.floor(Math.random() * Chunk.size),
       z: Math.floor(Math.random() * Chunk.size),
     };
-    spawn.y = chunk.heightmap[spawn.x][spawn.z];
+    spawn.y = chunk.heightmap[(spawn.x * Chunk.size) + spawn.z];
     spawn.x += chunk.x * Chunk.size;
     spawn.z += chunk.z * Chunk.size;
     return { seed, spawn };
@@ -147,7 +147,7 @@ class World extends Room {
         if (chunk.needsPropagation) {
           return;
         }
-        const { type: current } = chunk.get(x, y, z);
+        const current = chunk.voxels[Chunk.getVoxel(x, y, z)];
         if (
           (current !== Chunk.types.air && type !== Chunk.types.air)
           || (current === Chunk.types.air && type === Chunk.types.air)
@@ -206,6 +206,6 @@ class World extends Room {
   }
 }
 
-World.maxLoadedChunks = 512;
+World.maxLoadedChunks = 1024;
 
 module.exports = World;
