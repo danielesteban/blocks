@@ -149,8 +149,11 @@ class Voxels extends Object3D {
       mesh.visible = true;
     });
 
-    this.updateMatrixWorld();
+    super.updateMatrixWorld();
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  updateMatrixWorld() {}
 
   static updateHeightmap({ geometry, heightmap }) {
     const aux = { x: 0, y: 0, z: 0 };
