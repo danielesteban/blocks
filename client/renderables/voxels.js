@@ -2,6 +2,7 @@ import {
   BufferGeometry,
   Mesh,
   BufferAttribute,
+  Object3D,
   ShaderLib,
   ShaderMaterial,
   UniformsUtils,
@@ -10,7 +11,7 @@ import {
 
 // Voxels chunk
 
-class Voxels extends Mesh {
+class Voxels extends Object3D {
   static setupMaterial() {
     Voxels.material = new ShaderMaterial({
       name: 'voxels-material',
@@ -75,17 +76,16 @@ class Voxels extends Mesh {
     if (!Voxels.material || !Voxels.transparentMaterial) {
       Voxels.setupMaterial();
     }
-    super(
-      new BufferGeometry(),
-      Voxels.material
-    );
+    super();
     this.matrixAutoUpdate = false;
-    this.transparentMesh = new Mesh(
-      new BufferGeometry(),
-      Voxels.transparentMaterial
-    );
-    this.transparentMesh.matrixAutoUpdate = false;
-    this.add(this.transparentMesh);
+    this.meshes = {
+      opaque: new Mesh(new BufferGeometry(), Voxels.material),
+      transparent: new Mesh(new BufferGeometry(), Voxels.transparentMaterial),
+    };
+    ['opaque', 'transparent'].forEach((key) => {
+      this.meshes[key].matrixAutoUpdate = false;
+      this.add(this.meshes[key]);
+    });
   }
 
   dispose() {
@@ -96,10 +96,10 @@ class Voxels extends Mesh {
   update({
     chunk,
     heightmap,
-    opaque,
-    transparent,
+    geometries,
   }) {
     const { updateHeightmap } = Voxels;
+    const { meshes } = this;
 
     this.chunk = chunk;
     this.position
@@ -108,12 +108,14 @@ class Voxels extends Mesh {
     this.scale.set(0.5, 0.5, 0.5);
     this.updateMatrix();
 
-    [opaque, transparent].forEach(({
-      color,
-      light,
-      position,
-    }, isTransparent) => {
-      const mesh = isTransparent ? this.transparentMesh : this;
+    ['opaque', 'transparent'].forEach((key) => {
+      const {
+        color,
+        light,
+        position,
+      } = geometries[key];
+      const mesh = meshes[key];
+
       if (!position.length) {
         mesh.visible = false;
         return;

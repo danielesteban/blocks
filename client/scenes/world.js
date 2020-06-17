@@ -256,7 +256,7 @@ class World extends Scene {
       }
       const heightmap = new Uint8Array(256);
       chunks.heightmaps.set(key, heightmap);
-      meshes.forEach(({ opaque, transparent }, subchunk) => {
+      meshes.forEach((geometries, subchunk) => {
         const key = `${x}:${z}:${subchunk}`;
         let mesh = chunks.voxels.get(key);
         if (!mesh) {
@@ -269,9 +269,8 @@ class World extends Scene {
         }
         mesh.update({
           chunk: { x, y: subchunk, z },
+          geometries,
           heightmap,
-          opaque,
-          transparent,
         });
       });
       chunks.loaded.set(key, { x, z });
@@ -339,13 +338,13 @@ class World extends Scene {
   updateTranslocables() {
     const { chunks, translocables } = this;
     translocables.length = 0;
-    chunks.voxels.forEach((mesh) => {
-      if (chunks.player.distanceTo(mesh.chunk) <= 4) {
-        if (mesh.visible) {
-          translocables.push(mesh);
+    chunks.voxels.forEach(({ chunk, meshes }) => {
+      if (chunks.player.distanceTo(chunk) <= 4) {
+        if (meshes.opaque.visible) {
+          translocables.push(meshes.opaque);
         }
-        if (mesh.transparentMesh.visible) {
-          translocables.push(mesh.transparentMesh);
+        if (meshes.transparent.visible) {
+          translocables.push(meshes.transparent);
         }
       }
     });
