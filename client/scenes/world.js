@@ -353,7 +353,7 @@ class World extends Scene {
 }
 
 World.dayDuration = 600;
-World.rainInterval = 1000;
+World.rainInterval = 1500;
 World.rainDuration = 300;
 World.renderRadius = 8;
 World.renderGrid = (() => {
