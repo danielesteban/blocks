@@ -144,25 +144,16 @@ module.exports = (app) => {
       }
       Location
         .findById(req.params.id)
-        .select('updatedAt')
+        .select('photo')
         .then((location) => {
           if (!location) {
-            return res.status(404).end();
+            res.status(404).end();
+            return;
           }
-          const lastModified = location.updatedAt.toUTCString();
-          if (req.get('if-modified-since') === lastModified) {
-            return res.status(304).end();
-          }
-          return Location
-            .findById(location._id)
-            .select('photo')
-            .then(({ photo }) => (
-              res
-                .set('Cache-Control', 'must-revalidate')
-                .set('Content-Type', 'image/jpeg')
-                .set('Last-Modified', lastModified)
-                .send(photo)
-            ));
+          res
+            .set('Cache-Control', 'public, max-age=15552000')
+            .type('image/jpeg')
+            .send(location.photo);
         })
         .catch(() => (
           res.status(500).end()
