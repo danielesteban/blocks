@@ -4,6 +4,9 @@ const Location = require('../models/location');
 const Server = require('../models/server');
 const User = require('../models/user');
 
+const host = process.env.HOST || 'https://blocks.gatunes.com/auth/';
+const client = process.env.CLIENT || 'https://blocks.gatunes.com/';
+
 module.exports = (app) => {
   const upload = multer({
     limits: { fileSize: 512000 },
@@ -60,14 +63,12 @@ module.exports = (app) => {
             .save()
             .then(() => (
               location
-                .populate('server', '-_id url')
-                .execPopulate()
                 .then(() => (
                   res.json({
                     _id: location._id,
                     position: location.position,
                     rotation: location.rotation,
-                    server: location.server.url,
+                    server: location.server,
                   })
                 ))
             ));
@@ -98,6 +99,51 @@ module.exports = (app) => {
 
   app.get(
     '/location/:id',
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      Location
+        .findById(req.params.id)
+        .select('position server')
+        .populate('server', '-_id url')
+        .then((location) => {
+          if (!location) {
+            res.status(404).end();
+            return;
+          }
+          const { _id, position: { x, y, z }, server: { url } } = location;
+          const redirect = (
+            `${client}#/server:${encodeURIComponent(url)}/x:${x}/y:${y}/z:${z}`
+          );
+          res
+            .set('Cache-Control', 'public, max-age=15552000')
+            .type('text/html')
+            .send([
+              '<html>',
+              '<head>',
+              `<meta property="og:url" content="${host}location/${_id}" />`,
+              `<meta property="og:title" content=${JSON.stringify(url)} />`,
+              `<meta property="og:description" content="X:${x} - Y:${y} - Z:${z}" />`,
+              `<meta property="og:image" content="${host}location/${_id}/photo" />`,
+              '<script>',
+              `window.location = ${JSON.stringify(redirect)};`,
+              '</script>',
+              '</head>',
+              '</html>',
+            ].join('\n'));
+        })
+        .catch(() => (
+          res.status(500).end()
+        ));
+    }
+  );
+
+  app.get(
+    '/location/:id/photo',
     param('id')
       .isMongoId(),
     (req, res) => {
