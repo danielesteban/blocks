@@ -169,7 +169,7 @@ class World extends Scene {
       debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
       this.needsTranslocablesUpdate = true;
       if (hasCrossedBorder) {
-        const maxDistance = renderRadius * 1.5;
+        const maxDistance = renderRadius * 1.25;
         chunks.loaded.forEach((chunk) => {
           if (
             chunks.player.distanceTo(
