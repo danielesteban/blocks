@@ -31,7 +31,7 @@ module.exports = (app) => {
       const list = () => (
         Location
           .find(filter === 'user' ? { user: req.user._id } : {})
-          .select(`${filter !== 'user' ? '-_id ' : ''}position rotation server`)
+          .select('position rotation server')
           .populate('server', '-_id url')
           .sort('-createdAt')
           .skip(page * pageSize)
@@ -142,11 +142,28 @@ module.exports = (app) => {
         res.status(422).end();
         return;
       }
-      Location.findById(req.params.id)
-        .select('photo')
-        .then(({ photo }) => (
-          res.type('image/jpeg').end(photo)
-        ))
+      Location
+        .findById(req.params.id)
+        .select('updatedAt')
+        .then((location) => {
+          if (!location) {
+            return res.status(404).end();
+          }
+          const lastModified = location.updatedAt.toUTCString();
+          if (req.get('if-modified-since') === lastModified) {
+            return res.status(304).end();
+          }
+          return Location
+            .findById(location._id)
+            .select('photo')
+            .then(({ photo }) => (
+              res
+                .set('Cache-Control', 'must-revalidate')
+                .set('Content-Type', 'image/jpeg')
+                .set('Last-Modified', lastModified)
+                .send(photo)
+            ));
+        })
         .catch(() => (
           res.status(500).end()
         ));
