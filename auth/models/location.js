@@ -20,9 +20,13 @@ const LocationSchema = new mongoose.Schema({
       required: true,
     },
   },
+  rotation: {
+    type: Number,
+    required: true,
+  },
   server: {
-    type: String,
-    lowercase: true,
+    type: mongoose.Types.ObjectId,
+    ref: 'Server',
     index: true,
     required: true,
   },

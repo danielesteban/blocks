@@ -6,6 +6,7 @@ const {
 } = require('express-validator');
 const multer = require('multer');
 const Location = require('../models/location');
+const Server = require('../models/server');
 const User = require('../models/user');
 
 module.exports = (app) => {
@@ -30,12 +31,16 @@ module.exports = (app) => {
       const list = () => (
         Location
           .find(filter === 'user' ? { user: req.user._id } : {})
-          .select('position server')
+          .select(`${filter !== 'user' ? '-_id ' : ''}position rotation server`)
+          .populate('server', '-_id url')
           .sort('-createdAt')
           .skip(page * pageSize)
           .limit(pageSize)
           .then((locations) => (
-            res.json(locations)
+            res.json(locations.map((location) => ({
+              ...location._doc,
+              server: location.server.url,
+            })))
           ))
           .catch(() => res.status(500).end())
       );
@@ -62,6 +67,9 @@ module.exports = (app) => {
     body('positionZ')
       .isInt()
       .toInt(),
+    body('rotation')
+      .isFloat()
+      .toFloat(),
     (req, res) => {
       if (
         !req.file
@@ -71,22 +79,36 @@ module.exports = (app) => {
         res.status(422).end();
         return;
       }
-      const location = new Location({
-        photo: req.file.buffer,
-        position: {
-          x: req.body.positionX,
-          y: req.body.positionY,
-          z: req.body.positionZ,
-        },
-        server: req.body.server,
-        user: req.user._id,
-      });
-      location.save()
-        .then(() => res.json({
-          _id: location._id,
-          position: location.position,
-          server: location.server,
-        }))
+      Server
+        .findOrCreate({ url: req.body.server })
+        .then((server) => {
+          const location = new Location({
+            photo: req.file.buffer,
+            position: {
+              x: req.body.positionX,
+              y: req.body.positionY,
+              z: req.body.positionZ,
+            },
+            rotation: req.body.rotation,
+            server: server._id,
+            user: req.user._id,
+          });
+          return location
+            .save()
+            .then(() => (
+              location
+                .populate('server', '-_id url')
+                .execPopulate()
+                .then(() => (
+                  res.json({
+                    _id: location._id,
+                    position: location.position,
+                    rotation: location.rotation,
+                    server: location.server.url,
+                  })
+                ))
+            ));
+        })
         .catch(() => res.status(400).end());
     }
   );
