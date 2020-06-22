@@ -33,7 +33,7 @@ class World extends Scene {
     this.background = new Color();
     this.birds = new Birds({ anchor: this.player });
     this.add(this.birds);
-    this.fog = new FogExp2(0, 0.02);
+    this.fog = new FogExp2(0, 0.03);
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
     this.rain = new Rain({ anchor: this.player, heightmaps: this.chunks.heightmaps });
@@ -355,7 +355,7 @@ class World extends Scene {
 World.dayDuration = 600;
 World.rainInterval = 1000;
 World.rainDuration = 300;
-World.renderRadius = 10;
+World.renderRadius = 8;
 World.renderGrid = (() => {
   const grid = [];
   const center = new Vector2();
