@@ -1,9 +1,4 @@
-const {
-  body,
-  param,
-  query,
-  validationResult,
-} = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const multer = require('multer');
 const Location = require('../models/location');
 const Server = require('../models/server');
@@ -17,39 +12,7 @@ module.exports = (app) => {
 
   app.get(
     '/locations',
-    query('page')
-      .optional()
-      .isInt()
-      .toInt(),
-    query('filter')
-      .optional()
-      .isIn(['latest', 'user']),
-    (req, res) => {
-      const page = req.query.page || 0;
-      const pageSize = 10;
-      const filter = req.query.filter || 'latest';
-      const list = () => (
-        Location
-          .find(filter === 'user' ? { user: req.user._id } : {})
-          .select('position rotation server')
-          .populate('server', '-_id url')
-          .sort('-createdAt')
-          .skip(page * pageSize)
-          .limit(pageSize)
-          .then((locations) => (
-            res.json(locations.map((location) => ({
-              ...location._doc,
-              server: location.server.url,
-            })))
-          ))
-          .catch(() => res.status(500).end())
-      );
-      if (filter === 'user') {
-        User.authenticate(req, res, list);
-        return;
-      }
-      list();
-    }
+    Location.list({ filter: 'latest' })
   );
 
   app.post(

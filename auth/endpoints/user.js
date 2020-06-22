@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
+const Location = require('../models/location');
 const User = require('../models/user');
 
 module.exports = (app) => {
@@ -14,6 +15,12 @@ module.exports = (app) => {
     (req, res) => {
       res.json(req.user.getNewSession());
     }
+  );
+
+  app.get(
+    '/user/locations',
+    User.authenticate,
+    Location.list({ filter: 'user' })
   );
 
   app.get(

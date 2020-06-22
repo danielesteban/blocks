@@ -1,3 +1,4 @@
+const { param, query, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const sharp = require('sharp');
 
@@ -60,5 +61,52 @@ LocationSchema.pre('save', function onSave(next) {
     .then(() => next())
     .catch(next);
 });
+
+LocationSchema.statics = {
+  list({
+    filter = 'latest',
+    pageSize = 10,
+  }) {
+    const Location = this;
+    return [
+      ...(filter === 'server' ? [
+        param('server')
+          .isMongoId(),
+      ] : []),
+      query('page')
+        .optional()
+        .isInt()
+        .toInt(),
+      (req, res) => {
+        if (!validationResult(req).isEmpty()) {
+          res.status(422).end();
+          return;
+        }
+        const page = req.query.page || 0;
+        const selector = {};
+        switch (filter) {
+          case 'server':
+            selector.server = req.params.server;
+            break;
+          case 'user':
+            selector.user = req.user._id;
+            break;
+          default:
+            break;
+        }
+        Location
+          .find(selector)
+          .select(`position rotation${filter !== 'server' ? ' server' : ''}`)
+          .sort('-createdAt')
+          .skip(page * pageSize)
+          .limit(pageSize)
+          .then((locations) => (
+            res.json(locations)
+          ))
+          .catch(() => res.status(500).end());
+      },
+    ];
+  },
+};
 
 module.exports = mongoose.model('Location', LocationSchema);

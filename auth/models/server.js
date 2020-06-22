@@ -7,6 +7,7 @@ const ServerSchema = new mongoose.Schema({
     lowercase: true,
     index: true,
     required: true,
+    unique: true,
   },
 }, { timestamps: true });
 

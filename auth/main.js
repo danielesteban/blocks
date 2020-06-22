@@ -4,6 +4,7 @@ const express = require('express');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
 const setupLocationEndpoints = require('./endpoints/location');
+const setupServerEndpoints = require('./endpoints/server');
 const setupUserEndpoints = require('./endpoints/user');
 
 const app = express();
@@ -16,6 +17,7 @@ const server = app.listen(process.env.PORT || 8080, () => (
 ));
 
 setupLocationEndpoints(app);
+setupServerEndpoints(app);
 setupUserEndpoints(app);
 app.use((req, res) => res.status(404).end());
 // eslint-disable-next-line no-unused-vars
