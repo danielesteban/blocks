@@ -9,7 +9,9 @@
  * `CLIENT` serve the client (boolean, defaults to true)
  * `GENERATOR` the world [generator](server/generators.js) function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
+ * `NAME` the server name (for the public registry)
  * `PRELOAD` a chunk radius around the spawn area to be preloaded
+ * `PUBLIC_URL` public url of the server (for the public registry)
  * `SEED` 16bit world generation seed. (0 - 65535)
  * `STORAGE` directory in where to store the generated/modified chunks
 
@@ -32,7 +34,9 @@ services:
   server:
     image: danigatunes/blocks:latest
     environment:
+     - NAME=Your Server Name
      - PRELOAD=10
+     - PUBLIC_URL=https://yourserver.url/
      - SEED=1234
      - STORAGE=/data
     ports:
@@ -42,10 +46,6 @@ services:
 volumes:
   data:
 ```
-
-#### If you deployed a server and would like it to appear on the public list
-
-Add it to [servers.json](servers.json) and make a PR or drop me a line on [twitter](https://twitter.com/DaniGatunes)
 
 #### Local development
 

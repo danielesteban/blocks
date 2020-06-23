@@ -225,6 +225,6 @@ class Map extends Panel {
   }
 }
 
-Map.servers = 'https://raw.githubusercontent.com/danielesteban/blocks/master/servers.json';
+Map.servers = 'https://blocks.gatunes.com/auth/servers';
 
 export default Map;
