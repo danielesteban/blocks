@@ -27,7 +27,7 @@ module.exports = (app) => {
     User.authenticate,
     upload.single('photo'),
     body('server')
-      .isURL({ protocols: ['https'] }),
+      .isMongoId(),
     body('positionX')
       .isInt()
       .toInt(),
@@ -50,8 +50,12 @@ module.exports = (app) => {
         return;
       }
       Server
-        .findOrCreate({ url: req.body.server })
+        .findById(req.body.server)
+        .select('_id')
         .then((server) => {
+          if (!server) {
+            throw new Error();
+          }
           const location = new Location({
             photo: req.file.buffer,
             position: {
@@ -113,15 +117,15 @@ module.exports = (app) => {
       Location
         .findById(req.params.id)
         .select('position server')
-        .populate('server', '-_id name url')
+        .populate('server', 'name url')
         .then((location) => {
           if (!location) {
             res.status(404).end();
             return;
           }
-          const { _id, position: { x, y, z }, server: { name, url } } = location;
+          const { _id, position: { x, y, z }, server: { _id: server, name } } = location;
           const redirect = (
-            `${client}#/server:${encodeURIComponent(url)}/x:${x}/y:${y}/z:${z}`
+            `${client}#/server:${server}/x:${x}/y:${y}/z:${z}`
           );
           res
             .set('Cache-Control', 'public, max-age=15552000')

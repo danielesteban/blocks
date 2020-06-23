@@ -22,7 +22,7 @@ module.exports = (app) => {
       const page = req.query.page || 0;
       const pageSize = 10;
       Server
-        .find()
+        .find({ verified: true })
         .select('name url')
         .sort('-createdAt')
         .skip(page * pageSize)

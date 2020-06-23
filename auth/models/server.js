@@ -12,6 +12,10 @@ const ServerSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
   version: {
     type: String,
   },
