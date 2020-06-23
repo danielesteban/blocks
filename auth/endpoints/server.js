@@ -67,7 +67,7 @@ module.exports = (app) => {
       }
       Server
         .findById(req.params.id)
-        .select('url')
+        .select('name url')
         .then((server) => {
           if (!server) {
             res.status(404).end();
