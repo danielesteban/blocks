@@ -227,7 +227,7 @@ class Session {
     if (!session) {
       return;
     }
-    fetch(`${authService}user/skin`, {
+    fetch(`${authService}user`, {
       body: JSON.stringify({
         skin: skin.substr(skin.indexOf(',') + 1),
       }),
