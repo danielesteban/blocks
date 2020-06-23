@@ -1,14 +1,8 @@
 const { body, validationResult } = require('express-validator');
-const multer = require('multer');
 const Location = require('../models/location');
 const User = require('../models/user');
 
 module.exports = (app) => {
-  const upload = multer({
-    limits: { fileSize: 102400 },
-    storage: multer.memoryStorage(),
-  });
-
   app.get(
     '/user',
     User.authenticate,
@@ -39,18 +33,28 @@ module.exports = (app) => {
   );
 
   app.patch(
-    '/user/skin',
+    '/user',
+    body('name')
+      .optional()
+      .not().isEmpty()
+      .isLength({ min: 1, max: 25 })
+      .trim(),
+    body('skin')
+      .optional()
+      .isBase64(),
     User.authenticate,
-    upload.single('skin'),
     (req, res) => {
-      if (
-        !req.file
-        || req.file.mimetype !== 'image/png'
-      ) {
+      const { name, skin } = req.body;
+      if (!name && !skin) {
         res.status(422).end();
         return;
       }
-      req.user.skin = req.file.buffer;
+      if (name) {
+        req.user.name = name;
+      }
+      if (skin) {
+        req.user.skin = Buffer.from(skin, 'base64');
+      }
       req.user.save()
         .then(() => res.status(200).end())
         .catch(() => res.status(400).end());
@@ -95,7 +99,6 @@ module.exports = (app) => {
 
   app.post(
     '/users',
-    upload.single('skin'),
     body('email')
       .isEmail()
       .normalizeEmail(),
@@ -106,12 +109,10 @@ module.exports = (app) => {
     body('password')
       .not().isEmpty()
       .trim(),
+    body('skin')
+      .isBase64(),
     (req, res) => {
-      if (
-        !req.file
-        || req.file.mimetype !== 'image/png'
-        || !validationResult(req).isEmpty()
-      ) {
+      if (!validationResult(req).isEmpty()) {
         res.status(422).end();
         return;
       }
@@ -119,7 +120,7 @@ module.exports = (app) => {
         email: req.body.email,
         name: req.body.name,
         password: req.body.password,
-        skin: req.file.buffer,
+        skin: Buffer.from(req.body.skin, 'base64'),
       });
       user.save()
         .then(() => res.json(user.getNewSession()))

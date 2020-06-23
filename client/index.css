@@ -8,18 +8,90 @@ body {
   font-family: monospace;
 }
 
+button {
+  box-sizing: border-box;
+  background: #333;
+  color: #fff;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 0;
+  outline: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button.primary {
+  background: #393;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+
+input[type="email"], input[type="password"], input[type="text"] {
+  display: inline-block;
+  vertical-align: middle;
+  width: 220px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 0.5rem;
+  outline: 0;
+  margin-bottom: 0.5rem;
+}
+
 canvas {
   vertical-align: middle;
 }
 
-#credits, #info {
+.dialog {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, .5);
+}
+
+.dialog.open {
+  display: block;
+}
+
+.dialog > form {
   position: absolute;
-  bottom: 1rem;
-  opacity: 0.3;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  background: #111;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.dialog > form .spacer {
+  margin: 1rem 0;
+  background: #333;
+  width: 100%;
+  height: 1px;
+}
+
+.dialog > form > a {
+  color: #888;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 #credits {
+  position: absolute;
+  bottom: 1rem;
   left: 1rem;
+  opacity: 0.3;
 }
 
 #credits > a {
@@ -50,8 +122,10 @@ canvas {
 }
 
 #info {
-  right: 1rem;
-  text-align: right;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  opacity: 0.3;
 }
 
 #error {
@@ -66,6 +140,40 @@ canvas {
 #mount {
   width: 100vw;
   height: 100vh;
+}
+
+#session {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px 0 0 4px;
+  overflow: hidden;
+}
+
+#session > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#session > div > canvas {
+  width: 60px;
+  height: 60px;
+}
+
+#session > div > button {
+  width: 80px;
+  margin: 0 1.5rem;
+}
+
+#session > div:first-child {
+  box-sizing: border-box;
+  padding: 0.25rem;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 #support.supported {

@@ -33,9 +33,36 @@
       </svg>
     </a>
     <div id="info">
-      chunk: <span id="chunk">···</span><br />
       seed: <span id="seed">···</span><br />
+      chunk: <span id="chunk">···</span><br />
       players: <span id="players">···</span>
+    </div>
+    <div id="session" style="display:none">
+      <div></div>
+      <div>
+        <button type="button"></button>
+        <canvas></canvas>
+      </div>
+    </div>
+    <div id="login" class="dialog">
+      <form>
+        <input placeholder="Email" name="email" type="email" required />
+        <input placeholder="Password" name="password" type="password" required />
+        <button class="primary" name="submit" type="submit">Login</button>
+        <div class="spacer"></div>
+        <a>Create an account</a>
+      </form>
+    </div>
+    <div id="register" class="dialog">
+      <form>
+        <input placeholder="Name" name="name" type="text" required />
+        <input placeholder="Email" name="email" type="email" required />
+        <input placeholder="Password" name="password" type="password" required />
+        <input placeholder="Confirm Password" name="confirmPassword" type="password" required />
+        <button class="primary" name="submit" type="submit">Register</button>
+        <div class="spacer"></div>
+        <a>Already have an account?</a>
+      </form>
     </div>
   </body>
 </html>

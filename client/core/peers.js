@@ -34,7 +34,7 @@ class Peers extends Object3D {
     });
   }
 
-  broadcast({ controllers, head, skin }) {
+  broadcast({ controllers, head, session: { skin } }) {
     const { peers } = this;
     const hands = controllers
       .filter(({ hand }) => (!!hand))

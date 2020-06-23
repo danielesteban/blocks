@@ -11,6 +11,7 @@ import Hand from '../renderables/hand.js';
 import Head from '../renderables/head.js';
 import Marker from '../renderables/marker.js';
 import Pointer from '../renderables/pointer.js';
+import Session from './session.js';
 
 // Player controller
 
@@ -83,14 +84,13 @@ class Player extends Object3D {
       return controller;
     });
     this.desktopControls = new DesktopControls({ mount, xr });
-    {
-      let skin = localStorage.getItem('blocks::skin');
-      if (!skin) {
-        skin = Head.generateTexture().toDataURL();
-        localStorage.setItem('blocks::skin', skin);
-      }
-      this.skin = skin;
-    }
+    this.session = new Session({
+      dialogs: {
+        login: document.getElementById('login'),
+        register: document.getElementById('register'),
+      },
+      state: document.getElementById('session'),
+    });
   }
 
   onAnimationTick({ camera, delta }) {
@@ -165,7 +165,7 @@ class Player extends Object3D {
   }
 
   editSkin(layer) {
-    const { head, skin, skinEditor } = this;
+    const { head, session: { skin }, skinEditor } = this;
     if (skinEditor) {
       skinEditor.setLayer(layer);
       return;
@@ -191,12 +191,12 @@ class Player extends Object3D {
   }
 
   saveSkin() {
-    const { skinEditor } = this;
+    const { session, skinEditor } = this;
     if (!skinEditor) {
       return;
     }
-    this.skin = skinEditor.renderer.toDataURL();
-    localStorage.setItem('blocks::skin', this.skin);
+    session.updateSkin(skinEditor.renderer.toDataURL());
+    session.uploadSkin();
     this.disposeSkinEditor();
   }
 
