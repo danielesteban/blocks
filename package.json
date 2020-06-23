@@ -11,7 +11,7 @@
   },
   "scripts": {
     "compile:protocol": "pbjs -t static-module -w es6 -o client/core/protocol.js --no-comments server/messages.proto",
-    "lint": "eslint --cache --ext .js auth client server",
+    "lint": "eslint --cache --ext .js client server",
     "start": "cross-env PRELOAD=10 SEED=34653 STORAGE=./data nodemon --watch server server/main.js"
   },
   "dependencies": {
