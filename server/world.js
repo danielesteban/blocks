@@ -6,9 +6,12 @@ const Room = require('./room');
 
 class World extends Room {
   constructor({
+    authService,
     generator,
     maxClients,
+    name,
     preload,
+    publicURL,
     seed,
     storage,
   }) {
@@ -16,7 +19,11 @@ class World extends Room {
       console.error('Must provide a SEED if you want STORAGE.\n');
       process.exit(1);
     }
-    super({ maxClients });
+    super({
+      authService,
+      maxClients,
+      name,
+    });
     this.chunks = new Map();
     this.seed = seed && !Number.isNaN(seed) ? (
       seed % 65536
@@ -48,6 +55,9 @@ class World extends Room {
         fs.mkdirSync(storage, { recursive: true });
       }
       setInterval(() => this.persist(), 60000);
+    }
+    if (publicURL) {
+      this.register(publicURL);
     }
   }
 
@@ -182,6 +192,21 @@ class World extends Room {
       default:
         break;
     }
+  }
+
+  onStatusRequest(req, res) {
+    const {
+      id,
+      name,
+      seed,
+      version,
+    } = this;
+    res.json({
+      id,
+      name,
+      seed,
+      version,
+    });
   }
 
   persist() {

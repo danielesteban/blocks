@@ -10,10 +10,13 @@ const Map = require('./map');
 const World = require('./world');
 
 const world = new World({
+  authService: process.env.AUTH_SERVICE || 'https://blocks.gatunes.com/auth/',
   generator: process.env.GENERATOR || 'default',
   maxClients: process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16,
+  name: process.env.NAME || 'Local server',
   seed: process.env.SEED ? parseInt(process.env.SEED, 10) : undefined,
   preload: process.env.PRELOAD ? parseInt(process.env.PRELOAD, 10) : undefined,
+  publicURL: process.env.PUBLIC_URL,
   storage: process.env.STORAGE,
 });
 const map = new Map({ world });
@@ -37,6 +40,7 @@ app.get(
   cors(),
   map.onRequest.bind(map)
 );
+app.get('/status', world.onStatusRequest.bind(world));
 if (process.env.CLIENT !== 'false') {
   app.use(express.static(path.join(__dirname, '..', 'client')));
 }

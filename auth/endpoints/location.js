@@ -1,4 +1,8 @@
-const { body, param, validationResult } = require('express-validator');
+const {
+  body,
+  param,
+  validationResult,
+} = require('express-validator');
 const multer = require('multer');
 const Location = require('../models/location');
 const Server = require('../models/server');
@@ -109,13 +113,13 @@ module.exports = (app) => {
       Location
         .findById(req.params.id)
         .select('position server')
-        .populate('server', '-_id url')
+        .populate('server', '-_id name url')
         .then((location) => {
           if (!location) {
             res.status(404).end();
             return;
           }
-          const { _id, position: { x, y, z }, server: { url } } = location;
+          const { _id, position: { x, y, z }, server: { name, url } } = location;
           const redirect = (
             `${client}#/server:${encodeURIComponent(url)}/x:${x}/y:${y}/z:${z}`
           );
@@ -126,7 +130,7 @@ module.exports = (app) => {
               '<html>',
               '<head>',
               `<meta property="og:url" content="${host}location/${_id}" />`,
-              `<meta property="og:title" content=${JSON.stringify(url)} />`,
+              `<meta property="og:title" content=${JSON.stringify(name)} />`,
               `<meta property="og:description" content="X:${x} - Y:${y} - Z:${z}" />`,
               `<meta property="og:image" content="${host}location/${_id}/photo" />`,
               '<script>',

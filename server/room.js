@@ -1,16 +1,25 @@
+const crypto = require('crypto');
+const fetch = require('node-fetch');
 const path = require('path');
 const protobuf = require('protobufjs');
 const { v4: uuid } = require('uuid');
 const zlib = require('zlib');
 
-const Message = protobuf
-  .loadSync(path.join(__dirname, 'messages.proto'))
-  .lookupType('protocol.Message');
+const Spec = path.join(__dirname, 'messages.proto');
+const Message = protobuf.loadSync(Spec).lookupType('protocol.Message');
+const Version = crypto.createHash('md5').update(Spec).digest('hex');
 
 class Room {
-  constructor({ maxClients }) {
+  constructor({
+    authService,
+    maxClients,
+    name,
+  }) {
+    this.authService = authService;
     this.clients = [];
     this.maxClients = maxClients;
+    this.name = name;
+    this.version = Version;
   }
 
   onClose(client) {
@@ -133,6 +142,24 @@ class Room {
       client.isAlive = false;
       client.ping(() => {});
     });
+  }
+
+  register(publicURL) {
+    const { authService } = this;
+    fetch(`${authService}server`, {
+      body: JSON.stringify({
+        url: publicURL,
+      }),
+      headers: { 'Content-Type': 'application/json' },
+      method: 'PUT',
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          res.json().then((id) => {
+            this.id = id;
+          });
+        }
+      });
   }
 
   static decode(buffer) {

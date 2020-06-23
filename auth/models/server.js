@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
-const WebSocket = require('ws');
+const fetch = require('node-fetch');
 
 const ServerSchema = new mongoose.Schema({
+  name: {
+    type: String,
+  },
   url: {
     type: String,
     lowercase: true,
@@ -9,25 +12,24 @@ const ServerSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  version: {
+    type: String,
+  },
 }, { timestamps: true });
 
 ServerSchema.pre('save', function onSave(next) {
   const server = this;
   const promises = [];
   if (server.isModified('url')) {
-    promises.push(new Promise((resolve, reject) => {
-      const url = new URL(server.url);
-      url.protocol = url.protocol.replace(/http/, 'ws');
-      const socket = new WebSocket(url.toString());
-      socket.on('error', (err) => {
-        socket.terminate();
-        reject(err);
-      });
-      socket.on('open', () => {
-        socket.terminate();
-        resolve();
-      });
-    }));
+    promises.push(
+      fetch(`${server.url}status`)
+        .then((res) => res.json())
+        .then(({ name, version }) => {
+          server.name = name;
+          server.version = version;
+          next();
+        })
+    );
   }
   if (!promises.length) {
     return next();
