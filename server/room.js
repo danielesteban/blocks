@@ -39,7 +39,13 @@ class Room {
   }
 
   onClient(client) {
-    const { clients, maxClients, pingInterval } = this;
+    const {
+      clients,
+      id,
+      maxClients,
+      name,
+      pingInterval,
+    } = this;
     if (clients.length >= maxClients) {
       client.send(Room.encode({
         type: 'ERROR',
@@ -52,6 +58,8 @@ class Room {
     client.send(Room.encode({
       type: 'INIT',
       json: {
+        id,
+        name,
         peers: clients.map(({ id }) => (id)),
         ...(this.onInit ? this.onInit(client) : {}),
       },
