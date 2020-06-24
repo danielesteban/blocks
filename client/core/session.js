@@ -11,10 +11,7 @@ class Session {
       const [form] = dialogs.login.getElementsByTagName('form');
       const [alternative] = dialogs.login.getElementsByTagName('a');
       form.addEventListener('submit', this.onLoginSubmit.bind(this));
-      alternative.addEventListener('click', () => {
-        dialogs.login.className = 'dialog';
-        dialogs.register.className = 'dialog open';
-      });
+      alternative.addEventListener('click', () => this.showDialog('register'));
       dialogs.login.addEventListener('click', ({ target }) => {
         if (target === dialogs.login) {
           dialogs.login.className = 'dialog';
@@ -25,10 +22,7 @@ class Session {
       const [form] = dialogs.register.getElementsByTagName('form');
       const [alternative] = dialogs.register.getElementsByTagName('a');
       form.addEventListener('submit', this.onRegisterSubmit.bind(this));
-      alternative.addEventListener('click', () => {
-        dialogs.register.className = 'dialog';
-        dialogs.login.className = 'dialog open';
-      });
+      alternative.addEventListener('click', () => this.showDialog('login'));
       dialogs.register.addEventListener('click', ({ target }) => {
         if (target === dialogs.register) {
           dialogs.register.className = 'dialog';
@@ -142,7 +136,6 @@ class Session {
 
   renderState() {
     const {
-      dialogs,
       session,
       state,
     } = this;
@@ -157,9 +150,7 @@ class Session {
       name.innerText = 'Guest';
       button.innerText = 'Login';
       button.className = 'primary';
-      button.onclick = () => {
-        dialogs.login.className = 'dialog open';
-      };
+      button.onclick = () => this.showDialog('login');
     }
   }
 
@@ -201,6 +192,14 @@ class Session {
         };
         reader.readAsDataURL(blob);
       });
+  }
+
+  showDialog(id) {
+    const { dialogs } = this;
+    Object.keys(dialogs).forEach((key) => {
+      dialogs[key].className = 'dialog';
+    });
+    dialogs[id].className = 'dialog open';
   }
 
   updateSession(session) {

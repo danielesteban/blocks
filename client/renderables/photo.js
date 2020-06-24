@@ -51,38 +51,59 @@ class Photo extends Object3D {
       height: 0.0375,
       page: 0,
       styles: {
+        background: 'transparent',
         font: '700 24px monospace',
       },
-      pages: [{
-        buttons: [
-          {
-            label: 'X',
-            x: 0,
-            y: 0,
-            width: 96,
-            height: 48,
-            onPointer: () => {
-              this.visible = false;
+      pages: [
+        {
+          buttons: [
+            {
+              background: '#393',
+              label: 'Login to save',
+              x: 0,
+              y: 0,
+              width: 192,
+              height: 48,
+              onPointer: () => {
+                this.visible = false;
+                renderer.xr.getSession().end();
+                this.player.session.showDialog('login');
+              },
             },
-          },
-          {
-            background: '#393',
-            label: 'Save',
-            x: 96,
-            y: 0,
-            width: 96,
-            height: 48,
-            onPointer: () => {
-              if (
-                this.player.session.server
-                && this.player.session.session
-              ) {
-                this.save();
-              }
+          ],
+        },
+        {},
+        {
+          buttons: [
+            {
+              label: 'X',
+              x: 0,
+              y: 0,
+              width: 96,
+              height: 48,
+              onPointer: () => {
+                this.visible = false;
+              },
             },
-          },
-        ],
-      }],
+            {
+              background: '#393',
+              label: 'Save',
+              x: 96,
+              y: 0,
+              width: 96,
+              height: 48,
+              onPointer: () => {
+                if (
+                  this.player.session.server
+                  && this.player.session.session
+                ) {
+                  this.save();
+                }
+              },
+            },
+          ],
+        },
+      ],
       textureWidth: 192,
       textureHeight: 48,
     });
@@ -113,6 +134,7 @@ class Photo extends Object3D {
       player,
       renderer,
       target,
+      ui,
     } = this;
     camera.position.copy(player.head.position);
     camera.quaternion.copy(player.head.quaternion);
@@ -135,6 +157,13 @@ class Photo extends Object3D {
     player.controllers.forEach((controller) => {
       controller.visible = true;
     });
+    let page = 2;
+    if (!player.session.session) {
+      page = 0;
+    } else if (!player.session.server) {
+      page = 1;
+    }
+    ui.setPage(page);
     this.visible = true;
   }
 
