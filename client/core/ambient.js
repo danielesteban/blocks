@@ -22,14 +22,29 @@ class Ambient {
     this.sounds = sounds.map((sound, i) => {
       const audio = new Audio(listener);
       audio.setBuffer(buffers[i]);
-      audio.setLoop(true);
-      audio.setVolume(sound.effect && effects[sound.effect] ? (gain * 0.5) : 0);
-      audio.play();
+      if (sound.trigger) {
+        audio.setVolume(gain);
+      } else {
+        audio.setLoop(true);
+        audio.setVolume(sound.effect && effects[sound.effect] ? (gain * 0.5) : 0);
+        audio.play();
+      }
       return {
         ...sound,
         audio,
       };
     });
+  }
+
+  trigger(name) {
+    const { sounds } = this;
+    if (!sounds) {
+      return;
+    }
+    const sound = sounds.find(({ trigger }) => (trigger === name));
+    if (sound) {
+      sound.audio.play();
+    }
   }
 
   updateAltitude(altitude) {
@@ -81,6 +96,10 @@ Ambient.sounds = [
   {
     name: 'rain',
     effect: 'rain',
+  },
+  {
+    name: 'shutter',
+    trigger: 'shutter',
   },
 ];
 

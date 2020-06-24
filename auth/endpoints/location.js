@@ -70,15 +70,12 @@ module.exports = (app) => {
           return location
             .save()
             .then(() => (
-              location
-                .then(() => (
-                  res.json({
-                    _id: location._id,
-                    position: location.position,
-                    rotation: location.rotation,
-                    server: location.server,
-                  })
-                ))
+              res.json({
+                _id: location._id,
+                position: location.position,
+                rotation: location.rotation,
+                server: location.server,
+              })
             ));
         })
         .catch(() => res.status(400).end());

@@ -153,12 +153,13 @@ class Scene extends ThreeScene {
     json,
     signal,
   }) {
-    const { peers, server } = this;
+    const { peers, player, server } = this;
     switch (type) {
       case 'ERROR':
         server.error = text;
         break;
       case 'INIT':
+        player.session.server = json.id;
         peers.init({
           server,
           peers: json.peers,

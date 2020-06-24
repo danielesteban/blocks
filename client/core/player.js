@@ -57,6 +57,9 @@ class Player extends Object3D {
         quaternion: new Quaternion(),
       };
       controller.addEventListener('connected', ({ data: { handedness, gamepad } }) => {
+        if (controller.hand) {
+          return;
+        }
         const hand = new Hand({ handedness });
         controller.hand = hand;
         controller.gamepad = gamepad;
@@ -69,6 +72,9 @@ class Player extends Object3D {
         }
       });
       controller.addEventListener('disconnected', () => {
+        if (!controller.hand) {
+          return;
+        }
         const attachments = this.attachments[controller.hand.handedness];
         if (attachments) {
           attachments.forEach((attachment) => {

@@ -238,6 +238,32 @@ class Session {
       method: 'PATCH',
     });
   }
+
+  uploadLocation({
+    blob,
+    position,
+    rotation,
+  }) {
+    const { authService } = Session;
+    const { session, server } = this;
+    if (!session || !server) {
+      return;
+    }
+    const body = new FormData();
+    body.append('photo', blob);
+    body.append('positionX', position.x);
+    body.append('positionY', position.y);
+    body.append('positionZ', position.z);
+    body.append('rotation', rotation);
+    body.append('server', server);
+    fetch(`${authService}locations`, {
+      body,
+      headers: {
+        Authorization: `Bearer ${session.token}`,
+      },
+      method: 'POST',
+    });
+  }
 }
 
 Session.authService = 'https://blocks.gatunes.com/auth/';

@@ -10,6 +10,7 @@ import Clouds from '../renderables/clouds.js';
 import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu/index.js';
 import Help from '../renderables/help.js';
+import Photo from '../renderables/photo.js';
 import Rain from '../renderables/rain.js';
 import Scene from '../core/scene.js';
 import Sun from '../renderables/sun.js';
@@ -44,12 +45,17 @@ class World extends Scene {
 
     this.map = new MapUI({ world: this });
     this.menu = new Menu({ world: this });
+    this.photo = new Photo({
+      player: this.player,
+      renderer: renderer.renderer,
+    });
     const { attachments } = this.player;
-    attachments.left = [this.menu];
+    attachments.left = [this.menu, this.photo];
     attachments.right = [this.map];
     this.ui.push(
-      ...attachments.left,
-      ...attachments.right
+      this.menu,
+      this.photo.ui,
+      this.map
     );
     this.player.setWelcome(new Help());
   }
@@ -70,6 +76,7 @@ class World extends Scene {
       map,
       menu,
       player,
+      photo,
       rain,
       server,
       sun,
@@ -82,6 +89,7 @@ class World extends Scene {
           grip,
           gripUp,
           primary,
+          primaryDown,
           primaryUp,
           trigger,
           triggerUp,
@@ -104,7 +112,13 @@ class World extends Scene {
       ) {
         return;
       }
-      const isPicking = primary || primaryUp;
+      if (hand.handedness === 'left' && (primary || primaryUp)) {
+        if (primaryDown) {
+          photo.update(scene);
+          ambient.trigger('shutter');
+        }
+        return;
+      }
       const hit = (player.skinEditor ? (
         raycaster.intersectObject(player.skinEditor.getLayer())
       ) : (
@@ -119,8 +133,7 @@ class World extends Scene {
       });
       if (gripUp || primaryUp || triggerUp) {
         const { point, face, uv } = hit;
-        const remove = grip || gripUp;
-        if (isPicking) {
+        if (hand.handedness === 'right' && (primary || primaryUp)) {
           let color;
           if (player.skinEditor) {
             color = player.skinEditor.getColor(uv);
@@ -131,6 +144,7 @@ class World extends Scene {
           menu.picker.setColor(color);
           return;
         }
+        const remove = grip || gripUp;
         if (player.skinEditor) {
           player.skinEditor.updatePixel({
             color: `#${menu.picker.color.getHexString()}`,

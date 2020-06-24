@@ -70,9 +70,14 @@ class Help extends UI {
               y: height * 0.55,
             },
             {
-              text: 'A/X BUTTON: Pick Color',
+              text: 'A BUTTON: Pick Color',
               x: width * 0.5,
               y: height * 0.65,
+            },
+            {
+              text: 'X BUTTON: Take Photo',
+              x: width * 0.5,
+              y: height * 0.75,
             },
           ],
         },
