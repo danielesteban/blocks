@@ -1,8 +1,4 @@
-const {
-  body,
-  param,
-  validationResult,
-} = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const multer = require('multer');
 const Location = require('../models/location');
 const Server = require('../models/server');
@@ -113,29 +109,36 @@ module.exports = (app) => {
       }
       Location
         .findById(req.params.id)
-        .select('position server')
-        .populate('server', 'name url')
+        .select('createdAt position server user')
+        .populate('server', '-_id name url')
+        .populate('user', '-_id name')
         .then((location) => {
           if (!location) {
             res.status(404).end();
             return;
           }
-          const { _id, position: { x, y, z }, server: { _id: server, name } } = location;
-          const redirect = (
-            `${client}#/server:${server}/x:${x}/y:${y}/z:${z}`
-          );
+          const {
+            _id,
+            createdAt,
+            position: { x, y, z },
+            server: { name: server },
+            user: { name: user },
+          } = location;
+          const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
+          const date = `${createdAt.getFullYear()}/${leadingZero(createdAt.getMonth() + 1)}/${leadingZero(createdAt.getDate())}`;
           res
             .set('Cache-Control', 'public, max-age=15552000')
             .type('text/html')
             .send([
               '<html>',
               '<head>',
+              '<meta charset="utf-8">',
               `<meta property="og:url" content="${host}location/${_id}" />`,
-              `<meta property="og:title" content=${JSON.stringify(name)} />`,
-              `<meta property="og:description" content="X:${x} - Y:${y} - Z:${z}" />`,
+              `<meta property="og:title" content=${JSON.stringify(`${user} - ${server}`)} />`,
+              `<meta property="og:description" content="${date} @ x:${x} y:${y} z:${z}" />`,
               `<meta property="og:image" content="${host}location/${_id}/photo" />`,
               '<script>',
-              `window.location = ${JSON.stringify(redirect)};`,
+              `window.location = ${JSON.stringify(`${client}#/location:${_id}`)};`,
               '</script>',
               '</head>',
               '</html>',
