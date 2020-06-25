@@ -31,6 +31,7 @@ class Player extends Object3D {
     this.attachments = {};
     this.direction = new Vector3();
     this.head = new AudioListener();
+    this.head.rotation.order = 'YXZ';
     const onFirstInteraction = () => {
       document.removeEventListener('mousedown', onFirstInteraction);
       const { context } = this.head;
