@@ -90,8 +90,8 @@ module.exports = (app) => {
       Location
         .findById(req.params.id)
         .select('createdAt position server user')
-        .populate('server', '-_id name url')
-        .populate('user', '-_id name')
+        .populate('server', 'name')
+        .populate('user', 'name')
         .then((location) => {
           if (!location) {
             res.status(404).end();
@@ -105,7 +105,7 @@ module.exports = (app) => {
             user: { name: user },
           } = location;
           const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
-          const date = `${createdAt.getFullYear()}/${leadingZero(createdAt.getMonth() + 1)}/${leadingZero(createdAt.getDate())}`;
+          const date = `${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`;
           res
             .set('Cache-Control', 'public, max-age=15552000')
             .type('text/html')
@@ -114,8 +114,8 @@ module.exports = (app) => {
               '<head>',
               '<meta charset="utf-8">',
               `<meta property="og:url" content="${host}location/${_id}" />`,
-              `<meta property="og:title" content=${JSON.stringify(`${user} - ${server}`)} />`,
-              `<meta property="og:description" content="${date} @ x:${x} y:${y} z:${z}" />`,
+              `<meta property="og:title" content=${JSON.stringify(`x:${x} y:${y} z:${z} - ${server}`)} />`,
+              `<meta property="og:description" content=${JSON.stringify(`${user} - ${date}`)} />`,
               `<meta property="og:image" content="${host}location/${_id}/photo" />`,
               '<script>',
               `window.location = ${JSON.stringify(`${client}#/location:${_id}`)};`,

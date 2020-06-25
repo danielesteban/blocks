@@ -96,7 +96,14 @@ LocationSchema.statics = {
         }
         Location
           .find(selector)
-          .select(`position rotation${filter !== 'server' ? ' server' : ''}`)
+          .select([
+            'position',
+            'rotation',
+            ...(filter !== 'server' ? ['server'] : []),
+            ...(filter !== 'user' ? ['user'] : []),
+          ])
+          .populate('server', 'name')
+          .populate('user', 'name')
           .sort('-createdAt')
           .skip(page * pageSize)
           .limit(pageSize)

@@ -224,8 +224,8 @@ class Session {
             );
             user.innerText = (
               `${location.user.name}`
-              + ` - ${createdAt.getFullYear()}/${leadingZero(createdAt.getMonth() + 1)}/${leadingZero(createdAt.getDate())}`
-              + ` ${leadingZero(createdAt.getHours())}:${leadingZero(createdAt.getMinutes())}`
+              + ` - ${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`
+              + ` ${leadingZero(`${createdAt.getHours()}`)}:${leadingZero(`${createdAt.getMinutes()}`)}`
             );
             this.showDialog('location');
             return {
