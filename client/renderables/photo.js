@@ -139,11 +139,11 @@ class Photo extends Object3D {
     camera.position.copy(player.head.position);
     camera.quaternion.copy(player.head.quaternion);
     target.position = {
-      x: Math.floor(player.position.x / 0.5),
+      x: Math.floor(player.head.position.x / 0.5),
       y: Math.floor(player.position.y / 0.5),
-      z: Math.floor(player.position.z / 0.5),
+      z: Math.floor(player.head.position.z / 0.5),
     };
-    target.rotation = 0; // TODO!
+    target.rotation = player.head.rotation.y;
     this.visible = false;
     player.controllers.forEach((controller) => {
       controller.visible = false;

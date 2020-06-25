@@ -58,6 +58,30 @@ class World extends Scene {
       this.map
     );
     this.player.setWelcome(new Help());
+
+    const params = World.getURLParams();
+    if (params.location) {
+      this.player.session
+        .showLocation(params.location)
+        .then(({ server, position, rotation }) => {
+          this.player.spawn = {
+            position: (new Vector3()).copy(position)
+              .multiplyScalar(World.scale)
+              .add({
+                x: 0.25,
+                y: 0,
+                z: 0.25,
+              }),
+            rotation,
+          };
+          this.connect(server);
+        })
+        .catch(() => (
+          this.connect(params.server || document.location.toString())
+        ));
+    } else {
+      this.connect(params.server || document.location.toString());
+    }
   }
 
   onBeforeRender(renderer, scene, camera) {
@@ -72,7 +96,7 @@ class World extends Scene {
       birds,
       chunks,
       clouds,
-      debug,
+      dom,
       map,
       menu,
       player,
@@ -180,7 +204,7 @@ class World extends Scene {
     if (!chunks.player.equals(chunks.aux)) {
       const hasCrossedBorder = chunks.player.x !== chunks.aux.x || chunks.player.z !== chunks.aux.z;
       chunks.player.copy(chunks.aux);
-      debug.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
+      dom.chunk.innerText = `${chunks.player.x}:${chunks.player.y}:${chunks.player.z}`;
       this.needsTranslocablesUpdate = true;
       if (hasCrossedBorder) {
         const maxDistance = renderRadius * 1.25;
@@ -231,7 +255,7 @@ class World extends Scene {
       case 'INIT':
       case 'JOIN':
       case 'LEAVE':
-        this.debug.players.innerText = this.peers.peers.length + 1;
+        this.dom.players.innerText = this.peers.peers.length + 1;
         if (type === 'INIT') {
           this.onInit(event.json);
         }
@@ -246,16 +270,22 @@ class World extends Scene {
 
   onInit(data) {
     const { scale } = World;
-    const { chunks, debug, player } = this;
-    debug.seed.innerText = data.seed;
-    player.position
-      .copy(data.spawn)
-      .multiplyScalar(scale)
-      .add({
-        x: 0.25,
-        y: 0.5,
-        z: 0.25,
-      });
+    const { chunks, dom, player } = this;
+    dom.seed.innerText = data.seed;
+    if (player.spawn) {
+      player.position.copy(player.spawn.position);
+      player.rotation.y = player.spawn.rotation;
+      delete player.spawn;
+    } else {
+      player.position
+        .copy(data.spawn)
+        .multiplyScalar(scale)
+        .add({
+          x: 0.25,
+          y: 0.5,
+          z: 0.25,
+        });
+    }
     chunks.loaded.forEach((chunk) => this.unloadChunk(chunk));
     chunks.requested.clear();
     chunks.player.set(Infinity, Infinity, Infinity);
@@ -363,6 +393,14 @@ class World extends Scene {
       }
     });
     this.needsTranslocablesUpdate = false;
+  }
+
+  static getURLParams() {
+    return document.location.hash.substr(2).split('/').reduce((keys, param) => {
+      const [key, value] = param.split(':');
+      keys[key] = decodeURIComponent(value);
+      return keys;
+    }, {});
   }
 }
 

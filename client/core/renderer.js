@@ -9,8 +9,8 @@ import {
 
 class Renderer {
   constructor({
-    debug,
-    mount,
+    dialogs,
+    dom,
   }) {
     // Initialize state
     this.clock = new Clock();
@@ -18,8 +18,8 @@ class Renderer {
       count: 0,
       lastTick: this.clock.oldTime / 1000,
     };
-    this.debug = debug;
-    this.mount = mount;
+    this.dialogs = dialogs;
+    this.dom = dom;
 
     // Setup camera
     this.camera = new PerspectiveCamera(70, 1, 0.1, 1000);
@@ -37,7 +37,7 @@ class Renderer {
     this.renderer.toneMapping = ACESFilmicToneMapping;
     // this.renderer.setPixelRatio(window.devicePixelRatio || 1);
     this.renderer.setAnimationLoop(this.onAnimationTick.bind(this));
-    this.mount.appendChild(this.renderer.domElement);
+    dom.renderer.appendChild(this.renderer.domElement);
 
     // Setup viewport resize
     window.addEventListener('resize', this.onResize.bind(this), false);
@@ -47,7 +47,7 @@ class Renderer {
     if (navigator.xr) {
       const { xr } = this.renderer;
       xr.enabled = true;
-      mount.addEventListener('mousedown', () => {
+      dom.renderer.addEventListener('mousedown', () => {
         if (xr.isPresenting) return;
         navigator.xr.requestSession('immersive-vr', {
           optionalFeatures: ['local-floor', 'bounded-floor'],
@@ -59,17 +59,17 @@ class Renderer {
             });
           });
       }, false);
-      debug.support.className = 'supported';
-      debug.support.innerText = 'webxr is supported';
+      dom.support.className = 'supported';
+      dom.support.innerText = 'webxr is supported';
       navigator.xr.isSessionSupported('immersive-vr')
         .then((supported) => {
           if (supported) {
-            debug.enterVR.style.display = '';
+            dom.enterVR.style.display = '';
           }
         });
     } else {
-      debug.support.className = 'unsupported';
-      debug.support.innerText = 'webxr is not supported';
+      dom.support.className = 'unsupported';
+      dom.support.innerText = 'webxr is not supported';
     }
   }
 
@@ -77,7 +77,7 @@ class Renderer {
     const {
       camera,
       clock,
-      debug,
+      dom,
       fps,
       renderer,
       scene,
@@ -99,7 +99,7 @@ class Renderer {
     fps.count += 1;
     if (renderer.animation.time >= fps.lastTick + 1) {
       renderer.fps = Math.round(fps.count / (renderer.animation.time - fps.lastTick));
-      debug.fps.innerText = `${renderer.fps}fps`;
+      dom.fps.innerText = `${renderer.fps}fps`;
       fps.lastTick = renderer.animation.time;
       fps.count = 0;
     }
@@ -108,12 +108,12 @@ class Renderer {
   onResize() {
     const {
       camera,
-      mount,
+      dom,
       renderer,
     } = this;
 
     // Resize viewport
-    const { width, height } = mount.getBoundingClientRect();
+    const { width, height } = dom.renderer.getBoundingClientRect();
     if (renderer.xr.isPresenting) {
       renderer.domElement.style.width = `${width}px`;
       renderer.domElement.style.height = `${height}px`;

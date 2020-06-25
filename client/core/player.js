@@ -16,7 +16,12 @@ import Session from './session.js';
 // Player controller
 
 class Player extends Object3D {
-  constructor({ camera, mount, xr }) {
+  constructor({
+    camera,
+    dialogs,
+    dom,
+    xr,
+  }) {
     super();
     this.add(camera);
     this.auxMatrixA = new Matrix4();
@@ -89,13 +94,10 @@ class Player extends Object3D {
       });
       return controller;
     });
-    this.desktopControls = new DesktopControls({ mount, xr });
+    this.desktopControls = new DesktopControls({ renderer: dom.renderer, xr });
     this.session = new Session({
-      dialogs: {
-        login: document.getElementById('login'),
-        register: document.getElementById('register'),
-      },
-      state: document.getElementById('session'),
+      dialogs,
+      state: dom.session,
     });
   }
 

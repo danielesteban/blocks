@@ -14,14 +14,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
   </head>
   <body>
-    <div id="mount"></div>
+    <div id="renderer"></div>
+    <div id="enterVR" style="display:none">
+      Enter VR
+    </div>
     <div id="credits">
       blocks - <span id="fps">···</span><br />
       <span id="support">···</span><br />
       <a href="https://dani.gatunes.com" rel="noopener noreferrer" target="_blank">dani@gatunes</a> © 2020
-    </div>
-    <div id="enterVR" style="display:none">
-      Enter VR
     </div>
     <a
       id="github"
@@ -45,6 +45,15 @@
       <div>
         <button type="button"></button>
         <canvas></canvas>
+      </div>
+    </div>
+    <div id="location" class="dialog">
+      <div>
+        <img />
+        <div>
+          <div></div>
+          <div></div>
+        </div>
       </div>
     </div>
     <div id="login" class="dialog">

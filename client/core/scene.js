@@ -10,16 +10,21 @@ import { Scene as ThreeScene } from './three.js';
 class Scene extends ThreeScene {
   constructor({
     camera,
-    debug,
-    mount,
+    dialogs,
+    dom,
     renderer: { xr },
   }) {
     super();
 
     this.locomotion = Scene.locomotions.teleport;
-    this.debug = debug;
+    this.dom = dom;
 
-    this.player = new Player({ camera, mount, xr });
+    this.player = new Player({
+      camera,
+      dialogs,
+      dom,
+      xr,
+    });
     this.player.controllers.forEach(({ marker }) => (
       this.add(marker)
     ));
@@ -30,15 +35,6 @@ class Scene extends ThreeScene {
 
     this.translocables = [];
     this.ui = [];
-
-    let server = document.location.toString();
-    {
-      const [key, value] = document.location.hash.substr(2).split(':');
-      if (key === 'server') {
-        server = decodeURIComponent(value);
-      }
-    }
-    this.connect(server);
   }
 
   onBeforeRender({ animation: { delta }, xr }, scene, camera) {
@@ -221,6 +217,12 @@ class Scene extends ThreeScene {
         dialog.innerText = server.error;
         document.body.appendChild(dialog);
         return;
+      }
+      if (!this.player.spawn) {
+        this.player.spawn = {
+          position: this.player.position.clone(),
+          rotation: this.player.rotation.y,
+        };
       }
       this.reconnectTimer = setTimeout(() => this.connect(url), 1000);
     };

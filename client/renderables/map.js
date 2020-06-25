@@ -172,7 +172,11 @@ class Map extends Panel {
     fetch(Map.servers)
       .then((res) => res.json())
       .then((list) => {
-        const connectedServer = world.server.serverURL;
+        const connectedServer = world.server ? (
+          world.server.serverURL
+        ) : (
+          document.location.toString()
+        );
         const isOnList = list.findIndex(({ url }) => (url === connectedServer));
         if (~isOnList) {
           list.unshift(list.splice(isOnList, 1)[0]);

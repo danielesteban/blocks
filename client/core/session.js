@@ -7,27 +7,25 @@ class Session {
   }) {
     this.dialogs = dialogs;
     this.state = state;
+    Object.keys(dialogs).forEach((dialog) => {
+      dialog = dialogs[dialog];
+      dialog.addEventListener('click', ({ target }) => {
+        if (target === dialog) {
+          dialog.className = 'dialog';
+        }
+      });
+    });
     {
       const [form] = dialogs.login.getElementsByTagName('form');
       const [alternative] = dialogs.login.getElementsByTagName('a');
       form.addEventListener('submit', this.onLoginSubmit.bind(this));
       alternative.addEventListener('click', () => this.showDialog('register'));
-      dialogs.login.addEventListener('click', ({ target }) => {
-        if (target === dialogs.login) {
-          dialogs.login.className = 'dialog';
-        }
-      });
     }
     {
       const [form] = dialogs.register.getElementsByTagName('form');
       const [alternative] = dialogs.register.getElementsByTagName('a');
       form.addEventListener('submit', this.onRegisterSubmit.bind(this));
       alternative.addEventListener('click', () => this.showDialog('login'));
-      dialogs.register.addEventListener('click', ({ target }) => {
-        if (target === dialogs.register) {
-          dialogs.register.className = 'dialog';
-        }
-      });
     }
     {
       const skin = localStorage.getItem('blocks::skin');
@@ -200,6 +198,43 @@ class Session {
       dialogs[key].className = 'dialog';
     });
     dialogs[id].className = 'dialog open';
+  }
+
+  showLocation(id) {
+    const { authService } = Session;
+    const { dialogs: { location: dialog } } = this;
+    return fetch(`${authService}location/${id}/meta`)
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error();
+        }
+        return res
+          .json()
+          .then((location) => {
+            const [container] = dialog.getElementsByTagName('div');
+            const [image] = container.getElementsByTagName('img');
+            const [info] = container.getElementsByTagName('div');
+            const [title, user] = info.getElementsByTagName('div');
+            image.src = `${authService}location/${location._id}/photo`;
+            const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
+            const createdAt = new Date(location.createdAt);
+            title.innerText = (
+              `x:${location.position.x} y:${location.position.y} z:${location.position.z}`
+              + ` - ${location.server.name}`
+            );
+            user.innerText = (
+              `${location.user.name}`
+              + ` - ${createdAt.getFullYear()}/${leadingZero(createdAt.getMonth() + 1)}/${leadingZero(createdAt.getDate())}`
+              + ` ${leadingZero(createdAt.getHours())}:${leadingZero(createdAt.getMinutes())}`
+            );
+            this.showDialog('location');
+            return {
+              server: location.server.url,
+              position: location.position,
+              rotation: location.rotation,
+            };
+          });
+      });
   }
 
   updateSession(session) {
