@@ -78,26 +78,6 @@ module.exports = (app) => {
     }
   );
 
-  app.delete(
-    '/location/:id',
-    User.authenticate,
-    param('id')
-      .isMongoId(),
-    (req, res) => {
-      if (!validationResult(req).isEmpty()) {
-        res.status(422).end();
-        return;
-      }
-      Location
-        .deleteOne({
-          _id: req.params.id,
-          user: req.user._id,
-        })
-        .then(() => res.status(200).end())
-        .catch(() => res.status(400).end());
-    }
-  );
-
   app.get(
     '/location/:id',
     param('id')
@@ -151,6 +131,33 @@ module.exports = (app) => {
   );
 
   app.get(
+    '/location/:id/meta',
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      Location
+        .findById(req.params.id)
+        .select('createdAt position rotation server user')
+        .populate('server', 'name url')
+        .populate('user', 'name')
+        .then((location) => {
+          if (!location) {
+            res.status(404).end();
+            return;
+          }
+          res.json(location);
+        })
+        .catch(() => (
+          res.status(500).end()
+        ));
+    }
+  );
+
+  app.get(
     '/location/:id/photo',
     param('id')
       .isMongoId(),
@@ -175,6 +182,26 @@ module.exports = (app) => {
         .catch(() => (
           res.status(500).end()
         ));
+    }
+  );
+
+  app.delete(
+    '/location/:id',
+    User.authenticate,
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      Location
+        .deleteOne({
+          _id: req.params.id,
+          user: req.user._id,
+        })
+        .then(() => res.status(200).end())
+        .catch(() => res.status(400).end());
     }
   );
 };
