@@ -117,6 +117,7 @@ module.exports = (app) => {
               `<meta property="og:title" content=${JSON.stringify(`x:${x} y:${y} z:${z} - ${server}`)} />`,
               `<meta property="og:description" content=${JSON.stringify(`${user} - ${date}`)} />`,
               `<meta property="og:image" content="${host}location/${_id}/photo" />`,
+              '<meta property="twitter:card" content="summary_large_image">',
               '<script>',
               `window.location = ${JSON.stringify(`${client}#/location:${_id}`)};`,
               '</script>',
