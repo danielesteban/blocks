@@ -59,9 +59,14 @@ class Renderer {
             });
           });
       }, false);
-      debug.enterVR.style.display = '';
       debug.support.className = 'supported';
       debug.support.innerText = 'webxr is supported';
+      navigator.xr.isSessionSupported('immersive-vr')
+        .then((supported) => {
+          if (supported) {
+            debug.enterVR.style.display = '';
+          }
+        });
     } else {
       debug.support.className = 'unsupported';
       debug.support.innerText = 'webxr is not supported';
