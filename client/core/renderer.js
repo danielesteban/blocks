@@ -59,6 +59,7 @@ class Renderer {
             });
           });
       }, false);
+      debug.enterVR.style.display = '';
       debug.support.className = 'supported';
       debug.support.innerText = 'webxr is supported';
     } else {

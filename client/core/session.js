@@ -121,8 +121,8 @@ class Session {
     } = this;
     const [/* name */, user] = state.getElementsByTagName('div');
     const [image] = user.getElementsByTagName('canvas');
-    image.width = 60;
-    image.height = 60;
+    image.width = 64;
+    image.height = 64;
     const ctx = image.getContext('2d');
     const texture = new Image();
     texture.onload = () => {
