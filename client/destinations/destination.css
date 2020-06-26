@@ -11,24 +11,45 @@
   flex-grow: 1;
 }
 
-#photo > img {
+#photo > a > img {
   display: block;
   width: 100%;
-  height: calc(100vh - 3.825rem);
+  height: calc(100vh - 5rem);
   object-fit: contain;
 }
 
 #meta {
   display: flex;
   width: 100%;
-  justify-content: space-between;
+  align-items: center;
 }
+
+#meta > div {
+  display: flex;
+  align-items: center;
+  width: calc(50% - 50px);
+}
+
+#meta > div:nth-child(2) {
+  width: 100px;
+  justify-content: center;
+}
+
+#meta > div:nth-child(3) {
+  justify-content: flex-end;
+}
+
+#meta > div > a {
+  display: flex;
+  align-items: center;
+  margin: 0 0.25rem;
+} 
 
 #prev, #next {
   position: absolute;
   top: 0;
   height: 100vh;
-  width: 10rem;
+  width: 8rem;
   display: flex;
   align-items: center;
   justify-content: center;
