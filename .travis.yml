@@ -1,6 +1,4 @@
 dist: xenial
-language: node_js
-node_js: lts/*
 env:
   global:
   - secure: 5pfHU9sXi1Xt/YhOaky9lNuS26EWz3o8tOosZbsWoIuCWEt/2F0TDl6N8ejBOhPbDTJN9gWG3sF7SJgEPSEtQmmC2j9hbHdeGcHAK6YErV6VF3lLybov2j26mVnSjqdWXVKtsEjMh4Zgr6Q9ub3irlTZscaHMDa0r0V6bzTsIjPeE/odiGxokynTbHlfZSG09s5Jdypk/FA+xL7vVbc9kxQt6eG7oz4q7NM2C5UGR4yTBs/15vRA6xUafaQQIKXLQvbT3FgYEbyyP7skqHuewi9I3HKGY7DRztExdg9GntB0DGW8rQufgEPCT0HWJNl3pcjAEzfghiRK542sCbAvfkigyMNZiHJBbND9upPiz2iZ6Ni0BbzpKpCBu+cpalLYK1fJoHTvZyTh5Y+1913k9DJJZn6YWmC1YgI3e7+4WdnTvFmfGjX4GBnwdoKB6iYS355hqbOayCirdzoULh2yRyF8ES3XSc12c3slpaYozCUHzM6UEKL8sk8b+ufhNrKA0v5+6dRFr/3sduObevN4od6HyGY9V6HqjMMc/g2SCunkvpnDaPkf71Pfz3W0Mn+fiEXlWa84r7LwqVZSl3cKN5D46LMSFpgZJicSBVdzZREpVxT7IfNIK23R+PWmb+E1JksvO5E+EOR9PzJKz4Ihg8fO675YrBACydRV0IR1wzc=
@@ -9,6 +7,8 @@ services:
 jobs:
   include:
     - name: blocks
+      language: node_js
+      node_js: lts/*
       script:
       - npm run lint
       - docker build -t danigatunes/blocks .
@@ -19,6 +19,7 @@ jobs:
         script: echo ${DOCKER_PASSWORD} | docker login -u danigatunes --password-stdin && docker push danigatunes/blocks  
         skip_cleanup: true
     - name: blocks-auth
+      language: generic
       script:
       - docker build -t danigatunes/blocks-auth auth
       deploy:
