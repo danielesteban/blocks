@@ -87,15 +87,14 @@ canvas {
 
 .dialog#location > div {
   width: calc(100vw - 6rem);
-  max-height: calc(100vh - 6rem);
   pointer-events: none;
 }
 
 .dialog#location > div > img {
   width: 100%;
-  object-fit: cover;
+  height: calc(100vh - 10rem);
+  object-fit: contain;
   margin-bottom: 0.825rem;
-  border-radius: 4px;
 }
 
 .dialog#location > div > div {
