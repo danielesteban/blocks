@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const fetch = require('node-fetch');
 
 const ServerSchema = new mongoose.Schema({
@@ -58,5 +59,7 @@ ServerSchema.statics = {
       });
   },
 };
+
+ServerSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Server', ServerSchema);

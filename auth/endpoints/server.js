@@ -12,23 +12,29 @@ module.exports = (app) => {
     '/servers',
     query('page')
       .optional()
-      .isInt()
+      .isInt({ min: 1 })
       .toInt(),
     (req, res) => {
       if (!validationResult(req).isEmpty()) {
         res.status(422).end();
         return;
       }
-      const page = req.query.page || 0;
-      const pageSize = 10;
+      const page = Math.max(req.query.page || 1, 1);
       Server
-        .find({ verified: true })
-        .select('name url')
-        .sort('-createdAt')
-        .skip(page * pageSize)
-        .limit(pageSize)
-        .then((servers) => (
-          res.json(servers)
+        .paginate(
+          { verified: true },
+          {
+            limit: 10,
+            page,
+            select: 'name url',
+            sort: '-createdAt',
+          }
+        )
+        .then(({ docs, totalPages }) => (
+          res
+            .set('Access-Control-Expose-Headers', 'X-Total-Pages')
+            .set('X-Total-Pages', totalPages)
+            .json(docs)
         ))
         .catch(() => res.status(400).end());
     }

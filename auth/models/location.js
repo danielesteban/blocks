@@ -1,5 +1,6 @@
 const { param, query, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const sharp = require('sharp');
 
 const LocationSchema = new mongoose.Schema({
@@ -82,7 +83,7 @@ LocationSchema.statics = {
           res.status(422).end();
           return;
         }
-        const page = req.query.page || 0;
+        const page = Math.max(req.query.page || 1, 1);
         const selector = {};
         switch (filter) {
           case 'server':
@@ -95,26 +96,37 @@ LocationSchema.statics = {
             break;
         }
         Location
-          .find(selector)
-          .select([
-            'createdAt',
-            'position',
-            'rotation',
-            ...(filter !== 'server' ? ['server'] : []),
-            ...(filter !== 'user' ? ['user'] : []),
-          ])
-          .populate('server', 'name')
-          .populate('user', 'name')
-          .sort('-createdAt')
-          .skip(page * pageSize)
-          .limit(pageSize)
-          .then((locations) => (
-            res.json(locations)
+          .paginate(
+            selector,
+            {
+              limit: pageSize,
+              page,
+              populate: [
+                { path: 'server', select: 'name' },
+                { path: 'user', select: 'name' },
+              ],
+              select: [
+                'createdAt',
+                'position',
+                'rotation',
+                ...(filter !== 'server' ? ['server'] : []),
+                ...(filter !== 'user' ? ['user'] : []),
+              ],
+              sort: '-createdAt',
+            }
+          )
+          .then(({ docs, totalPages }) => (
+            res
+              .set('Access-Control-Expose-Headers', 'X-Total-Pages')
+              .set('X-Total-Pages', totalPages)
+              .json(docs)
           ))
           .catch(() => res.status(500).end());
       },
     ];
   },
 };
+
+LocationSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Location', LocationSchema);
