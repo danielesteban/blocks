@@ -176,7 +176,7 @@ module.exports = (app) => {
             return;
           }
           res
-            .set('Cache-Control', 'public, max-age=15552000')
+            .set('Cache-Control', 'public, max-age=31536000')
             .type('image/jpeg')
             .send(location.photo);
         })

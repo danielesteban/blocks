@@ -152,4 +152,41 @@ module.exports = (app) => {
         ));
     }
   );
+
+  app.get(
+    '/user/:id/skin',
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      User
+        .findById(req.params.id)
+        .select('updatedAt')
+        .then((user) => {
+          if (!user) {
+            return res.status(404).end();
+          }
+          const lastModified = user.updatedAt.toUTCString();
+          if (req.get('if-modified-since') === lastModified) {
+            return res.status(304).end();
+          }
+          return User
+            .findById(user._id)
+            .select('skin')
+            .then(({ skin }) => {
+              res
+                .set('Cache-Control', 'public, max-age=86400')
+                .set('Last-Modified', lastModified)
+                .type('image/png')
+                .send(skin);
+            })
+            .catch(() => (
+              res.status(500).end()
+            ));
+        });
+    }
+  );
 };
