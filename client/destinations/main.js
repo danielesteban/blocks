@@ -28,10 +28,10 @@ const renderLocation = (index) => {
     + ` - ${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`
     + ` ${leadingZero(`${createdAt.getHours()}`)}:${leadingZero(`${createdAt.getMinutes()}`)}`
   );
-  link.href = `/#/location:${location._id}`;
-  const permalink = encodeURIComponent(`${authService}location/${location._id}`);
-  facebook.href = `https://facebook.com/sharer/sharer.php?u=${permalink}`;
-  twitter.href = `https://twitter.com/intent/tweet?url=${permalink}`;
+  link.href = `${authService}location/${location._id}`;
+  const url = encodeURIComponent(link.href);
+  facebook.href = `https://facebook.com/sharer/sharer.php?u=${url}`;
+  twitter.href = `https://twitter.com/intent/tweet?url=${url}`;
 };
 
 [facebook, twitter].forEach((link) => {
