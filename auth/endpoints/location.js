@@ -107,7 +107,7 @@ module.exports = (app) => {
           const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
           const date = `${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`;
           res
-            .set('Cache-Control', 'public, max-age=15552000')
+            .set('Cache-Control', 'public, max-age=31536000')
             .type('text/html')
             .send([
               '<html>',
