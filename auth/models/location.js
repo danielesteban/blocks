@@ -47,7 +47,7 @@ LocationSchema.pre('save', function onSave(next) {
     promises.push(
       sharp(location.photo)
         .resize(1280, 720)
-        .jpeg()
+        .jpeg({ quality: 90 })
         .toBuffer()
         .then((photo) => {
           location.photo = photo;
