@@ -4,31 +4,6 @@ const User = require('../models/user');
 
 module.exports = (app) => {
   app.get(
-    '/user/:id',
-    param('id')
-      .isMongoId(),
-    (req, res) => {
-      if (!validationResult(req).isEmpty()) {
-        res.status(422).end();
-        return;
-      }
-      User
-        .findById(req.params.id)
-        .select('name')
-        .then((user) => {
-          if (!user) {
-            res.status(404).end();
-            return;
-          }
-          res.json(user);
-        })
-        .catch(() => (
-          res.status(500).end()
-        ));
-    }
-  );
-
-  app.get(
     '/user',
     User.authenticate,
     (req, res) => {
@@ -150,6 +125,31 @@ module.exports = (app) => {
       user.save()
         .then(() => res.json(user.getNewSession()))
         .catch(() => res.status(400).end());
+    }
+  );
+
+  app.get(
+    '/user/:id/meta',
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      User
+        .findById(req.params.id)
+        .select('name')
+        .then((user) => {
+          if (!user) {
+            res.status(404).end();
+            return;
+          }
+          res.json(user);
+        })
+        .catch(() => (
+          res.status(500).end()
+        ));
     }
   );
 };
