@@ -1,8 +1,33 @@
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const Location = require('../models/location');
 const User = require('../models/user');
 
 module.exports = (app) => {
+  app.get(
+    '/user/:id',
+    param('id')
+      .isMongoId(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      User
+        .findById(req.params.id)
+        .select('name')
+        .then((user) => {
+          if (!user) {
+            res.status(404).end();
+            return;
+          }
+          res.json(user);
+        })
+        .catch(() => (
+          res.status(500).end()
+        ));
+    }
+  );
+
   app.get(
     '/user',
     User.authenticate,
@@ -34,6 +59,7 @@ module.exports = (app) => {
 
   app.patch(
     '/user',
+    User.authenticate,
     body('name')
       .optional()
       .not().isEmpty()
@@ -42,7 +68,6 @@ module.exports = (app) => {
     body('skin')
       .optional()
       .isBase64(),
-    User.authenticate,
     (req, res) => {
       const { name, skin } = req.body;
       if (!name && !skin) {

@@ -97,6 +97,7 @@ LocationSchema.statics = {
         Location
           .find(selector)
           .select([
+            'createdAt',
             'position',
             'rotation',
             ...(filter !== 'server' ? ['server'] : []),
