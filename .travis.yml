@@ -7,10 +7,8 @@ services:
 jobs:
   include:
     - name: blocks
-      language: node_js
-      node_js: lts/*
+      language: generic
       script:
-      - npm run lint
       - docker build -t danigatunes/blocks .
       deploy:
         on:
