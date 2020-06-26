@@ -62,13 +62,21 @@ class Peers extends Object3D {
         && connection._channel
         && connection._channel.readyState === 'open'
       ) {
-        connection.send(payload);
+        try {
+          connection.send(payload);
+        } catch (e) {
+          return;
+        }
         if (!connection.hasSentSkin) {
           connection.hasSentSkin = true;
           const encoded = (new TextEncoder()).encode(skin);
           const payload = new Uint8Array(1 + encoded.length);
           payload.set(encoded, 1);
-          connection.send(payload);
+          try {
+            connection.send(payload);
+          } catch (e) {
+            // console.log(e);
+          }
         }
       }
     });
