@@ -7,7 +7,14 @@ module.exports = (app) => {
     '/user',
     User.authenticate,
     (req, res) => {
-      res.json(req.user.getNewSession());
+      User.findById(req.user._id)
+        .select('name')
+        .then((user) => (
+          res.json(user.getNewSession())
+        ))
+        .catch(() => (
+          res.status(500).end()
+        ));
     }
   );
 
@@ -21,11 +28,25 @@ module.exports = (app) => {
     '/user/skin',
     User.authenticate,
     (req, res) => {
-      User.findById(req.user._id)
-        .select('skin')
-        .then(({ skin }) => (
-          res.type('image/png').end(skin)
-        ))
+      User
+        .findById(req.user._id)
+        .select('updatedAt')
+        .then((user) => {
+          const lastModified = user.updatedAt.toUTCString();
+          if (req.get('if-modified-since') === lastModified) {
+            return res.status(304).end();
+          }
+          return User
+            .findById(user._id)
+            .select('skin')
+            .then(({ skin }) => (
+              res
+                .set('Cache-Control', 'public, must-revalidate')
+                .set('Last-Modified', lastModified)
+                .type('image/png')
+                .send(skin)
+            ));
+        })
         .catch(() => (
           res.status(500).end()
         ));
@@ -176,17 +197,17 @@ module.exports = (app) => {
           return User
             .findById(user._id)
             .select('skin')
-            .then(({ skin }) => {
+            .then(({ skin }) => (
               res
                 .set('Cache-Control', 'public, max-age=86400')
                 .set('Last-Modified', lastModified)
                 .type('image/png')
-                .send(skin);
-            })
-            .catch(() => (
-              res.status(500).end()
+                .send(skin)
             ));
-        });
+        })
+        .catch(() => (
+          res.status(500).end()
+        ));
     }
   );
 };

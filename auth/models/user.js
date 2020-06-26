@@ -115,7 +115,7 @@ UserSchema.statics = {
       }
       User
         .findOne({ _id: decoded._id })
-        .select('name')
+        .select('_id')
         .then((user) => {
           if (!user) {
             res.status(401).end();
