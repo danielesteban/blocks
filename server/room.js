@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const fs = require('fs');
 const path = require('path');
 const protobuf = require('protobufjs');
 const { v4: uuid } = require('uuid');
@@ -7,7 +8,7 @@ const zlib = require('zlib');
 
 const Spec = path.join(__dirname, 'messages.proto');
 const Message = protobuf.loadSync(Spec).lookupType('protocol.Message');
-const Version = crypto.createHash('md5').update(Spec).digest('hex');
+const Version = crypto.createHash('md5').update(fs.readFileSync(Spec)).digest('hex');
 
 class Room {
   constructor({
