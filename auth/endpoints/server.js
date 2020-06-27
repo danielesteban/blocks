@@ -50,11 +50,7 @@ module.exports = (app) => {
         return;
       }
       Server
-        .findOrCreate({ url: req.body.url })
-        .then((server) => {
-          server.updatedAt = new Date();
-          return server.save();
-        })
+        .createOrUpdate({ url: req.body.url })
         .then((server) => (
           res.json(server._id)
         ))

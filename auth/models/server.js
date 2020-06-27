@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const ServerSchema = new mongoose.Schema({
   name: {
     type: String,
+    required: true,
   },
   url: {
     type: String,
@@ -19,34 +20,36 @@ const ServerSchema = new mongoose.Schema({
   },
   version: {
     type: String,
+    required: true,
   },
 }, { timestamps: true });
 
-ServerSchema.pre('save', function onSave(next) {
-  const server = this;
-  const promises = [];
-  if (server.isModified('url')) {
-    promises.push(
-      fetch(`${server.url}status`)
-        .then((res) => res.json())
-        .then(({ name, version }) => {
-          server.name = name;
-          server.version = version;
-          next();
-        })
-    );
-  }
-  if (!promises.length) {
-    return next();
-  }
-  return Promise
-    .all(promises)
-    .then(() => next())
-    .catch(next);
-});
+ServerSchema.methods = {
+  updateStatus() {
+    const server = this;
+    return fetch(`${server.url}status`)
+      .then((res) => res.json())
+      .then(({ name, version }) => {
+        server.name = name;
+        server.version = version;
+        return server.save();
+      })
+      .catch((err) => {
+        if (server.isNew || !server.verified) {
+          throw err;
+        }
+        server.verified = false;
+        return server
+          .save()
+          .then(() => {
+            throw err;
+          });
+      });
+  },
+};
 
 ServerSchema.statics = {
-  findOrCreate(doc) {
+  createOrUpdate(query, doc) {
     const Server = this;
     return Server
       .findOne(doc)
@@ -54,9 +57,11 @@ ServerSchema.statics = {
         if (server) {
           return server;
         }
-        server = new Server(doc);
-        return server.save();
-      });
+        return new Server(doc);
+      })
+      .then((server) => (
+        server.updateStatus()
+      ));
   },
 };
 
