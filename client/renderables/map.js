@@ -193,11 +193,18 @@ class Map extends Panel {
   requestTeleport() {
     const {
       chunk,
+      connectedServer,
+      displayedServer,
       pointer,
       renderer,
+      servers,
       world,
     } = this;
-    if (!world.server) {
+    if (
+      !servers
+      || connectedServer !== displayedServer
+      || !world.server
+    ) {
       return;
     }
     const radius = 8;
