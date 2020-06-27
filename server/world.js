@@ -229,6 +229,7 @@ class World extends Room {
 
   onStatusRequest(req, res) {
     const {
+      clients,
       id,
       name,
       seed,
@@ -237,6 +238,7 @@ class World extends Room {
     res.json({
       id,
       name,
+      players: clients.length,
       seed,
       version,
     });
