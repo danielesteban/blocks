@@ -154,7 +154,8 @@ class Room {
 
   register(publicURL) {
     const { authService } = this;
-    fetch(`${authService}server`, {
+    this.publicURL = publicURL;
+    return fetch(`${authService}server`, {
       body: JSON.stringify({
         url: publicURL,
       }),

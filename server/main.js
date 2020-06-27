@@ -43,5 +43,9 @@ app.get(
 app.get('/status', world.onStatusRequest.bind(world));
 if (process.env.CLIENT !== 'false') {
   app.use(express.static(path.join(__dirname, '..', 'client')));
+} else if (world.publicURL) {
+  app.get('/', (req, res) => (
+    res.redirect(`https://blocks.gatunes.com/#/server:${encodeURIComponent(world.publicURL)}`)
+  ));
 }
 app.use((req, res) => res.status(404).end());
