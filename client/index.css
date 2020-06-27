@@ -72,6 +72,12 @@ canvas {
   padding: 1rem;
 }
 
+.dialog > form .error {
+  display: none;
+  margin: 0.5rem 0 1rem;
+  color: #933;
+}
+
 .dialog > form .spacer {
   margin: 1rem 0;
   background: #333;

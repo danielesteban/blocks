@@ -48,11 +48,13 @@ class Session {
   }
 
   onLoginSubmit(e) {
+    const { target: form } = e;
     const { authService } = Session;
     const { dialogs: { login: dialog } } = this;
-    const { target: form } = e;
     const { email, password, submit } = form;
+    const [error] = dialog.getElementsByClassName('error');
     e.preventDefault();
+    error.style.display = '';
     submit.disabled = true;
     fetch(`${authService}user`, {
       body: JSON.stringify({
@@ -64,20 +66,25 @@ class Session {
     })
       .then((res) => {
         submit.disabled = false;
-        if (res.status === 200) {
-          form.reset();
-          dialog.className = 'dialog';
-          res
-            .json()
-            .then((session) => this.updateSession(session));
+        if (res.status !== 200) {
+          throw new Error();
         }
+        form.reset();
+        dialog.className = 'dialog';
+        return res
+          .json()
+          .then((session) => this.updateSession(session));
+      })
+      .catch(() => {
+        error.style.display = 'block';
+        error.innerText = 'Invalid email/password combination';
       });
   }
 
   onRegisterSubmit(e) {
+    const { target: form } = e;
     const { authService } = Session;
     const { dialogs: { register: dialog }, skin } = this;
-    const { target: form } = e;
     const {
       name,
       email,
@@ -85,10 +92,14 @@ class Session {
       confirmPassword,
       submit,
     } = form;
+    const [error] = dialog.getElementsByClassName('error');
     e.preventDefault();
     if (password.value !== confirmPassword.value) {
+      error.style.display = 'block';
+      error.innerText = 'Passwords don\'t match!';
       return;
     }
+    error.style.display = '';
     submit.disabled = true;
     fetch(`${authService}users`, {
       body: JSON.stringify({
@@ -102,13 +113,18 @@ class Session {
     })
       .then((res) => {
         submit.disabled = false;
-        if (res.status === 200) {
-          form.reset();
-          dialog.className = 'dialog';
-          res
-            .json()
-            .then((session) => this.updateSession(session));
+        if (res.status !== 200) {
+          throw new Error();
         }
+        form.reset();
+        dialog.className = 'dialog';
+        return res
+          .json()
+          .then((session) => this.updateSession(session));
+      })
+      .catch(() => {
+        error.style.display = 'block';
+        error.innerText = 'That email has already registered';
       });
   }
 
