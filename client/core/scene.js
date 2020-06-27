@@ -149,7 +149,12 @@ class Scene extends ThreeScene {
     json,
     signal,
   }) {
-    const { peers, player, server } = this;
+    const {
+      dom,
+      peers,
+      player,
+      server,
+    } = this;
     switch (type) {
       case 'ERROR':
         server.error = text;
@@ -172,6 +177,11 @@ class Scene extends ThreeScene {
         break;
       default:
         break;
+    }
+    if (
+      type === 'INIT' || type === 'JOIN' || type === 'LEAVE'
+    ) {
+      dom.players.innerText = peers.peers.length + 1;
     }
   }
 

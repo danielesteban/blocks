@@ -251,25 +251,12 @@ class World extends Scene {
   onEvent(event) {
     super.onEvent(event);
     const { type } = event;
-    const { dom, peers, player } = this;
     switch (type) {
       case 'INIT':
-      case 'JOIN':
-      case 'LEAVE':
-        dom.players.innerText = peers.peers.length + 1;
-        if (type === 'INIT') {
-          this.onInit(event.json);
-        }
+        this.onInit(event.json);
         break;
       case 'TELEPORT':
-        player.position
-          .copy(event.json)
-          .multiplyScalar(World.scale)
-          .add({
-            x: 0.25,
-            y: 0.5,
-            z: 0.25,
-          });
+        this.onTeleport(event.json);
         break;
       case 'UPDATE':
         this.onUpdate(event.chunks);
@@ -307,6 +294,19 @@ class World extends Scene {
     chunks.loaded.forEach((chunk) => this.unloadChunk(chunk));
     chunks.requested.clear();
     chunks.player.set(Infinity, Infinity, Infinity);
+  }
+
+  onTeleport(position) {
+    const { scale } = World;
+    const { player } = this;
+    player.position
+      .copy(position)
+      .multiplyScalar(scale)
+      .add({
+        x: 0.25,
+        y: 0.5,
+        z: 0.25,
+      });
   }
 
   onUpdate(data) {
