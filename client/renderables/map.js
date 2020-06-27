@@ -27,7 +27,7 @@ class Map extends Panel {
               width,
               height,
               isVisible: false,
-              onPointer: () => this.setPage(0),
+              onPointer: () => this.requestTeleport(),
             },
             {
               label: 'Connect',
@@ -68,6 +68,14 @@ class Map extends Panel {
                   );
                 }
               },
+            },
+            {
+              label: 'X',
+              x: width * 0.91,
+              y: height * 0.03,
+              width: width * 0.06,
+              height: width * 0.06,
+              onPointer: () => this.setPage(0),
             },
           ],
           labels: [
@@ -145,7 +153,7 @@ class Map extends Panel {
       servers,
       world,
     } = this;
-    const [/* toggle */, { buttons: [/* back */, connect] }] = pages;
+    const [/* toggle */, { buttons: [/* teleport */, connect] }] = pages;
     connect.isVisible = false;
     this.connectedServer = displayedServer;
     this.draw();
@@ -180,6 +188,32 @@ class Map extends Panel {
           this.setDisplayedServer(this.connectedServer);
         }
       });
+  }
+
+  requestTeleport() {
+    const {
+      chunk,
+      pointer,
+      renderer,
+      world,
+    } = this;
+    if (!world.server) {
+      return;
+    }
+    const radius = 8;
+    const size = 16;
+    const length = ((radius * 2) + 1) * size;
+    const origin = {
+      x: (chunk.x * size) + (size * 0.5) - (length * 0.5),
+      z: (chunk.z * size) + (size * 0.5) - (length * 0.5),
+    };
+    world.server.sendEvent({
+      type: 'TELEPORT',
+      json: {
+        x: Math.floor(origin.x + ((pointer.x / renderer.width) * length)),
+        z: Math.floor(origin.z + ((pointer.y / renderer.height) * length)),
+      },
+    });
   }
 
   setChunk({ x, z }) {
@@ -217,7 +251,7 @@ class Map extends Panel {
       pages,
       servers,
     } = this;
-    const [/* toggle */, { buttons: [/* back */, connect], labels: [name] }] = pages;
+    const [/* toggle */, { buttons: [/* teleport */, connect], labels: [name] }] = pages;
     connect.isVisible = index !== connectedServer;
     name.text = servers[index].name;
     delete image.loaded;

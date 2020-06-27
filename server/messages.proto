@@ -31,7 +31,8 @@ message Message {
     LEAVE = 4;
     LOAD = 5;
     SIGNAL = 6;
-    UPDATE = 7;
+    TELEPORT = 7;
+    UPDATE = 8;
   }
   Type type = 1;
   string json = 2;

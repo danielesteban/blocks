@@ -251,7 +251,7 @@ class World extends Scene {
   onEvent(event) {
     super.onEvent(event);
     const { type } = event;
-    const { dom, peers } = this;
+    const { dom, peers, player } = this;
     switch (type) {
       case 'INIT':
       case 'JOIN':
@@ -260,6 +260,16 @@ class World extends Scene {
         if (type === 'INIT') {
           this.onInit(event.json);
         }
+        break;
+      case 'TELEPORT':
+        player.position
+          .copy(event.json)
+          .multiplyScalar(World.scale)
+          .add({
+            x: 0.25,
+            y: 0.5,
+            z: 0.25,
+          });
         break;
       case 'UPDATE':
         this.onUpdate(event.chunks);

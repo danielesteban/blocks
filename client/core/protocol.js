@@ -597,6 +597,7 @@ export const protocol = $root.protocol = (() => {
                 case 5:
                 case 6:
                 case 7:
+                case 8:
                     break;
                 }
             if (message.json != null && message.hasOwnProperty("json"))
@@ -651,9 +652,13 @@ export const protocol = $root.protocol = (() => {
             case 6:
                 message.type = 6;
                 break;
-            case "UPDATE":
+            case "TELEPORT":
             case 7:
                 message.type = 7;
+                break;
+            case "UPDATE":
+            case 8:
+                message.type = 8;
                 break;
             }
             if (object.json != null)
@@ -718,7 +723,8 @@ export const protocol = $root.protocol = (() => {
             values[valuesById[4] = "LEAVE"] = 4;
             values[valuesById[5] = "LOAD"] = 5;
             values[valuesById[6] = "SIGNAL"] = 6;
-            values[valuesById[7] = "UPDATE"] = 7;
+            values[valuesById[7] = "TELEPORT"] = 7;
+            values[valuesById[8] = "UPDATE"] = 8;
             return values;
         })();
 

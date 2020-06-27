@@ -115,6 +115,39 @@ class World extends Room {
         this.unloadChunks();
         break;
       }
+      case 'TELEPORT': {
+        let {
+          x,
+          z,
+        } = request.json || {};
+        x = parseInt(x, 10);
+        z = parseInt(z, 10);
+        if (
+          Number.isNaN(x)
+          || Number.isNaN(z)
+        ) {
+          return;
+        }
+        let chunk = {
+          x: Math.floor(x / Chunk.size),
+          z: Math.floor(z / Chunk.size),
+        };
+        chunk = this.getChunk(chunk);
+        if (chunk.needsPropagation) {
+          return;
+        }
+        const y = chunk.heightmap[
+          ((x - (Chunk.size * chunk.x)) * Chunk.size)
+          + (z - (Chunk.size * chunk.z))
+        ];
+        this.broadcast({
+          type: 'TELEPORT',
+          json: { x, y, z },
+        }, {
+          include: client.id,
+        });
+        break;
+      }
       case 'UPDATE': {
         let {
           x,
