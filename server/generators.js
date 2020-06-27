@@ -93,20 +93,39 @@ module.exports = {
       console.error('Must provide a HEIGHTMAP if you want to use the heightmap generator.\n');
       process.exit(1);
     }
-    const { maxHeight, size, types } = Chunk;
+    const { maxHeight, types } = Chunk;
     const waterLevel = 6;
     const heightmap = PNG.sync.read(fs.readFileSync(process.env.HEIGHTMAP));
-    const offset = {
+    const heightOffset = {
       x: Math.floor(heightmap.width * 0.5),
       z: Math.floor(heightmap.height * 0.5),
     };
     const scale = maxHeight / 0xFF;
+    const colormap = process.env.COLORMAP ? (
+      PNG.sync.read(fs.readFileSync(process.env.COLORMAP))
+    ) : false;
+    const colorOffset = colormap ? {
+      x: Math.floor(colormap.width * 0.5),
+      z: Math.floor(colormap.height * 0.5),
+    } : false;
+    const getColor = (x, y, z) => {
+      const cx = colorOffset.x + x;
+      const cz = colorOffset.z + z;
+      if (cx >= 0 && cx < colormap.width && cz >= 0 && cz < colormap.height) {
+        const index = ((colormap.width * cz) + cx) * 4;
+        return {
+          r: colormap.data[index],
+          g: colormap.data[index + 1],
+          b: colormap.data[index + 2],
+        };
+      }
+      return computeColor(noise, x, y, z);
+    };
     return {
       noise,
-      saplings: treeSaplings({ noise, from: waterLevel + 3, to: maxHeight - size }),
       terrain: (x, y, z) => {
-        const hx = offset.x + x;
-        const hz = offset.z + z;
+        const hx = heightOffset.x + x;
+        const hz = heightOffset.z + z;
         let height = 0;
         if (hx >= 0 && hx < heightmap.width && hz >= 0 && hz < heightmap.height) {
           height = Math.floor(heightmap.data[((heightmap.width * hz) + hx) * 4] * scale);
@@ -118,7 +137,7 @@ module.exports = {
         };
         if (isBlock || y <= waterLevel) {
           voxel.type = isBlock ? types.block : types.glass;
-          voxel.color = computeColor(noise, x, y, z);
+          voxel.color = isBlock && colormap ? getColor(x, y, z) : computeColor(noise, x, y, z);
           if (!isBlock) {
             const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
             voxel.color.r = avg;
