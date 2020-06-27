@@ -41,7 +41,7 @@ app.get(
   map.onRequest.bind(map)
 );
 app.get('/status', world.onStatusRequest.bind(world));
-if (process.env.CLIENT !== 'false') {
+if (process.env.CLIENT) {
   app.use(express.static(path.join(__dirname, '..', 'client')));
 } else if (world.publicURL) {
   app.get('/', (req, res) => (

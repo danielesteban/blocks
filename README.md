@@ -8,8 +8,8 @@
 
 * [Remix glitch.com/~blocks-server](https://glitch.com/edit/#!/remix/blocks-server)
 * Create a `.env` file with this variables:
-  * `NAME=A name for your server` The name of your server
-  * `SEED=1234` The seed for the world generation (0 - 65535)
+  * `NAME` the server name (for the public registry)
+  * `SEED` 16bit world generation seed. (0 - 65535)
 
 #### You can also use docker-compose if you already own a more powerful server:
 
@@ -41,7 +41,7 @@ If you want to speed this up, you can always drop me a line on [twitter](https:/
 
 #### Server configuration
 
- * `CLIENT` serve the client (boolean, defaults to true)
+ * `CLIENT` serve the client (boolean, defaults to false)
  * `GENERATOR` the world [generator](server/generators.js) function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
  * `NAME` the server name (for the public registry)
@@ -55,8 +55,8 @@ If you want to speed this up, you can always drop me a line on [twitter](https:/
 node server/main.js
 # same, but preloading a 10 chunk radius around the spawn area
 PRELOAD=10 node server/main.js
-# server-only flat world for only 4 clients with persistence
-CLIENT=false GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
+# flat world for only 4 clients with persistence
+GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
 # heightmap driven world generator
 HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
 ```
