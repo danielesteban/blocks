@@ -49,7 +49,7 @@ ServerSchema.methods = {
 };
 
 ServerSchema.statics = {
-  createOrUpdate(query, doc) {
+  createOrUpdate(doc) {
     const Server = this;
     return Server
       .findOne(doc)
