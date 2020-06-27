@@ -58,7 +58,7 @@ PRELOAD=10 node server/main.js
 # flat world for only 4 clients with persistence
 GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
 # heightmap driven world generator
-HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
+GENERATOR=heightmap COLORMAP=./island_rgb.png HEIGHTMAP=./island_height.png node server/main.js
 ```
 
 #### Local development
