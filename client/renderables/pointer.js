@@ -18,7 +18,7 @@ class Pointer extends Line {
 
   static setupMaterial() {
     Pointer.material = new LineBasicMaterial({
-      color: (new Color(0xffe0bd)).convertGammaToLinear(2.2),
+      color: (new Color(0xffe0bd)).convertSRGBToLinear(),
     });
   }
 
