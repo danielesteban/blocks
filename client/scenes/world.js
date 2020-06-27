@@ -251,11 +251,12 @@ class World extends Scene {
   onEvent(event) {
     super.onEvent(event);
     const { type } = event;
+    const { dom, peers } = this;
     switch (type) {
       case 'INIT':
       case 'JOIN':
       case 'LEAVE':
-        this.dom.players.innerText = this.peers.peers.length + 1;
+        dom.players.innerText = peers.peers.length + 1;
         if (type === 'INIT') {
           this.onInit(event.json);
         }
@@ -270,8 +271,15 @@ class World extends Scene {
 
   onInit(data) {
     const { scale } = World;
-    const { chunks, dom, player } = this;
+    const {
+      chunks,
+      dom,
+      map,
+      player,
+      server,
+    } = this;
     dom.seed.innerText = data.seed;
+    map.setConnectedServer(server.serverURL);
     if (player.spawn) {
       player.position.copy(player.spawn.position);
       player.rotation.y = player.spawn.rotation;

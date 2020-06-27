@@ -171,24 +171,14 @@ class Map extends Panel {
     const { world } = this;
     fetch(Map.servers)
       .then((res) => res.json())
-      .then((list) => {
-        const connectedServer = world.server ? (
-          world.server.serverURL
-        ) : (
-          document.location.toString()
-        );
-        const isOnList = list.findIndex(({ url }) => (url === connectedServer));
-        if (~isOnList) {
-          list.unshift(list.splice(isOnList, 1)[0]);
+      .then((servers) => {
+        this.servers = servers;
+        if (world.server) {
+          this.setConnectedServer(world.server.serverURL);
         } else {
-          list.unshift({
-            name: new URL(connectedServer).hostname,
-            url: connectedServer,
-          });
+          this.connectedServer = 0;
+          this.setDisplayedServer(this.connectedServer);
         }
-        this.connectedServer = 0;
-        this.servers = list;
-        this.setDisplayedServer(0);
       });
   }
 
@@ -199,6 +189,23 @@ class Map extends Panel {
     if (page.id === 1) {
       this.loadImage();
     }
+  }
+
+  setConnectedServer(url) {
+    const { servers } = this;
+    if (!servers) {
+      return;
+    }
+    let index = servers.findIndex(({ url: server }) => (server === url));
+    if (index === -1) {
+      index = servers.length;
+      servers.push({
+        name: new URL(url).hostname,
+        url,
+      });
+    }
+    this.connectedServer = index;
+    this.setDisplayedServer(this.connectedServer);
   }
 
   setDisplayedServer(index) {
