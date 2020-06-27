@@ -4,6 +4,41 @@
 
 > webxr multiplayer voxels engine
 
+#### Create your own server in two steps:
+
+* [Remix glitch.com/~blocks-server](https://glitch.com/edit/#!/remix/blocks-server)
+* Create a `.env` file with this variables:
+  * `NAME=A name for your server` The name of your server
+  * `SEED=1234` The seed for the world generation (0 - 65535)
+
+#### You can also use docker-compose if you already own a more powerful server:
+
+```yaml
+version: '3'
+services:
+  server:
+    image: danigatunes/blocks:latest
+    environment:
+     - NAME=Your Server Name
+     - PRELOAD=10
+     - PUBLIC_URL=https://yourserver.url/
+     - SEED=1234
+     - STORAGE=/data
+    ports:
+     - "80:8080"
+    volumes:
+     - "data:/data"
+volumes:
+  data:
+```
+
+#### Want your server to show up on the in-game map?
+
+At the moment, the main server list verification it's a bit of a manual process.
+I will check the list from time to time and manually approve them after checking they work correctly.
+I need to write better tools to streamline the process, but there's other priorities right now.
+If you want to speed this up, you can always drop me a line on [twitter](https://twitter.com/danigatunes) with the url of your server.
+
 #### Server configuration
 
  * `CLIENT` serve the client (boolean, defaults to true)
@@ -24,27 +59,6 @@ PRELOAD=10 node server/main.js
 CLIENT=false GENERATOR=flat MAX_CLIENTS=4 PRELOAD=10 SEED=1234 STORAGE=./data node server/main.js
 # heightmap driven world generator
 HEIGHTMAP=./island.png GENERATOR=heightmap node server/main.js
-```
-
-#### docker-compose
-
-```yaml
-version: '3'
-services:
-  server:
-    image: danigatunes/blocks:latest
-    environment:
-     - NAME=Your Server Name
-     - PRELOAD=10
-     - PUBLIC_URL=https://yourserver.url/
-     - SEED=1234
-     - STORAGE=/data
-    ports:
-     - "80:8080"
-    volumes:
-     - "data:/data"
-volumes:
-  data:
 ```
 
 #### Local development
