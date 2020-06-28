@@ -20,7 +20,7 @@
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "fastnoisejs": "^1.0.1",
-    "helmet": "^3.23.2",
+    "helmet": "^3.23.3",
     "node-fetch": "^2.6.0",
     "pngjs": "^5.0.0",
     "protobufjs": "^6.9.0",
