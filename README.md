@@ -40,7 +40,7 @@ volumes:
 
 #### Want your server to show up on the in-game map?
 
-At the moment, the main server list verification it's a bit of a manual process.
+At the moment, the main server list verification is a bit of a manual process.
 I will check the list from time to time and manually approve them after checking they work correctly.
 I need to write better tools to streamline the process, but there's other priorities right now.
 If you want to speed this up, you can always drop me a line on [twitter](https://twitter.com/danigatunes) with the url of your server.
