@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/danielesteban/blocks.svg?branch=master)](https://travis-ci.org/danielesteban/blocks)
 ==
 
-> webxr multiplayer voxels engine
+[![screenshot](https://blocks.gatunes.com/auth/location/5ef51b8ea422424629f75085/photo)](https://blocks.gatunes.com/)
 
 #### Create your own server in two steps:
 
