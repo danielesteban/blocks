@@ -43,7 +43,14 @@ module.exports = (app) => {
   app.put(
     '/server',
     body('url')
-      .isURL({ protocols: ['https'] }),
+      .isURL({ protocols: ['https'] })
+      .custom((url) => {
+        url = new URL(url);
+        return (
+          !url.hash && !url.query
+          && url.pathname.substr(url.pathname.length - 1) === '/'
+        );
+      }),
     (req, res) => {
       if (!validationResult(req).isEmpty()) {
         res.status(422).end();
