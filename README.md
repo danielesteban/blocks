@@ -6,16 +6,16 @@
 
 #### Create your own server in two steps:
 
-* [Remix glitch.com/~blocks-server](https://glitch.com/edit/#!/remix/blocks-server)
-* Set this variables on the `.env` file:
-  * `NAME` the server name (for the public registry)
-  * `SEED` 16bit world generation seed. (0 - 65535)
+ * [Remix glitch.com/~blocks-server](https://glitch.com/edit/#!/remix/blocks-server)
+ * Set this variables on the `.env` file:
+   * `NAME` the server name (for the public registry)
+   * `SEED` 16bit world generation seed. (0 - 65535)
 
 #### If you want to experiment with world generation:
 
-* [Remix glitch.com/~blocks-server-worldgen](https://glitch.com/edit/#!/remix/blocks-server-worldgen)
-* Set the variables on the `.env` file
-* Edit [worldgen.js](https://glitch.com/edit/#!/blocks-server-worldgen?path=worldgen.js)
+ * [Remix glitch.com/~blocks-server-worldgen](https://glitch.com/edit/#!/remix/blocks-server-worldgen)
+ * Set the variables on the `.env` file
+ * Edit [worldgen.js](https://glitch.com/edit/#!/blocks-server-worldgen?path=worldgen.js)
 
 #### You can also use docker-compose if you already own a more powerful server:
 
