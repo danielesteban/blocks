@@ -1,5 +1,4 @@
 const fs = require('fs');
-const fastnoise = require('fastnoisejs');
 const Chunk = require('./chunk');
 const Generators = require('./generators');
 const Room = require('./room');
@@ -31,33 +30,27 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.storage = storage;
-    const noise = fastnoise.Create(this.seed);
-    this.generator = Generators[generator](noise);
-    this.spawnOffset = generator === 'default' ? (
-      Math.floor(noise.GetWhiteNoise(this.seed, this.seed) * 50)
-    ) : (
-      0
-    );
+    this.generator = Generators({ generator, seed });
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload + 1)) ** 2} chunks...`);
       for (let z = -preload; z <= preload; z += 1) {
         for (let x = -preload; x <= preload; x += 1) {
           this.getChunk({
-            x: this.spawnOffset + x,
-            z: this.spawnOffset + z,
+            x: this.generator.spawn.x + x,
+            z: this.generator.spawn.z + z,
           }).remesh();
         }
       }
+    }
+    if (publicURL) {
+      this.register(publicURL);
     }
     if (storage) {
       if (!fs.existsSync(storage)) {
         fs.mkdirSync(storage, { recursive: true });
       }
       setInterval(() => this.persist(), 60000);
-    }
-    if (publicURL) {
-      this.register(publicURL);
     }
   }
 
@@ -73,10 +66,10 @@ class World extends Room {
   }
 
   onInit() {
-    const { seed, spawnOffset } = this;
+    const { generator: { spawn: offset }, seed } = this;
     const chunk = this.getChunk({
-      x: spawnOffset + Math.floor(Math.random() * 3) - 1,
-      z: spawnOffset + Math.floor(Math.random() * 3) - 1,
+      x: offset.x + Math.floor(Math.random() * 3) - 1,
+      z: offset.z + Math.floor(Math.random() * 3) - 1,
     });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),

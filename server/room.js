@@ -164,12 +164,19 @@ class Room {
       method: 'PUT',
     })
       .then((res) => {
-        if (res.status === 200) {
-          res.json().then((id) => {
-            this.id = id;
-          });
+        if (res.status !== 200) {
+          throw new Error(`status ${res.status}`);
         }
-      });
+        return res
+          .json()
+          .then((id) => {
+            this.id = id;
+            console.log(`Server ID: ${id}`);
+          });
+      })
+      .catch((err) => (
+        console.error('Error registering server:', err.message)
+      ));
   }
 
   static decode(buffer) {

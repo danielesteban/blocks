@@ -1,5 +1,7 @@
 const { hsl2Rgb } = require('colorsys');
+const fastnoise = require('fastnoisejs');
 const fs = require('fs');
+const path = require('path');
 const { PNG } = require('pngjs');
 const Chunk = require('./chunk.js');
 
@@ -24,33 +26,37 @@ const computeColor = (noise, x, y, z) => {
   return color;
 };
 
-const treeSaplings = ({ noise, from, to }) => (x, y, z) => {
-  if (
-    y < from
-    || y > to
-    || (Math.abs(noise.GetPerlin(x / 4, y / 4, z / 4))) > 0.1
-    || (Math.abs(noise.GetSimplex(z * 4, y * 4, x * 4))) > 0.005
-  ) {
-    return false;
-  }
-  const n = Math.abs(noise.GetSimplex(z / 8, x / 8));
-  const height = 5 + Math.floor(Math.abs(noise.GetWhiteNoise(x / 2, z / 2)) * 16);
-  const hue = Math.floor(n * 0x100);
-  const radius = 7 + Math.floor(n * height * 0.5);
-  return {
-    r: height,
-    g: hue,
-    b: radius,
-  };
-};
-
-module.exports = {
+const Generators = {
   default(noise) {
     const { maxHeight, size, types } = Chunk;
     const waterLevel = 8;
+    const saplings = {
+      from: waterLevel + 3,
+      to: waterLevel + size,
+    };
+    const seed = noise.GetSeed();
+    const spawn = Math.floor(noise.GetWhiteNoise(seed, seed) * 50);
     return {
-      noise,
-      saplings: treeSaplings({ noise, from: waterLevel + 3, to: waterLevel + size }),
+      saplings: (x, y, z) => {
+        if (
+          y < saplings.from
+          || y > saplings.to
+          || (Math.abs(noise.GetPerlin(x / 4, y / 4, z / 4))) > 0.1
+          || (Math.abs(noise.GetSimplex(z * 4, y * 4, x * 4))) > 0.005
+        ) {
+          return false;
+        }
+        const n = Math.abs(noise.GetSimplex(z / 8, x / 8));
+        const height = 5 + Math.floor(Math.abs(noise.GetWhiteNoise(x / 2, z / 2)) * 16);
+        const hue = Math.floor(n * 0x100);
+        const radius = 7 + Math.floor(n * height * 0.5);
+        return {
+          r: height,
+          g: hue,
+          b: radius,
+        };
+      },
+      spawn: { x: spawn, z: spawn },
       terrain: (x, y, z) => {
         const isBlock = y <= (
           Math.abs(noise.GetSimplexFractal(x / 1.5, y, z / 1.5))
@@ -78,7 +84,6 @@ module.exports = {
     const { types } = Chunk;
     const worldHeight = 3;
     return {
-      noise,
       terrain: (x, y, z) => {
         const isBlock = y <= worldHeight;
         return {
@@ -122,7 +127,6 @@ module.exports = {
       return computeColor(noise, x, y, z);
     };
     return {
-      noise,
       terrain: (x, y, z) => {
         const hx = heightOffset.x + x;
         const hz = heightOffset.z + z;
@@ -149,4 +153,22 @@ module.exports = {
       },
     };
   },
+};
+
+module.exports = ({ generator, seed }) => {
+  const noise = fastnoise.Create(seed);
+  if (Generators[generator]) {
+    generator = Generators[generator](noise);
+  } else if (fs.existsSync(generator)) {
+    // eslint-disable-next-line import/no-dynamic-require, global-require
+    generator = require(path.resolve(generator))(noise);
+  } else {
+    console.error(`Couldn't find the generator "${generator}".\n`);
+    process.exit(1);
+  }
+  return {
+    ...generator,
+    noise,
+    spawn: generator.spawn || { x: 0, z: 0 },
+  };
 };

@@ -17,8 +17,8 @@ class Map {
       x: parseInt(req.params.originX, 10),
       z: parseInt(req.params.originZ, 10),
     }) : ({
-      x: world.spawnOffset,
-      z: world.spawnOffset,
+      x: world.generator.spawn.x,
+      z: world.generator.spawn.z,
     });
     const radius = Math.min(
       Math.max(
