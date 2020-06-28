@@ -57,15 +57,13 @@ class Photo extends Object3D {
     this.frame.matrixAutoUpdate = false;
     this.frame.scale.set(0.5, (height * 0.5) / width, 1);
     this.frame.updateMatrix();
-    {
-      const backplate = new Mesh(
-        Photo.geometry,
-        Photo.backplateMaterial
-      );
-      backplate.matrixAutoUpdate = false;
-      this.frame.add(backplate);
-    }
     this.add(this.frame);
+    const backplate = new Mesh(
+      Photo.geometry,
+      Photo.backplateMaterial
+    );
+    backplate.matrixAutoUpdate = false;
+    this.frame.add(backplate);
     this.ui = new UI({
       width: 0.15,
       height: 0.0375,
