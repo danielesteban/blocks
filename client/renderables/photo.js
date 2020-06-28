@@ -131,13 +131,13 @@ class Photo extends Object3D {
   update(scene) {
     const {
       camera,
+      matrixWorld,
       player,
       renderer,
       target,
       ui,
     } = this;
-    camera.position.copy(player.head.position);
-    camera.quaternion.copy(player.head.quaternion);
+    matrixWorld.decompose(camera.position, camera.quaternion, camera.scale);
     target.position = {
       x: Math.floor(player.head.position.x / 0.5),
       y: Math.floor(player.position.y / 0.5),
