@@ -1,4 +1,6 @@
 import {
+  BackSide,
+  Color,
   Mesh,
   MeshBasicMaterial,
   NearestFilter,
@@ -13,6 +15,13 @@ import UI from './ui.js';
 // A photo frame mesh
 
 class Photo extends Object3D {
+  static setupBackplateMaterial() {
+    Photo.backplateMaterial = new MeshBasicMaterial({
+      color: (new Color(0x222222)).convertSRGBToLinear(),
+      side: BackSide,
+    });
+  }
+
   static setupGeometry() {
     Photo.geometry = new PlaneBufferGeometry(1, 1, 1, 1);
   }
@@ -23,6 +32,9 @@ class Photo extends Object3D {
     width = 1280,
     height = 720,
   } = {}) {
+    if (!Photo.backplateMaterial) {
+      Photo.setupBackplateMaterial();
+    }
     if (!Photo.geometry) {
       Photo.setupGeometry();
     }
@@ -45,6 +57,14 @@ class Photo extends Object3D {
     this.frame.matrixAutoUpdate = false;
     this.frame.scale.set(0.5, (height * 0.5) / width, 1);
     this.frame.updateMatrix();
+    {
+      const backplate = new Mesh(
+        Photo.geometry,
+        Photo.backplateMaterial
+      );
+      backplate.matrixAutoUpdate = false;
+      this.frame.add(backplate);
+    }
     this.add(this.frame);
     this.ui = new UI({
       width: 0.15,
