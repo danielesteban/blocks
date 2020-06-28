@@ -8,7 +8,7 @@ const renderer = new Renderer({
     fps: document.getElementById('fps'),
     players: document.getElementById('players'),
     renderer: document.getElementById('renderer'),
-    seed: document.getElementById('seed'),
+    server: document.getElementById('server'),
     session: document.getElementById('session'),
     support: document.getElementById('support'),
   },

@@ -270,12 +270,10 @@ class World extends Scene {
     const { scale } = World;
     const {
       chunks,
-      dom,
       map,
       player,
       server,
     } = this;
-    dom.seed.innerText = data.seed;
     map.setConnectedServer(server.serverURL);
     if (player.spawn) {
       player.position.copy(player.spawn.position);

@@ -120,6 +120,13 @@ canvas {
   color: inherit;
 }
 
+#debug {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  opacity: 0.3;
+}
+
 #enterVR {
   position: absolute;
   bottom: 1rem;
@@ -163,13 +170,6 @@ canvas {
 
 #github > svg:hover .octo-arm {
   animation: octocat-wave 560ms ease-in-out;
-}
-
-#info {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  opacity: 0.3;
 }
 
 #renderer {

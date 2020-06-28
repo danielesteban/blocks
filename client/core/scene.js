@@ -160,6 +160,7 @@ class Scene extends ThreeScene {
         server.error = text;
         break;
       case 'INIT':
+        dom.server.innerText = json.id || (new URL(server.serverURL)).host;
         player.session.server = json.id;
         peers.init({
           server,
