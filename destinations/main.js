@@ -6,11 +6,28 @@ const [image] = photo.getElementsByTagName('img');
 const meta = document.getElementById('meta');
 const [title, sharing, user] = meta.getElementsByTagName('div');
 const [twitter, facebook] = sharing.getElementsByTagName('a');
+const [skinCanvas] = user.getElementsByTagName('canvas');
+const [username] = user.getElementsByTagName('div');
 const prev = document.getElementById('prev');
 const next = document.getElementById('next');
 
 let current;
 const locations = [];
+
+const skin = {
+  canvas: skinCanvas,
+  ctx: skinCanvas.getContext('2d'),
+  texture: new Image(),
+};
+skin.canvas.width = 32;
+skin.canvas.height = 32;
+skin.ctx.imageSmoothingEnabled = false;
+skin.texture.onload = () => {
+  const { canvas, ctx, texture } = skin;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(texture, 8, 8, 8, 8, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(texture, 40, 8, 8, 8, 0, 0, canvas.width, canvas.height);
+};
 
 const renderLocation = (index) => {
   current = index;
@@ -23,7 +40,8 @@ const renderLocation = (index) => {
     `x:${location.position.x} y:${location.position.y} z:${location.position.z}`
     + ` - ${location.server.name}`
   );
-  user.innerText = (
+  skin.texture.src = `${authService}user/${location.user._id}/skin`;
+  username.innerText = (
     `${location.user.name}`
     + ` - ${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`
     + ` ${leadingZero(`${createdAt.getHours()}`)}:${leadingZero(`${createdAt.getMinutes()}`)}`

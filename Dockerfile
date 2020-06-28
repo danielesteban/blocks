@@ -11,9 +11,10 @@ COPY package.json .
 COPY package-lock.json .
 RUN npm ci
 
-# Copy server & client
+# Copy server & clients
 COPY server/ server/
 COPY client/ client/
+COPY destinations/ destinations/
 
 # De-escalate privileges
 USER node

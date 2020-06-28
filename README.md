@@ -42,6 +42,7 @@ If you want to speed this up, you can always drop me a line on [twitter](https:/
 #### Server configuration
 
  * `CLIENT` serve the client (boolean, defaults to false)
+ * `DESTINATIONS` serve the destinations web ui (boolean, defaults to false)
  * `GENERATOR` the world [generator](server/generators.js) function
  * `MAX_CLIENTS` the maximum concurrent players (defaults to 16)
  * `NAME` the server name (for the public registry)
