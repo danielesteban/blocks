@@ -1,3 +1,4 @@
+import livereload from 'rollup-plugin-livereload';
 import resolve from '@rollup/plugin-node-resolve';
 import svelte from 'rollup-plugin-svelte';
 import { terser } from 'rollup-plugin-terser';
@@ -21,7 +22,7 @@ export default {
       browser: true,
       dedupe: ['svelte'],
     }),
-    ...(production ? [terser()] : []),
+    ...(production ? [terser()] : [livereload('dist')]),
   ],
   watch: {
     clearScreen: false,
