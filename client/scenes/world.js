@@ -270,10 +270,18 @@ class World extends Scene {
     const { scale } = World;
     const {
       chunks,
+      dom,
       map,
       player,
       server,
     } = this;
+    if (data.id) {
+      dom.server.href = `https://blocks.gatunes.com/destinations/#/server:${data.id}`;
+      dom.server.innerText = data.id;
+    } else {
+      dom.server.removeAttribute('href');
+      dom.server.innerText = (new URL(server.serverURL)).host;
+    }
     map.setConnectedServer(server.serverURL);
     if (player.spawn) {
       player.position.copy(player.spawn.position);

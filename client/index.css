@@ -116,15 +116,15 @@ canvas {
   opacity: 0.3;
 }
 
-#credits > a {
-  color: inherit;
-}
-
 #debug {
   position: absolute;
   top: 1rem;
   left: 1rem;
   opacity: 0.3;
+}
+
+#credits > a, #debug > a {
+  color: inherit;
 }
 
 #enterVR {
