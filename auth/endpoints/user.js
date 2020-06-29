@@ -21,7 +21,7 @@ module.exports = (app) => {
   app.get(
     '/user/locations',
     User.authenticate,
-    Location.list({ filter: 'user' })
+    Location.list({ filter: 'session' })
   );
 
   app.get(
@@ -147,6 +147,11 @@ module.exports = (app) => {
         .then(() => res.json(user.getNewSession()))
         .catch(() => res.status(400).end());
     }
+  );
+
+  app.get(
+    '/user/:user/locations',
+    Location.list({ filter: 'user' })
   );
 
   app.get(

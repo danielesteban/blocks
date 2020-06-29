@@ -74,6 +74,10 @@ LocationSchema.statics = {
         param('server')
           .isMongoId(),
       ] : []),
+      ...(filter === 'user' ? [
+        param('user')
+          .isMongoId(),
+      ] : []),
       query('page')
         .optional()
         .isInt()
@@ -86,11 +90,14 @@ LocationSchema.statics = {
         const page = Math.max(req.query.page || 1, 1);
         const selector = {};
         switch (filter) {
+          case 'session':
+            selector.user = req.user._id;
+            break;
           case 'server':
             selector.server = req.params.server;
             break;
           case 'user':
-            selector.user = req.user._id;
+            selector.user = req.params.user;
             break;
           default:
             break;
@@ -110,7 +117,7 @@ LocationSchema.statics = {
                 'position',
                 'rotation',
                 ...(filter !== 'server' ? ['server'] : []),
-                ...(filter !== 'user' ? ['user'] : []),
+                ...(~['session', 'user'].indexOf(filter) ? ['user'] : []),
               ],
               sort: '-createdAt',
             }
