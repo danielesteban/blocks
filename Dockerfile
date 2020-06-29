@@ -15,6 +15,7 @@ RUN npm ci
 COPY destinations/ destinations/
 RUN npm --prefix destinations ci
 RUN npm --prefix destinations run build
+RUN rm -rf destinations/node_modules/
 
 # Copy server & client source
 COPY server/ server/
