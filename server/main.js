@@ -40,7 +40,7 @@ app.get(
   cors(),
   map.onRequest.bind(map)
 );
-app.get('/status', world.onStatusRequest.bind(world));
+app.get('/status', cors(), world.onStatusRequest.bind(world));
 if (process.env.CLIENT) {
   app.use(express.static(path.resolve(__dirname, '..', 'client')));
 } else if (world.publicURL) {
