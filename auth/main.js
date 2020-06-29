@@ -16,6 +16,8 @@ const server = app.listen(process.env.PORT || 8080, () => (
   console.log(`Listening on port: ${server.address().port}`)
 ));
 
+app.set('CLIENT_URL', process.env.CLIENT_URL || 'https://blocks.gatunes.com/');
+app.set('PUBLIC_URL', process.env.PUBLIC_URL || 'https://blocks.gatunes.com/auth/');
 setupLocationEndpoints(app);
 setupServerEndpoints(app);
 setupUserEndpoints(app);

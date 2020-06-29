@@ -4,9 +4,6 @@ const Location = require('../models/location');
 const Server = require('../models/server');
 const User = require('../models/user');
 
-const host = process.env.HOST || 'https://blocks.gatunes.com/auth/';
-const client = process.env.CLIENT || 'https://blocks.gatunes.com/';
-
 module.exports = (app) => {
   const upload = multer({
     limits: { fileSize: 512000 },
@@ -113,24 +110,25 @@ module.exports = (app) => {
               '<html>',
               '<head>',
               '<meta charset="utf-8">',
-              `<meta property="og:url" content="${host}location/${_id}" />`,
+              `<meta property="og:url" content="${app.get('PUBLIC_URL')}location/${_id}" />`,
               `<meta property="og:title" content=${JSON.stringify(`x:${x} y:${y} z:${z} - ${server}`)} />`,
               `<meta property="og:description" content=${JSON.stringify(`${user} - ${date}`)} />`,
-              `<meta property="og:image" content="${host}location/${_id}/photo" />`,
+              `<meta property="og:image" content="${app.get('PUBLIC_URL')}location/${_id}/photo" />`,
               '<meta property="og:image:type" content="image/jpeg" />',
               '<meta property="og:image:width" content="1280" />',
               '<meta property="og:image:height" content="720" />',
               '<meta property="twitter:card" content="summary_large_image">',
               '<script>',
-              `window.location = ${JSON.stringify(`${client}#/location:${_id}`)};`,
+              `window.location = ${JSON.stringify(`${app.get('CLIENT_URL')}#/location:${_id}`)};`,
               '</script>',
               '</head>',
               '</html>',
             ].join('\n'));
         })
-        .catch(() => (
-          res.status(500).end()
-        ));
+        .catch((e) => {
+          console.log(e);
+          res.status(500).end();
+        });
     }
   );
 
