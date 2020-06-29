@@ -6,15 +6,19 @@ ENV NODE_ENV production
 RUN mkdir -p /usr/src/blocks
 WORKDIR /usr/src/blocks
 
-# Install dependencies
+# Install server dependencies
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci
 
-# Copy server & clients
+# Copy and build destinations client
+COPY destinations/ destinations/
+RUN npm --prefix destinations ci
+RUN npm --prefix destinations run build
+
+# Copy server & client source
 COPY server/ server/
 COPY client/ client/
-COPY destinations/ destinations/
 
 # De-escalate privileges
 USER node

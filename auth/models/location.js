@@ -66,7 +66,7 @@ LocationSchema.pre('save', function onSave(next) {
 LocationSchema.statics = {
   list({
     filter = 'latest',
-    pageSize = 10,
+    pageSize = 50,
   }) {
     const Location = this;
     return [

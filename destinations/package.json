@@ -1,0 +1,22 @@
+{
+  "name": "blocks-destinations",
+  "description": "blocks destinations web ui",
+  "author": "Daniel Esteban Nombela",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
+  },
+  "dependencies": {
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "rollup": "^2.18.1",
+    "rollup-plugin-svelte": "^5.2.3",
+    "rollup-plugin-terser": "^6.1.0",
+    "svelte": "^3.23.2"
+  },
+  "devDependencies": {
+    "eslint-plugin-svelte3": "^2.7.3"
+  }
+}

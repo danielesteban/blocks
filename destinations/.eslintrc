@@ -2,8 +2,13 @@
   "env": {
     "browser": true
   },
-  "rules": {
-    "import/extensions": 0,
-    "import/named": 0
-  }
+  "plugins": [
+    "svelte3"
+  ],
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "processor": "svelte3/svelte3"
+    }
+  ]
 }

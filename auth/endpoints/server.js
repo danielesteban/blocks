@@ -24,7 +24,7 @@ module.exports = (app) => {
         .paginate(
           { verified: true },
           {
-            limit: 10,
+            limit: 25,
             page,
             select: 'name url',
             sort: '-createdAt',
