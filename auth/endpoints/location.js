@@ -125,10 +125,9 @@ module.exports = (app) => {
               '</html>',
             ].join('\n'));
         })
-        .catch((e) => {
-          console.log(e);
-          res.status(500).end();
-        });
+        .catch(() => (
+          res.status(500).end()
+        ));
     }
   );
 
