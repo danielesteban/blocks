@@ -9,12 +9,9 @@
 	);
 </script>
 
-<actions>
-	<a href="#/">&lt; Servers</a>
-</actions>
 {#await fetchServer(id) then server}
 	<a href={server.link} target="_blank">
-		<img alt={server.name} src={`${server.url}map`} />
+		<img alt={server.name} src={server.map} />
 	</a>
 	<h3>
 		<a href={server.link} target="_blank">
@@ -36,25 +33,12 @@
 {/await}
 
 <style>
-	actions {
-		display: block;
-		background: #222;
-		border-bottom: 1px solid #111;
-	}
-
-	actions > a {
-		display: inline-block;
-		padding: 0.5rem 1rem;
-		text-align: center;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: #fff;
-		background: #333;
-	}
-
 	h3, div, social {
-		margin: 0;
 		padding: 0 1rem 1rem;
+	}
+
+  h3 {
+		margin: 1rem 0 0;
 	}
 
 	h3 > a {
@@ -64,7 +48,6 @@
 	img {
 		display: block;
 		width: 100%;
-		margin-bottom: 1rem;
 		width: 272px;
 		height: 272px;
 	}

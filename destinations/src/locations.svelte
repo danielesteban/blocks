@@ -39,13 +39,17 @@
 			<Share url={location.link} />
 		</div>
 		<div>
-			<Skin
-				user={location.user._id}
-				width={32}
-				height={32}
-			/>
+			<a href={`#/user:${location.user._id}`}>
+				<Skin
+					user={location.user._id}
+					width={32}
+					height={32}
+				/>
+			</a>
 			<div>
-				{location.user.name} - {location.date}
+				<a href={`#/user:${location.user._id}`}>
+					{location.user.name}
+				</a> - {location.date}
 			</div>
 		</div>
 	</info>
@@ -108,6 +112,10 @@
 		display: flex;
 		align-items: center;
 		width: calc(50% - 50px);
+	}
+
+	info > div > div > a {
+		color: #fff;
 	}
 
 	info > div:nth-child(2) {
