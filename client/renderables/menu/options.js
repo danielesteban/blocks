@@ -95,12 +95,20 @@ const Options = ({
       onPointer: () => setLocomotion('fly'),
     },
     {
-      label: 'Edit Avatar',
-      x: width * 0.125,
+      label: 'Skin',
+      x: width * 0.0625,
       y: height * 0.8125,
-      width: width * 0.75,
+      width: width * 0.40625,
       height: height * 0.125,
       onPointer: () => menu.skin.setLayer('transparent'),
+    },
+    {
+      label: 'Settings',
+      x: width * 0.53125,
+      y: height * 0.8125,
+      width: width * 0.40625,
+      height: height * 0.125,
+      onPointer: () => menu.setPage(pages.settings),
     },
   ];
   const graphics = [

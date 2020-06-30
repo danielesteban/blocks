@@ -1,6 +1,7 @@
 import Panel from '../panel.js';
 import ColorPicker from './colorpicker.js';
 import Options from './options.js';
+import Settings from './settings.js';
 import Skin from './skin.js';
 
 // Menu UI
@@ -29,6 +30,7 @@ class Menu extends Panel {
     const pages = {};
     [
       Options,
+      Settings,
       Skin,
       ColorPicker,
     ].forEach((Page) => {

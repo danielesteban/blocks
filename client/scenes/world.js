@@ -26,7 +26,6 @@ class World extends Scene {
       loaded: new Map(),
       requested: new Map(),
       player: new Vector3(),
-      pool: [...Array(World.renderGrid.length * World.subchunks)].map(() => new Voxels()),
       voxels: new Map(),
     };
 
@@ -34,7 +33,7 @@ class World extends Scene {
     this.background = new Color();
     this.birds = new Birds({ anchor: this.player });
     this.add(this.birds);
-    this.fog = new FogExp2(0, 0.03);
+    this.fog = new FogExp2(0, 0);
     this.clouds = new Clouds({ anchor: this.player });
     this.add(this.clouds);
     this.rain = new Rain({ anchor: this.player, heightmaps: this.chunks.heightmaps });
@@ -58,6 +57,12 @@ class World extends Scene {
       this.map
     );
     this.player.setWelcome(new Help());
+
+    this.updateRenderRadius(
+      parseInt(localStorage.getItem('blocks::renderRadius') || 0, 10)
+      || World.defaultRenderRadius
+    );
+    this.chunks.pool = [...Array(this.renderGrid.length * World.subchunks)].map(() => new Voxels());
 
     const params = World.getURLParams();
     if (params.location) {
@@ -86,11 +91,7 @@ class World extends Scene {
 
   onBeforeRender(renderer, scene, camera) {
     super.onBeforeRender(renderer, scene, camera);
-    const {
-      renderGrid,
-      renderRadius,
-      scale,
-    } = World;
+    const { scale } = World;
     const {
       ambient,
       birds,
@@ -102,6 +103,8 @@ class World extends Scene {
       player,
       photo,
       rain,
+      renderGrid,
+      renderRadius,
       server,
       sun,
       translocables,
@@ -376,6 +379,22 @@ class World extends Scene {
     }
   }
 
+  updateRenderRadius(radius) {
+    const {
+      chunks,
+      fog,
+      menu,
+      server,
+    } = this;
+    fog.density = (32 - radius) * 0.00125;
+    this.renderGrid = World.getRenderGrid(radius);
+    this.renderRadius = radius;
+    menu.settings.setRenderRadius(radius);
+    if (server) {
+      chunks.player.set(Infinity, Infinity, Infinity);
+    }
+  }
+
   updateTime(time) {
     const { dayDuration, rainInterval, rainDuration } = World;
     const {
@@ -419,6 +438,21 @@ class World extends Scene {
     this.needsTranslocablesUpdate = false;
   }
 
+  static getRenderGrid(radius) {
+    const grid = [];
+    const center = new Vector2();
+    for (let x = -radius; x <= radius; x += 1) {
+      for (let y = -radius; y <= radius; y += 1) {
+        const chunk = new Vector2(x, y);
+        if (chunk.distanceTo(center) <= radius) {
+          grid.push(chunk);
+        }
+      }
+    }
+    grid.sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)));
+    return grid;
+  }
+
   static getURLParams() {
     return document.location.hash.substr(2).split('/').reduce((keys, param) => {
       const [key, value] = param.split(':');
@@ -429,23 +463,9 @@ class World extends Scene {
 }
 
 World.dayDuration = 600;
+World.defaultRenderRadius = 8;
 World.rainInterval = 1500;
 World.rainDuration = 300;
-World.renderRadius = 8;
-World.renderGrid = (() => {
-  const grid = [];
-  const center = new Vector2();
-  for (let x = -World.renderRadius; x <= World.renderRadius; x += 1) {
-    for (let y = -World.renderRadius; y <= World.renderRadius; y += 1) {
-      const chunk = new Vector2(x, y);
-      if (chunk.distanceTo(center) <= World.renderRadius) {
-        grid.push(chunk);
-      }
-    }
-  }
-  grid.sort((a, b) => (a.distanceTo(center) - b.distanceTo(center)));
-  return grid;
-})();
 World.scale = 0.5;
 World.subchunks = 4;
 
