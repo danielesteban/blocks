@@ -27,7 +27,7 @@ module.exports = (app) => {
             limit: 25,
             page,
             select: 'name url',
-            sort: '-createdAt',
+            sort: '-updatedAt',
           }
         )
         .then(({ docs, totalPages }) => (
