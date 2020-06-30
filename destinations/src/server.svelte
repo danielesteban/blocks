@@ -41,10 +41,6 @@
 		margin: 1rem 0 0;
 	}
 
-	h3 > a {
-		color: #fff;
-	}
-
 	img {
 		display: block;
 		width: 100%;

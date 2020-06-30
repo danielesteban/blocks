@@ -37,6 +37,10 @@
 		{#if location}
 			<div>
 				{location.name}
+				&nbsp;-&nbsp;
+				<a href={`#/server:${location.server._id}`}>
+					{location.server.name}
+				</a>
 			</div>
 			<div>
 				<Share url={location.link} />
@@ -120,10 +124,6 @@
 		display: flex;
 		align-items: center;
 		width: calc(50% - 50px);
-	}
-
-	info > div > div > a {
-		color: #fff;
 	}
 
 	info > div:nth-child(2) {

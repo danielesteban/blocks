@@ -16,7 +16,6 @@
 	a {
 		display: block;
 		padding: 0.75rem 1rem;
-		color: #fff;
 		text-decoration: none;
 		background: #444;
 	}

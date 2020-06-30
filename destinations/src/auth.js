@@ -19,10 +19,7 @@ export const fetchLocations = ({ server, user }) => {
       const createdAt = new Date(location.createdAt);
       return {
         ...location,
-        name: (
-          `x:${location.position.x} y:${location.position.y} z:${location.position.z}`
-          + ` - ${location.server.name}`
-        ),
+        name: `x:${location.position.x} y:${location.position.y} z:${location.position.z}`,
         date: (
           `${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`
           + ` ${leadingZero(`${createdAt.getHours()}`)}:${leadingZero(`${createdAt.getMinutes()}`)}`
