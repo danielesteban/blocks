@@ -19,7 +19,6 @@ const Settings = ({
   };
   const buttons = [
     {
-      background: '#393',
       label: 'Low',
       x: width * 0.0625,
       y: height * 0.3125,
