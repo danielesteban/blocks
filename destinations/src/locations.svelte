@@ -15,9 +15,11 @@
 
 <destination>
 	<photo>
-		<a href={location.link} target="_blank">
-			<img alt={location.name} src="{location.photo}"/>
-		</a>
+		{#if location}
+			<a href={location.link} target="_blank">
+				<img alt={location.name} src="{location.photo}"/>
+			</a>
+		{/if}
 		<prev
 			class={current > 0 ? 'enabled' : ''}
 			on:click={paginate(-1)}
@@ -32,26 +34,30 @@
 		</next>
 	</photo>
 	<info>
-		<div>
-			{location.name}
-		</div>
-		<div>
-			<Share url={location.link} />
-		</div>
-		<div>
-			<a href={`#/user:${location.user._id}`}>
-				<Skin
-					user={location.user._id}
-					width={32}
-					height={32}
-				/>
-			</a>
+		{#if location}
+			<div>
+				{location.name}
+			</div>
+			<div>
+				<Share url={location.link} />
+			</div>
 			<div>
 				<a href={`#/user:${location.user._id}`}>
-					{location.user.name}
-				</a> - {location.date}
+					<Skin
+						user={location.user._id}
+						width={32}
+						height={32}
+					/>
+				</a>
+				<div>
+					<a href={`#/user:${location.user._id}`}>
+						{location.user.name}
+					</a> - {location.date}
+				</div>
 			</div>
-		</div>
+		{:else}
+			<div>No locations yet</div>
+		{/if}
 	</info>
 </destination>
 
@@ -66,13 +72,13 @@
 	}
 	
 	photo {
-		flex-grow: 1;
+		height: calc(100vh - 3rem);
 	}
 
 	photo > a > img {
 		display: block;
 		width: 100%;
-		height: calc(100vh - 3rem);
+		height: 100%;
 		object-fit: contain;
 	}
 
@@ -102,6 +108,8 @@
 	}
 
 	info {
+		box-sizing: border-box;
+		height: 3rem;
 		background: #111;
 		display: flex;
 		padding: 0.5rem 1rem;

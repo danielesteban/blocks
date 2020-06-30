@@ -27,3 +27,9 @@
   width={width}
   height={height}
 />
+
+<style>
+  canvas {
+    vertical-align: middle;
+  }
+</style>
