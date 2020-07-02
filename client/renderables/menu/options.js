@@ -7,16 +7,21 @@ const Options = ({
   height,
 }) => {
   const state = { blockType: 0x01 };
-  const setBlock = (type) => {
+  const setBlockType = (type) => {
     const [block, glass, light] = buttons; // eslint-disable-line no-use-before-define
     delete block.background;
     delete glass.background;
     delete light.background;
     const options = { 0x01: block, 0x02: glass, 0x03: light };
-    options[type].background = '#393';
+    if (options[type]) {
+      options[type].background = '#393';
+    }
     state.blockType = type;
-    menu.setPage(pages.options);
+    if (menu.page.id === pages.options) {
+      menu.setPage(pages.options);
+    }
   };
+  state.setBlockType = setBlockType;
   const setLocomotion = (type) => {
     const [
       /* block */,
@@ -43,7 +48,7 @@ const Options = ({
       y: height * 0.0625,
       width: width * 0.25,
       height: height * 0.1875,
-      onPointer: () => setBlock(0x01),
+      onPointer: () => setBlockType(0x01),
     },
     {
       label: 'Glass',
@@ -51,7 +56,7 @@ const Options = ({
       y: height * 0.0625,
       width: width * 0.25,
       height: height * 0.1875,
-      onPointer: () => setBlock(0x02),
+      onPointer: () => setBlockType(0x02),
     },
     {
       label: 'Light',
@@ -59,7 +64,7 @@ const Options = ({
       y: height * 0.0625,
       width: width * 0.25,
       height: height * 0.1875,
-      onPointer: () => setBlock(0x03),
+      onPointer: () => setBlockType(0x03),
     },
     {
       background: 'transparent',

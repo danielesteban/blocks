@@ -164,12 +164,8 @@ class World extends Room {
           || y >= Chunk.maxHeight
           || color < 0
           || color > 16777215
-          || (
-            type !== Chunk.types.air
-            && type !== Chunk.types.dirt
-            && type !== Chunk.types.glass
-            && type !== Chunk.types.light
-          )
+          || Object.values(Chunk.types).indexOf(type) === -1
+          || type === Chunk.types.sapling
         ) {
           return;
         }

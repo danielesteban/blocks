@@ -164,6 +164,8 @@ class World extends Scene {
           } else {
             point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
             color = { r: point.x, g: point.y, b: point.z };
+            point.fromBufferAttribute(hit.object.geometry.getAttribute('uv'), face.a);
+            menu.options.setBlockType(Math.floor((point.x + 1) / 2));
           }
           menu.picker.setColor(color);
           return;
