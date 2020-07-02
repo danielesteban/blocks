@@ -70,10 +70,7 @@ class World extends Room {
 
   onInit() {
     const { generator: { spawn: offset }, seed } = this;
-    const chunk = this.getChunk({
-      x: offset.x + Math.floor(Math.random() * 3) - 1,
-      z: offset.z + Math.floor(Math.random() * 3) - 1,
-    });
+    const chunk = this.getChunk({ x: offset.x, z: offset.z });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),
       z: Math.floor(Math.random() * Chunk.size),
