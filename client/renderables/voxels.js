@@ -72,7 +72,7 @@ class Voxels extends Object3D {
       RepeatWrapping
     );
     atlas.anisotropy = 16;
-    atlas.image.height = 256;
+    atlas.image.height = 128;
     atlas.encoding = sRGBEncoding;
     atlas.loader = new Image();
     atlas.loader.crossOrigin = 'anonymous';
