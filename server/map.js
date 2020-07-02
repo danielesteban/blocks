@@ -32,6 +32,7 @@ class Map {
       width: (size * ((radius * 2) + 1)) * 2,
       height: (size * ((radius * 2) + 1)) * 2,
       colorType: 2, // color, no alpha
+      inputColorType: 2, // color, no alpha
     });
     const renderChunks = () => {
       if (!grid.length) {
