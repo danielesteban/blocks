@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/danielesteban/blocks.svg?branch=master)](https://travis-ci.org/danielesteban/blocks)
 ==
 
-[![screenshot](https://blocks.gatunes.com/auth/location/5ef51b8ea422424629f75085/photo)](https://blocks.gatunes.com/)
+[![screenshot](https://blocks.gatunes.com/auth/location/5efd37aaf8c03a265013d09b/photo)](https://blocks.gatunes.com/)
 
 #### Create your own server in two steps:
 
