@@ -87,7 +87,7 @@ const Generators = {
       terrain: (x, y, z) => {
         const isBlock = y <= worldHeight;
         return {
-          type: isBlock ? types.dirt : types.water,
+          type: isBlock ? types.dirt : types.air,
           color: isBlock ? computeColor(noise, x, y, z) : { r: 0, g: 0, b: 0 },
         };
       },
