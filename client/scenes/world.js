@@ -58,10 +58,7 @@ class World extends Scene {
     );
     this.player.setWelcome(new Help());
 
-    this.updateRenderRadius(
-      parseInt(localStorage.getItem('blocks::renderRadius') || 0, 10)
-      || World.defaultRenderRadius
-    );
+    this.updateRenderRadius(this.menu.settings.renderRadius);
     this.chunks.pool = [...Array(this.renderGrid.length * World.subchunks)].map(() => new Voxels());
 
     const params = World.getURLParams();
@@ -464,7 +461,6 @@ class World extends Scene {
 }
 
 World.dayDuration = 600;
-World.defaultRenderRadius = 8;
 World.rainInterval = 1500;
 World.rainDuration = 300;
 World.scale = 0.5;

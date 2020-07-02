@@ -6,16 +6,21 @@ const Settings = ({
   width,
   height,
 }) => {
-  const setRenderRadius = (radius) => {
-    const [low, mid, high] = buttons; // eslint-disable-line no-use-before-define
-    delete low.background;
-    delete mid.background;
-    delete high.background;
-    const options = { 8: low, 12: mid, 16: high };
-    options[radius].background = '#393';
-    if (menu.page.id === pages.settings) {
-      menu.draw();
-    }
+  const state = {
+    renderRadius: (
+      parseInt(localStorage.getItem('blocks::renderRadius') || 0, 10) || 8
+    ),
+    setRenderRadius(radius) {
+      const [low, mid, high] = buttons; // eslint-disable-line no-use-before-define
+      delete low.background;
+      delete mid.background;
+      delete high.background;
+      const options = { 8: low, 12: mid, 16: high };
+      options[radius].background = '#393';
+      if (menu.page.id === pages.settings) {
+        menu.draw();
+      }
+    },
   };
   const buttons = [
     {
@@ -50,6 +55,7 @@ const Settings = ({
       height: height * 0.1875,
       onPointer: () => {
         menu.setPage(pages.options);
+        menu.world.updateRenderRadius(state.renderRadius);
       },
     },
     {
@@ -61,6 +67,7 @@ const Settings = ({
       height: height * 0.1875,
       onPointer: () => {
         menu.setPage(pages.options);
+        state.renderRadius = menu.world.renderRadius;
         localStorage.setItem('blocks::renderRadius', menu.world.renderRadius);
       },
     },
@@ -75,7 +82,7 @@ const Settings = ({
   return {
     key: 'settings',
     page: { buttons, labels },
-    state: { setRenderRadius },
+    state,
   };
 };
 
