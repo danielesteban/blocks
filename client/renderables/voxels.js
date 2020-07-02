@@ -71,28 +71,60 @@ class Voxels extends Object3D {
       RepeatWrapping,
       RepeatWrapping
     );
+    // atlas.image.style.position = 'absolute';
+    // atlas.image.style.left = '0px';
+    // atlas.image.style.top = '0px';
+    // document.body.appendChild(atlas.image);
     atlas.anisotropy = 16;
     atlas.image.height = 128;
     atlas.encoding = sRGBEncoding;
     atlas.loader = new Image();
     atlas.loader.crossOrigin = 'anonymous';
     atlas.loader.onload = () => {
-      atlas.image.width = (atlas.loader.width * atlas.image.height) / atlas.loader.height;
+      const size = atlas.loader.height;
+      const count = atlas.loader.width / size;
+      const scaled = atlas.image.height;
+      const halfScaled = atlas.image.height * 0.5;
+      atlas.image.width = (count + 0.5) * 2 * scaled;
       const ctx = atlas.image.getContext('2d');
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(
-        atlas.loader,
-        0,
-        0,
-        atlas.loader.width,
-        atlas.loader.height,
-        0,
-        0,
-        atlas.image.width,
-        atlas.image.height
-      );
+      for (let i = 0; i < count; i += 1) {
+        ctx.drawImage(
+          atlas.loader,
+          i * size,
+          0,
+          1,
+          size,
+          ((i * 2) + 0.5) * scaled,
+          0,
+          halfScaled,
+          scaled
+        );
+        ctx.drawImage(
+          atlas.loader,
+          i * size,
+          0,
+          size,
+          size,
+          ((i * 2) + 1) * scaled,
+          0,
+          scaled,
+          scaled
+        );
+        ctx.drawImage(
+          atlas.loader,
+          i * size + size - 1,
+          0,
+          1,
+          size,
+          ((i * 2) + 2) * scaled,
+          0,
+          halfScaled,
+          scaled
+        );
+      }
       atlas.needsUpdate = true;
-      const uvScale = 1 / (atlas.loader.width / 16);
+      const uvScale = 1 / ((count + 0.5) * 2);
       [opaque, transparent].forEach((material) => {
         material.map = atlas;
         material.uniforms.map.value = atlas;

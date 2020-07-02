@@ -631,7 +631,7 @@ class Chunk {
         getLighting(l, s, n3),
         getLighting(l, s, n4),
       ];
-      const uvs = [[t - 1, 0], [t, 0], [t, 1], [t - 1, 1]];
+      const uvs = [[(t * 2) - 1, 0], [t * 2, 0], [t * 2, 1], [(t * 2) - 1, 1]];
       const vertices = [p1, p2, p3, p4];
       if (
         lighting[0].combined + lighting[2].combined < lighting[1].combined + lighting[3].combined
