@@ -3,17 +3,21 @@ import {
   Mesh,
   BufferAttribute,
   Object3D,
+  RepeatWrapping,
   ShaderLib,
   ShaderMaterial,
+  sRGBEncoding,
+  CanvasTexture,
   UniformsUtils,
+  UVMapping,
   VertexColors,
 } from '../core/three.js';
 
 // Voxels chunk
 
 class Voxels extends Object3D {
-  static setupMaterial() {
-    Voxels.material = new ShaderMaterial({
+  static setupMaterials() {
+    const opaque = new ShaderMaterial({
       name: 'voxels-material',
       vertexColors: VertexColors,
       fog: true,
@@ -59,28 +63,87 @@ class Voxels extends Object3D {
         sunlightIntensity: { value: 1 },
       },
     });
-    Voxels.transparentMaterial = Voxels.material.clone();
-    Voxels.transparentMaterial.uniforms.opacity.value = 0.5;
-    Voxels.transparentMaterial.transparent = true;
+    const transparent = opaque.clone();
+    transparent.transparent = true;
+    const atlas = new CanvasTexture(
+      document.createElement('canvas'),
+      UVMapping,
+      RepeatWrapping,
+      RepeatWrapping
+    );
+    atlas.anisotropy = 16;
+    atlas.image.height = 256;
+    atlas.encoding = sRGBEncoding;
+    atlas.loader = new Image();
+    atlas.loader.crossOrigin = 'anonymous';
+    atlas.loader.onload = () => {
+      atlas.image.width = (atlas.loader.width * atlas.image.height) / atlas.loader.height;
+      const ctx = atlas.image.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+        atlas.loader,
+        0,
+        0,
+        atlas.loader.width,
+        atlas.loader.height,
+        0,
+        0,
+        atlas.image.width,
+        atlas.image.height
+      );
+      atlas.needsUpdate = true;
+      const uvScale = 1 / (atlas.loader.width / 16);
+      [opaque, transparent].forEach((material) => {
+        material.map = atlas;
+        material.uniforms.map.value = atlas;
+        material.uniforms.uvTransform.value.setUvTransform(
+          0, 0, uvScale, 1, 0, 0, 0
+        );
+        material.needsUpdate = true;
+      });
+    };
+    Voxels.materials = {
+      atlas,
+      opaque,
+      transparent,
+    };
   }
 
-  static updateMaterial(intensity) {
-    if (!Voxels.material || !Voxels.transparentMaterial) {
-      Voxels.setupMaterial();
+  static updateMaterials({ atlas, intensity }) {
+    if (!Voxels.materials) {
+      Voxels.setupMaterials();
     }
-    Voxels.material.uniforms.sunlightIntensity.value = intensity;
-    Voxels.transparentMaterial.uniforms.sunlightIntensity.value = intensity;
+    const {
+      atlas: { loader },
+      opaque,
+      transparent,
+    } = Voxels.materials;
+    if (atlas !== undefined) {
+      if (atlas) {
+        loader.src = atlas;
+      } else {
+        [opaque, transparent].forEach((material) => {
+          material.map = null;
+          material.uniforms.map.value = null;
+        });
+      }
+    }
+    if (intensity !== undefined) {
+      [opaque, transparent].forEach((material) => {
+        material.uniforms.sunlightIntensity.value = intensity;
+      });
+    }
   }
 
   constructor() {
-    if (!Voxels.material || !Voxels.transparentMaterial) {
-      Voxels.setupMaterial();
+    if (!Voxels.materials) {
+      Voxels.setupMaterials();
     }
     super();
     this.matrixAutoUpdate = false;
     this.meshes = {
-      opaque: new Mesh(new BufferGeometry(), Voxels.material),
-      transparent: new Mesh(new BufferGeometry(), Voxels.transparentMaterial),
+      opaque: new Mesh(new BufferGeometry(), Voxels.materials.opaque),
+      transparent: new Mesh(new BufferGeometry(), Voxels.materials.transparent),
     };
     ['opaque', 'transparent'].forEach((key) => {
       this.meshes[key].matrixAutoUpdate = false;
@@ -113,6 +176,7 @@ class Voxels extends Object3D {
         color,
         light,
         position,
+        uv,
       } = geometries[key];
       const mesh = meshes[key];
 
@@ -126,6 +190,7 @@ class Voxels extends Object3D {
       geometry.setAttribute('color', new BufferAttribute(color, 3));
       geometry.setAttribute('light', new BufferAttribute(light, 1));
       geometry.setAttribute('position', new BufferAttribute(position, 3));
+      geometry.setAttribute('uv', new BufferAttribute(uv, 2));
 
       {
         const len = (position.length / 3 / 4) * 6;

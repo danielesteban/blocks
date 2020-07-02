@@ -21,6 +21,7 @@ export const protocol = $root.protocol = (() => {
         Geometry.prototype.color = $util.newBuffer([]);
         Geometry.prototype.light = $util.newBuffer([]);
         Geometry.prototype.position = $util.newBuffer([]);
+        Geometry.prototype.uv = $util.newBuffer([]);
 
         Geometry.create = function create(properties) {
             return new Geometry(properties);
@@ -35,6 +36,8 @@ export const protocol = $root.protocol = (() => {
                 writer.uint32(18).bytes(message.light);
             if (message.position != null && Object.hasOwnProperty.call(message, "position"))
                 writer.uint32(26).bytes(message.position);
+            if (message.uv != null && Object.hasOwnProperty.call(message, "uv"))
+                writer.uint32(34).bytes(message.uv);
             return writer;
         };
 
@@ -57,6 +60,9 @@ export const protocol = $root.protocol = (() => {
                     break;
                 case 3:
                     message.position = reader.bytes();
+                    break;
+                case 4:
+                    message.uv = reader.bytes();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -84,6 +90,9 @@ export const protocol = $root.protocol = (() => {
             if (message.position != null && message.hasOwnProperty("position"))
                 if (!(message.position && typeof message.position.length === "number" || $util.isString(message.position)))
                     return "position: buffer expected";
+            if (message.uv != null && message.hasOwnProperty("uv"))
+                if (!(message.uv && typeof message.uv.length === "number" || $util.isString(message.uv)))
+                    return "uv: buffer expected";
             return null;
         };
 
@@ -106,6 +115,11 @@ export const protocol = $root.protocol = (() => {
                     $util.base64.decode(object.position, message.position = $util.newBuffer($util.base64.length(object.position)), 0);
                 else if (object.position.length)
                     message.position = object.position;
+            if (object.uv != null)
+                if (typeof object.uv === "string")
+                    $util.base64.decode(object.uv, message.uv = $util.newBuffer($util.base64.length(object.uv)), 0);
+                else if (object.uv.length)
+                    message.uv = object.uv;
             return message;
         };
 
@@ -135,6 +149,13 @@ export const protocol = $root.protocol = (() => {
                     if (options.bytes !== Array)
                         object.position = $util.newBuffer(object.position);
                 }
+                if (options.bytes === String)
+                    object.uv = "";
+                else {
+                    object.uv = [];
+                    if (options.bytes !== Array)
+                        object.uv = $util.newBuffer(object.uv);
+                }
             }
             if (message.color != null && message.hasOwnProperty("color"))
                 object.color = options.bytes === String ? $util.base64.encode(message.color, 0, message.color.length) : options.bytes === Array ? Array.prototype.slice.call(message.color) : message.color;
@@ -142,6 +163,8 @@ export const protocol = $root.protocol = (() => {
                 object.light = options.bytes === String ? $util.base64.encode(message.light, 0, message.light.length) : options.bytes === Array ? Array.prototype.slice.call(message.light) : message.light;
             if (message.position != null && message.hasOwnProperty("position"))
                 object.position = options.bytes === String ? $util.base64.encode(message.position, 0, message.position.length) : options.bytes === Array ? Array.prototype.slice.call(message.position) : message.position;
+            if (message.uv != null && message.hasOwnProperty("uv"))
+                object.uv = options.bytes === String ? $util.base64.encode(message.uv, 0, message.uv.length) : options.bytes === Array ? Array.prototype.slice.call(message.uv) : message.uv;
             return object;
         };
 

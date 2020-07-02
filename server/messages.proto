@@ -5,6 +5,7 @@ message Geometry {
   bytes color = 1;
   bytes light = 2;
   bytes position = 3;
+  bytes uv = 4;
 }
 
 message Mesh {

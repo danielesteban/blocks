@@ -165,6 +165,7 @@ class Chunk {
       voxelNeighbors,
     } = Chunk;
     const { world: { generator: { noise } } } = this;
+    const branches = height + radius * 0.5;
     const queue = [sapling];
     while (queue.length) {
       const {
@@ -196,7 +197,7 @@ class Chunk {
         y,
         z: cz,
         color,
-        type: types.block,
+        type: (isTrunk || distance < branches) ? types.trunk : types.leaves,
       });
       const pushNeighbor = (offset) => {
         const nx = x + offset.x;
@@ -454,16 +455,22 @@ class Chunk {
       heightmap[heightIndex] = y;
     }
     if (!needsPropagation) {
-      if (isTransparent(current)) {
+      if (current === types.light) {
+        this.removeLight(x, y, z);
+      } else if (isTransparent(current) && !isTransparent(type)) {
         ['light', 'sunlight'].forEach((key) => {
           if (voxels[voxel + fields[key]] !== 0) {
             this.removeLight(x, y, z, key);
           }
         });
-      } else if (current === types.light) {
-        this.removeLight(x, y, z);
       }
-      if (isTransparent(type)) {
+      if (type === types.light) {
+        voxels[voxel + fields.r] = 0xFF;
+        voxels[voxel + fields.g] = 0xFF;
+        voxels[voxel + fields.b] = 0xFF;
+        voxels[voxel + fields.light] = maxLight;
+        this.floodLight([{ x, y, z }]);
+      } else if (isTransparent(type) && !isTransparent(current)) {
         ['light', 'sunlight'].forEach((key) => {
           const queue = [];
           if (key === 'sunlight' && y === maxHeight - 1) {
@@ -492,12 +499,6 @@ class Chunk {
           }
           this.floodLight(queue, key);
         });
-      } else if (type === types.light) {
-        voxels[voxel + fields.r] = 0xFF;
-        voxels[voxel + fields.g] = 0xFF;
-        voxels[voxel + fields.b] = 0xFF;
-        voxels[voxel + fields.light] = maxLight;
-        this.floodLight([{ x, y, z }]);
       }
     }
     this.needsPersistence = true;
@@ -523,15 +524,20 @@ class Chunk {
 
   static isTransparent(type) {
     const { types } = Chunk;
-    return type === types.air || type === types.glass;
+    return (
+      type === types.air
+      || type === types.water
+      || type === types.glass
+      || type === types.leaves
+    );
   }
 
   static isVisible(type, neighbor) {
-    const { types } = Chunk;
-    if (type === types.glass) {
+    const { isTransparent, types } = Chunk;
+    if (isTransparent(type)) {
       return neighbor === types.air;
     }
-    return neighbor === types.air || neighbor === types.glass;
+    return isTransparent(neighbor);
   }
 
   static getLighting(light, sunlight, neighbors) {
@@ -578,16 +584,18 @@ class Chunk {
         color: [],
         light: [],
         position: [],
+        uv: [],
       },
       transparent: {
         color: [],
         light: [],
         position: [],
+        uv: [],
       },
     };
     const get = (x, y, z) => {
       if (y < 0) {
-        return { type: Chunk.types.block, light: 0, sunlight: 0 };
+        return { type: Chunk.types.dirt, light: 0, sunlight: 0 };
       }
       if (y >= maxHeight) {
         return { type: Chunk.types.air, light: 0, sunlight: Chunk.maxLight };
@@ -623,11 +631,13 @@ class Chunk {
         getLighting(l, s, n3),
         getLighting(l, s, n4),
       ];
+      const uvs = [[t - 1, 0], [t, 0], [t, 1], [t - 1, 1]];
       const vertices = [p1, p2, p3, p4];
       if (
         lighting[0].combined + lighting[2].combined < lighting[1].combined + lighting[3].combined
       ) {
         lighting.unshift(lighting.pop());
+        uvs.unshift(uvs.pop());
         vertices.unshift(vertices.pop());
       }
       const mesh = isTransparent(t) ? geometry.transparent : geometry.opaque;
@@ -639,6 +649,7 @@ class Chunk {
         );
         mesh.light.push(lighting.light);
       });
+      uvs.forEach((uv) => mesh.uv.push(...uv));
       vertices.forEach((vertex) => mesh.position.push(...vertex));
     };
     const yFrom = size * subchunk;
@@ -755,11 +766,17 @@ class Chunk {
       }
     }
     this.meshes[subchunk] = ['opaque', 'transparent'].reduce((meshes, key) => {
-      const { color, light, position } = geometry[key];
+      const {
+        color,
+        light,
+        position,
+        uv,
+      } = geometry[key];
       meshes[key] = {
         color: new Uint8Array(color),
         light: new Uint8Array(light),
         position: new Uint8Array(position),
+        uv: new Uint8Array(uv),
       };
       return meshes;
     }, {});
@@ -780,10 +797,13 @@ Chunk.fields = {
 };
 Chunk.types = {
   air: 0x00,
-  block: 0x01,
+  dirt: 0x01,
   glass: 0x02,
   light: 0x03,
-  sapling: 0x04,
+  water: 0x04,
+  trunk: 0x05,
+  leaves: 0x06,
+  sapling: 0x07,
 };
 Chunk.chunkNeighbors = [
   { x: -1, z: -1 },

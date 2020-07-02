@@ -41,6 +41,7 @@ class World extends Scene {
     this.sun = new Sun({ anchor: this.player });
     this.add(this.sun);
     this.timeOffset = Date.now() / 1000;
+    this.timeOffset = 200;
 
     this.map = new MapUI({ world: this });
     this.menu = new Menu({ world: this });
@@ -278,6 +279,7 @@ class World extends Scene {
       player,
       server,
     } = this;
+    Voxels.updateMaterials({ atlas: `${server.serverURL}atlas` });
     if (data.id) {
       dom.server.href = `https://blocks.gatunes.com/destinations/#/server:${data.id}`;
       dom.server.innerText = data.id;
@@ -386,7 +388,7 @@ class World extends Scene {
       menu,
       server,
     } = this;
-    fog.density = (32 - radius) * 0.00125;
+    fog.density = (24 - radius) * 0.002;
     this.renderGrid = World.getRenderGrid(radius);
     this.renderRadius = radius;
     menu.settings.setRenderRadius(radius);
@@ -413,7 +415,7 @@ class World extends Scene {
     Clouds.updateMaterial(intensity);
     Rain.updateMaterial(intensity);
     Sun.updateMaterial({ intensity, time: dayTime });
-    Voxels.updateMaterial(intensity);
+    Voxels.updateMaterials({ intensity });
     const isRaining = (time % rainInterval) < rainDuration;
     if (rain.visible !== isRaining) {
       rain.reset();

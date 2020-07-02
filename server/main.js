@@ -10,6 +10,7 @@ const Map = require('./map');
 const World = require('./world');
 
 const world = new World({
+  atlas: process.env.ATLAS,
   authService: process.env.AUTH_SERVICE || 'https://blocks.gatunes.com/auth/',
   generator: process.env.GENERATOR || 'default',
   maxClients: process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16,
@@ -32,6 +33,7 @@ app.use(helmet());
 expressWS(app, server, { clientTracking: false });
 
 app.ws('/', world.onClient.bind(world));
+app.get('/atlas', cors(), world.onAtlasRequest.bind(world));
 app.get(
   [
     '/map',

@@ -67,7 +67,7 @@ const Generators = {
           color: { r: 0, g: 0, b: 0 },
         };
         if (isBlock || y <= waterLevel) {
-          voxel.type = isBlock ? types.block : types.glass;
+          voxel.type = isBlock ? types.dirt : types.water;
           voxel.color = computeColor(noise, x, y, z);
           if (!isBlock) {
             const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);
@@ -87,7 +87,7 @@ const Generators = {
       terrain: (x, y, z) => {
         const isBlock = y <= worldHeight;
         return {
-          type: isBlock ? types.block : types.air,
+          type: isBlock ? types.dirt : types.water,
           color: isBlock ? computeColor(noise, x, y, z) : { r: 0, g: 0, b: 0 },
         };
       },
@@ -140,7 +140,7 @@ const Generators = {
           color: { r: 0, g: 0, b: 0 },
         };
         if (isBlock || y <= waterLevel) {
-          voxel.type = isBlock ? types.block : types.glass;
+          voxel.type = isBlock ? types.dirt : types.water;
           voxel.color = isBlock && colormap ? getColor(x, y, z) : computeColor(noise, x, y, z);
           if (!isBlock) {
             const avg = Math.floor((voxel.color.r + voxel.color.g + voxel.color.b) / 3);

@@ -1,10 +1,12 @@
 const fs = require('fs');
 const Chunk = require('./chunk');
+const DefaultAtlas = require('./atlas');
 const Generators = require('./generators');
 const Room = require('./room');
 
 class World extends Room {
   constructor({
+    atlas,
     authService,
     generator,
     maxClients,
@@ -23,6 +25,7 @@ class World extends Room {
       maxClients,
       name,
     });
+    this.atlas = atlas ? fs.readFileSync(atlas) : DefaultAtlas(Chunk.types);
     this.chunks = new Map();
     this.seed = seed && !Number.isNaN(seed) ? (
       seed % 65536
@@ -166,7 +169,7 @@ class World extends Room {
           || color > 16777215
           || (
             type !== Chunk.types.air
-            && type !== Chunk.types.block
+            && type !== Chunk.types.dirt
             && type !== Chunk.types.glass
             && type !== Chunk.types.light
           )
@@ -218,6 +221,14 @@ class World extends Room {
       default:
         break;
     }
+  }
+
+  onAtlasRequest(req, res) {
+    const { atlas } = this;
+    res
+      .set('Cache-Control', 'public, max-age=86400')
+      .type('image/png')
+      .send(atlas);
   }
 
   onStatusRequest(req, res) {
