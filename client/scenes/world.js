@@ -162,10 +162,16 @@ class World extends Scene {
           if (player.skinEditor) {
             color = player.skinEditor.getColor(uv);
           } else {
-            point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), face.a);
-            color = { r: point.x, g: point.y, b: point.z };
             point.fromBufferAttribute(hit.object.geometry.getAttribute('uv'), face.a);
             menu.options.setBlockType(Math.floor((point.x + 1) / 2));
+            color = { r: 0, g: 0, b: 0 };
+            const vertex = Math.floor(face.a / 4) * 4;
+            for (let i = 0; i < 4; i += 1) {
+              point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), vertex + i);
+              color.r = Math.max(color.r, point.x);
+              color.g = Math.max(color.g, point.y);
+              color.b = Math.max(color.b, point.z);
+            }
           }
           menu.picker.setColor(color);
           return;
