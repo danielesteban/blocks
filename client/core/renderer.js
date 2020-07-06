@@ -26,13 +26,11 @@ class Renderer {
     this.camera.position.y = 1.6;
 
     // Setup renderer
-    {
-      const canvas = document.createElement('canvas');
-      this.renderer = new WebGLRenderer({
-        canvas,
-        context: canvas.getContext('webgl2', { antialias: true, xrCompatible: true }),
-      });
-    }
+    this.renderer = new WebGLRenderer({
+      antialias: true,
+      stencil: false,
+      powerPreference: 'high-performance',
+    });
     this.renderer.outputEncoding = sRGBEncoding;
     this.renderer.toneMapping = ACESFilmicToneMapping;
     // this.renderer.setPixelRatio(window.devicePixelRatio || 1);
