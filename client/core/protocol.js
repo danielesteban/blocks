@@ -1,5 +1,5 @@
 /* eslint-disable */
-import $protobuf from "./protobuf.js";
+import $protobuf from './protobuf.js';
 
 const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
@@ -621,6 +621,7 @@ export const protocol = $root.protocol = (() => {
                 case 6:
                 case 7:
                 case 8:
+                case 9:
                     break;
                 }
             if (message.json != null && message.hasOwnProperty("json"))
@@ -671,17 +672,21 @@ export const protocol = $root.protocol = (() => {
             case 5:
                 message.type = 5;
                 break;
-            case "SIGNAL":
+            case "PICK":
             case 6:
                 message.type = 6;
                 break;
-            case "TELEPORT":
+            case "SIGNAL":
             case 7:
                 message.type = 7;
                 break;
-            case "UPDATE":
+            case "TELEPORT":
             case 8:
                 message.type = 8;
+                break;
+            case "UPDATE":
+            case 9:
+                message.type = 9;
                 break;
             }
             if (object.json != null)
@@ -745,9 +750,10 @@ export const protocol = $root.protocol = (() => {
             values[valuesById[3] = "JOIN"] = 3;
             values[valuesById[4] = "LEAVE"] = 4;
             values[valuesById[5] = "LOAD"] = 5;
-            values[valuesById[6] = "SIGNAL"] = 6;
-            values[valuesById[7] = "TELEPORT"] = 7;
-            values[valuesById[8] = "UPDATE"] = 8;
+            values[valuesById[6] = "PICK"] = 6;
+            values[valuesById[7] = "SIGNAL"] = 7;
+            values[valuesById[8] = "TELEPORT"] = 8;
+            values[valuesById[9] = "UPDATE"] = 9;
             return values;
         })();
 

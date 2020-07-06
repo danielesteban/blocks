@@ -10,8 +10,8 @@ const Map = require('./map');
 const World = require('./world');
 
 const world = new World({
-  atlas: process.env.ATLAS,
   authService: process.env.AUTH_SERVICE || 'https://blocks.gatunes.com/auth/',
+  blockTypes: process.env.BLOCK_TYPES || path.join(__dirname, 'blocks'),
   generator: process.env.GENERATOR || 'default',
   maxClients: process.env.MAX_CLIENTS ? parseInt(process.env.MAX_CLIENTS, 10) : 16,
   name: process.env.NAME || 'Local server',

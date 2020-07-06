@@ -198,9 +198,9 @@ class Voxels extends Object3D {
 
     this.chunk = chunk;
     this.position
-      .set(chunk.x, 0, chunk.z)
+      .set(chunk.x, chunk.y, chunk.z)
       .multiplyScalar(8);
-    this.scale.set(0.5, 0.5, 0.5);
+    this.scale.setScalar(1 / 16);
     this.updateMatrix();
 
     ['opaque', 'transparent'].forEach((key) => {
@@ -223,7 +223,6 @@ class Voxels extends Object3D {
       geometry.setAttribute('light', new BufferAttribute(light, 1));
       geometry.setAttribute('position', new BufferAttribute(position, 3));
       geometry.setAttribute('uv', new BufferAttribute(uv, 2));
-
       {
         const len = (position.length / 3 / 4) * 6;
         const index = new Uint16Array(len);
@@ -237,11 +236,8 @@ class Voxels extends Object3D {
         }
         geometry.setIndex(new BufferAttribute(index, 1));
       }
-
-      geometry.deleteAttribute('normal');
-      geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
-      updateHeightmap({ geometry, heightmap });
+      updateHeightmap({ chunk, geometry, heightmap });
 
       mesh.visible = true;
     });
@@ -252,24 +248,25 @@ class Voxels extends Object3D {
   // eslint-disable-next-line class-methods-use-this
   updateMatrixWorld() {}
 
-  static updateHeightmap({ geometry, heightmap }) {
+  static updateHeightmap({
+    chunk,
+    geometry,
+    heightmap,
+  }) {
     const aux = { x: 0, y: 0, z: 0 };
-    const normal = geometry.getAttribute('normal');
     const position = geometry.getAttribute('position');
-    const { count } = normal;
+    const uv = geometry.getAttribute('uv');
+    const { count } = uv;
+    const offsetY = chunk.y * 16;
     for (let i = 0; i < count; i += 4) {
-      if (
-        normal.getX(i) === 0
-        && normal.getY(i) === 1
-        && normal.getZ(i) === 0
-      ) {
+      if (uv.getY(i) === 0) {
         aux.x = 0xFF;
         aux.y = 0;
         aux.z = 0xFF;
         for (let j = 0; j < 4; j += 1) {
-          aux.x = Math.min(aux.x, position.getX(i + j));
-          aux.y = Math.max(aux.y, position.getY(i + j));
-          aux.z = Math.min(aux.z, position.getZ(i + j));
+          aux.x = Math.min(aux.x, Math.floor(position.getX(i + j) / 8));
+          aux.y = Math.max(aux.y, offsetY + Math.ceil(position.getY(i + j) / 8));
+          aux.z = Math.min(aux.z, Math.floor(position.getZ(i + j) / 8));
         }
         const index = (aux.x * 16) + aux.z;
         heightmap[index] = Math.max(heightmap[index], aux.y);

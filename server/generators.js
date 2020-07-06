@@ -3,7 +3,7 @@ const fastnoise = require('fastnoisejs');
 const fs = require('fs');
 const path = require('path');
 const { PNG } = require('pngjs');
-const Chunk = require('./chunk.js');
+const Chunk = require('./chunk');
 
 const computeColor = (noise, x, y, z) => {
   const { maxHeight } = Chunk;
@@ -27,8 +27,8 @@ const computeColor = (noise, x, y, z) => {
 };
 
 const Generators = {
-  default(noise) {
-    const { maxHeight, size, types } = Chunk;
+  default({ noise, types }) {
+    const { maxHeight, size } = Chunk;
     const waterLevel = 8;
     const saplings = {
       from: waterLevel + 3,
@@ -80,8 +80,7 @@ const Generators = {
       },
     };
   },
-  flat(noise) {
-    const { types } = Chunk;
+  flat({ noise, types }) {
     const worldHeight = 3;
     return {
       terrain: (x, y, z) => {
@@ -93,12 +92,12 @@ const Generators = {
       },
     };
   },
-  heightmap(noise) {
+  heightmap({ noise, types }) {
     if (!process.env.HEIGHTMAP) {
       console.error('Must provide a HEIGHTMAP if you want to use the heightmap generator.\n');
       process.exit(1);
     }
-    const { maxHeight, types } = Chunk;
+    const { maxHeight } = Chunk;
     const waterLevel = 6;
     const heightmap = PNG.sync.read(fs.readFileSync(process.env.HEIGHTMAP));
     const heightOffset = {
@@ -155,20 +154,75 @@ const Generators = {
   },
 };
 
-module.exports = ({ generator, seed }) => {
+const LoadBlockTypes = (basePath) => {
+  const blockTypes = {
+    air: 0,
+    0: { isTransparent: true },
+  };
+  /* eslint-disable import/no-dynamic-require, global-require */
+  const types = require(basePath);
+  const textures = [];
+  types.forEach((type, i) => {
+    const model = require(path.join(basePath, 'models', type));
+    Object.keys(model.textures).forEach((id) => {
+      const texture = model.textures[id];
+      let index = textures.findIndex(({ name }) => (name === texture));
+      if (index === -1) {
+        index = textures.length;
+        let image;
+        switch (path.extname(texture)) {
+          case '.js':
+            image = require(path.join(basePath, 'textures', texture));
+            break;
+          case '.png':
+            image = PNG.sync.read(fs.readFileSync(path.join(basePath, 'textures', texture)));
+            break;
+          default:
+            console.error(`Texture: ${texture} format not supported.\n`);
+            process.exit(1);
+        }
+        image.name = texture;
+        textures.push(image);
+      }
+      model.textures[id] = index;
+    });
+    const index = i + 1;
+    blockTypes[index] = model;
+    blockTypes[type] = index;
+  });
+  /* eslint-enable import/no-dynamic-require, global-require */
+  const { width, height } = textures[0];
+  const atlas = new PNG({
+    width: width * textures.length,
+    height,
+    colorType: 6, // RGBA
+  });
+  textures.forEach((texture, i) => {
+    PNG.bitblt(texture, atlas, 0, 0, texture.width, texture.height, width * i, 0);
+  });
+  return {
+    atlas: PNG.sync.write(atlas),
+    types: blockTypes,
+  };
+};
+
+module.exports = ({ blockTypes, generator, seed }) => {
   const noise = fastnoise.Create(seed);
+  const { atlas, types } = LoadBlockTypes(path.resolve(blockTypes));
   if (Generators[generator]) {
-    generator = Generators[generator](noise);
+    generator = Generators[generator]({ noise, types });
   } else if (fs.existsSync(generator)) {
     // eslint-disable-next-line import/no-dynamic-require, global-require
-    generator = require(path.resolve(generator))(noise);
+    generator = require(path.resolve(generator))({ noise, types });
   } else {
     console.error(`Couldn't find the generator "${generator}".\n`);
     process.exit(1);
   }
   return {
     ...generator,
+    atlas,
     noise,
     spawn: generator.spawn || { x: 0, z: 0 },
+    types,
   };
 };

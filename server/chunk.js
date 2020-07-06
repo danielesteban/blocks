@@ -2,6 +2,7 @@ const { hsl2Rgb } = require('colorsys');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const Mesher = require('./mesher');
 
 class Chunk {
   constructor({
@@ -85,7 +86,6 @@ class Chunk {
       getVoxel,
       maxHeight,
       size,
-      types,
     } = Chunk;
     const { world: { generator } } = this;
     const offset = { x: this.x * size, z: this.z * size };
@@ -115,7 +115,7 @@ class Chunk {
           const sapling = generator.saplings(offset.x + x, y, offset.z + z);
           if (sapling) {
             const voxel = getVoxel(x, y, z);
-            voxels[voxel] = types.sapling;
+            voxels[voxel] = generator.types.sapling;
             voxels[voxel + fields.r] = sapling.r;
             voxels[voxel + fields.g] = sapling.g;
             voxels[voxel + fields.b] = sapling.b;
@@ -130,10 +130,10 @@ class Chunk {
       getVoxel,
       maxHeight,
       size,
-      types,
     } = Chunk;
     const {
       voxels,
+      world: { generator: { types } },
     } = this;
     const heightmap = new Uint8Array(size ** 2);
     for (let x = 0; x < size; x += 1) {
@@ -161,10 +161,9 @@ class Chunk {
     const {
       getVoxel,
       maxHeight,
-      types,
       voxelNeighbors,
     } = Chunk;
-    const { world: { generator: { noise } } } = this;
+    const { world: { generator: { noise, types } } } = this;
     const branches = height + radius * 0.5;
     const queue = [sapling];
     while (queue.length) {
@@ -247,14 +246,12 @@ class Chunk {
     const {
       fields,
       getVoxel,
-      isTransparent,
       maxHeight,
       maxLight,
       size,
-      types,
     } = Chunk;
     this.needsPropagation = false;
-    const { voxels } = this;
+    const { voxels, world: { generator: { types } } } = this;
     const lightQueue = [];
     const sunlightQueue = [];
     const trees = [];
@@ -262,24 +259,20 @@ class Chunk {
       for (let y = 0; y < maxHeight; y += 1) {
         for (let z = 0; z < size; z += 1) {
           const voxel = getVoxel(x, y, z);
-          switch (voxels[voxel]) {
-            case types.light:
-              voxels[voxel + fields.r] = 0xFF;
-              voxels[voxel + fields.g] = 0xFF;
-              voxels[voxel + fields.b] = 0xFF;
-              voxels[voxel + fields.light] = maxLight;
-              lightQueue.push({ x, y, z });
-              break;
-            case types.sapling:
-              trees.push({
-                sapling: { x, y, z },
-                height: voxels[voxel + fields.r],
-                hue: voxels[voxel + fields.g],
-                radius: voxels[voxel + fields.b],
-              });
-              break;
-            default:
-              break;
+          const type = voxels[voxel];
+          if (type === types.sapling) {
+            trees.push({
+              sapling: { x, y, z },
+              height: voxels[voxel + fields.r],
+              hue: voxels[voxel + fields.g],
+              radius: voxels[voxel + fields.b],
+            });
+          } else if (types[type].isLight) {
+            voxels[voxel + fields.r] = 0xFF;
+            voxels[voxel + fields.g] = 0xFF;
+            voxels[voxel + fields.b] = 0xFF;
+            voxels[voxel + fields.light] = maxLight;
+            lightQueue.push({ x, y, z });
           }
         }
       }
@@ -289,7 +282,8 @@ class Chunk {
     for (let x = 0; x < size; x += 1) {
       for (let z = 0; z < size; z += 1) {
         const voxel = getVoxel(x, top, z);
-        if (isTransparent(voxels[voxel])) {
+        const type = voxels[voxel];
+        if (types[type].isTransparent) {
           voxels[voxel + fields.sunlight] = maxLight;
           sunlightQueue.push({ x, y: top, z });
         }
@@ -304,12 +298,12 @@ class Chunk {
     const {
       fields,
       getVoxel,
-      isTransparent,
       maxHeight,
       maxLight,
       size,
       voxelNeighbors,
     } = Chunk;
+    const { world: { generator: { types } } } = this;
     const isSunLight = key === 'sunlight';
     while (queue.length) {
       const { x, y, z } = queue.shift();
@@ -328,7 +322,7 @@ class Chunk {
         const { chunk, cx, cz } = this.get(nx, nz);
         const voxel = getVoxel(cx, ny, cz);
         if (
-          !isTransparent(chunk.voxels[voxel])
+          !types[chunk.voxels[voxel]].isTransparent
           || (
             isSunLight
             && offset.y !== -1
@@ -426,14 +420,17 @@ class Chunk {
     const {
       fields,
       getVoxel,
-      isTransparent,
       maxHeight,
       maxLight,
       size,
-      types,
       voxelNeighbors,
     } = Chunk;
-    const { heightmap, voxels, needsPropagation } = this;
+    const {
+      heightmap,
+      needsPropagation,
+      voxels,
+      world: { generator: { types } },
+    } = this;
     const voxel = getVoxel(x, y, z);
     const current = voxels[voxel];
     voxels[voxel] = type;
@@ -455,22 +452,22 @@ class Chunk {
       heightmap[heightIndex] = y;
     }
     if (!needsPropagation) {
-      if (current === types.light) {
+      if (types[current].isLight) {
         this.removeLight(x, y, z);
-      } else if (isTransparent(current) && !isTransparent(type)) {
+      } else if (types[current].isTransparent && !types[type].isTransparent) {
         ['light', 'sunlight'].forEach((key) => {
           if (voxels[voxel + fields[key]] !== 0) {
             this.removeLight(x, y, z, key);
           }
         });
       }
-      if (type === types.light) {
+      if (types[type].isLight) {
         voxels[voxel + fields.r] = 0xFF;
         voxels[voxel + fields.g] = 0xFF;
         voxels[voxel + fields.b] = 0xFF;
         voxels[voxel + fields.light] = maxLight;
         this.floodLight([{ x, y, z }]);
-      } else if (isTransparent(type) && !isTransparent(current)) {
+      } else if (types[type].isTransparent && !types[current].isTransparent) {
         ['light', 'sunlight'].forEach((key) => {
           const queue = [];
           if (key === 'sunlight' && y === maxHeight - 1) {
@@ -486,12 +483,10 @@ class Chunk {
               const nz = z + offset.z;
               const { chunk, cx, cz } = this.get(nx, nz);
               const voxel = getVoxel(cx, ny, cz);
+              const { isLight, isTransparent } = types[chunk.voxels[voxel]];
               if (
                 chunk.voxels[voxel + fields[key]] !== 0
-                && (
-                  isTransparent(chunk.voxels[voxel])
-                  || (key === 'light' && chunk.voxels[voxel] === types.light)
-                )
+                && (isTransparent || (isLight && key === 'light'))
               ) {
                 queue.push({ x: nx, y: ny, z: nz });
               }
@@ -522,264 +517,40 @@ class Chunk {
     }
   }
 
-  static isTransparent(type) {
-    const { types } = Chunk;
-    return (
-      type === types.air
-      || type === types.water
-      || type === types.glass
-      || type === types.leaves
-    );
-  }
-
-  static isVisible(type, neighbor) {
-    const { isTransparent, types } = Chunk;
-    if (isTransparent(type)) {
-      return neighbor === types.air;
-    }
-    return isTransparent(neighbor);
-  }
-
-  static getLighting(light, sunlight, neighbors) {
-    const { isTransparent, types } = Chunk;
-    let n1 = neighbors[0].type !== types.air;
-    let n2 = neighbors[1].type !== types.air;
-    let n3 = (n1 && n2) || (neighbors[2].type !== types.air);
-    const ao = [n1, n2, n3].reduce((ao, n) => (
-      ao - (n ? 0.2 : 0)
-    ), 1);
-    n1 = isTransparent(neighbors[0].type);
-    n2 = isTransparent(neighbors[1].type);
-    n3 = (n1 || n2) && isTransparent(neighbors[2].type);
-    let c = 1;
-    [n1, n2, n3].forEach((n, i) => {
-      if (n) {
-        light += neighbors[i].light;
-        sunlight += neighbors[i].sunlight;
-        c += 1;
-      }
-    });
-    light = Math.round(light / c);
-    sunlight = Math.round(sunlight / c);
-    return {
-      ao,
-      light: (light << 4) | sunlight,
-      combined: ao * (light + sunlight) * 0.5,
-    };
-  }
-
   meshSubChunk(subchunk) {
     const {
-      getLighting,
       getVoxel,
       fields,
-      isTransparent,
-      isVisible,
       maxHeight,
+      maxLight,
       size,
-      types,
     } = Chunk;
-    const geometry = {
-      opaque: {
-        color: [],
-        light: [],
-        position: [],
-        uv: [],
-      },
-      transparent: {
-        color: [],
-        light: [],
-        position: [],
-        uv: [],
-      },
-    };
-    const get = (x, y, z) => {
-      if (y < 0) {
-        return { type: Chunk.types.dirt, light: 0, sunlight: 0 };
-      }
-      if (y >= maxHeight) {
-        return { type: Chunk.types.air, light: 0, sunlight: Chunk.maxLight };
-      }
-      const { chunk, cx, cz } = this.get(x, z);
-      const voxel = getVoxel(cx, y, cz);
-      return {
-        type: chunk.voxels[voxel],
-        color: {
-          r: chunk.voxels[voxel + fields.r],
-          g: chunk.voxels[voxel + fields.g],
-          b: chunk.voxels[voxel + fields.b],
-        },
-        light: chunk.voxels[voxel + fields.light],
-        sunlight: chunk.voxels[voxel + fields.sunlight],
-      };
-    };
-    const pushFace = (
-      /* eslint-disable no-multi-spaces */
-      p1, n1,  // bottom left point + neighbours
-      p2, n2,  // bottom right point + neighbours
-      p3, n3,  // top right point + neighbours
-      p4, n4,  // top left point + neighbours
-      c,       // color
-      t,       // type
-      l,       // light level
-      s        // sunlight level
-      /* eslint-enable no-multi-spaces */
-    ) => {
-      const lighting = [
-        getLighting(l, s, n1),
-        getLighting(l, s, n2),
-        getLighting(l, s, n3),
-        getLighting(l, s, n4),
-      ];
-      const uvs = [[(t * 2) - 1, 0], [t * 2, 0], [t * 2, 1], [(t * 2) - 1, 1]];
-      const vertices = [p1, p2, p3, p4];
-      if (
-        lighting[0].combined + lighting[2].combined < lighting[1].combined + lighting[3].combined
-      ) {
-        lighting.unshift(lighting.pop());
-        uvs.unshift(uvs.pop());
-        vertices.unshift(vertices.pop());
-      }
-      const mesh = isTransparent(t) ? geometry.transparent : geometry.opaque;
-      lighting.forEach((lighting) => {
-        mesh.color.push(
-          Math.round(c.r * lighting.ao),
-          Math.round(c.g * lighting.ao),
-          Math.round(c.b * lighting.ao)
-        );
-        mesh.light.push(lighting.light);
-      });
-      uvs.forEach((uv) => mesh.uv.push(...uv));
-      vertices.forEach((vertex) => mesh.position.push(...vertex));
-    };
-    const yFrom = size * subchunk;
-    const yTo = yFrom + size;
-    for (let x = 0; x < size; x += 1) {
-      for (let y = yFrom; y < yTo; y += 1) {
-        for (let z = 0; z < size; z += 1) {
-          const voxel = get(x, y, z);
-          if (voxel.type !== types.air) {
-            const top = get(x, y + 1, z);
-            if (isVisible(voxel.type, top.type)) {
-              const n = get(x, y + 1, z - 1);
-              const e = get(x + 1, y + 1, z);
-              const w = get(x - 1, y + 1, z);
-              const s = get(x, y + 1, z + 1);
-              pushFace(
-                [x, y + 1, z + 1], [w, s, get(x - 1, y + 1, z + 1)],
-                [x + 1, y + 1, z + 1], [e, s, get(x + 1, y + 1, z + 1)],
-                [x + 1, y + 1, z], [e, n, get(x + 1, y + 1, z - 1)],
-                [x, y + 1, z], [w, n, get(x - 1, y + 1, z - 1)],
-                voxel.color,
-                voxel.type,
-                top.light,
-                top.sunlight
-              );
-            }
-            const bottom = get(x, y - 1, z);
-            if (isVisible(voxel.type, bottom.type)) {
-              const n = get(x, y - 1, z - 1);
-              const e = get(x + 1, y - 1, z);
-              const w = get(x - 1, y - 1, z);
-              const s = get(x, y - 1, z + 1);
-              pushFace(
-                [x, y, z], [w, n, get(x - 1, y - 1, z - 1)],
-                [x + 1, y, z], [e, n, get(x + 1, y - 1, z - 1)],
-                [x + 1, y, z + 1], [e, s, get(x + 1, y - 1, z + 1)],
-                [x, y, z + 1], [w, s, get(x - 1, y - 1, z + 1)],
-                voxel.color,
-                voxel.type,
-                bottom.light,
-                bottom.sunlight
-              );
-            }
-            const south = get(x, y, z + 1);
-            if (isVisible(voxel.type, south.type)) {
-              const e = get(x + 1, y, z + 1);
-              const w = get(x - 1, y, z + 1);
-              const t = get(x, y + 1, z + 1);
-              const b = get(x, y - 1, z + 1);
-              pushFace(
-                [x, y, z + 1], [w, b, get(x - 1, y - 1, z + 1)],
-                [x + 1, y, z + 1], [e, b, get(x + 1, y - 1, z + 1)],
-                [x + 1, y + 1, z + 1], [e, t, get(x + 1, y + 1, z + 1)],
-                [x, y + 1, z + 1], [w, t, get(x - 1, y + 1, z + 1)],
-                voxel.color,
-                voxel.type,
-                south.light,
-                south.sunlight
-              );
-            }
-            const north = get(x, y, z - 1);
-            if (isVisible(voxel.type, north.type)) {
-              const e = get(x + 1, y, z - 1);
-              const w = get(x - 1, y, z - 1);
-              const t = get(x, y + 1, z - 1);
-              const b = get(x, y - 1, z - 1);
-              pushFace(
-                [x + 1, y, z], [e, b, get(x + 1, y - 1, z - 1)],
-                [x, y, z], [w, b, get(x - 1, y - 1, z - 1)],
-                [x, y + 1, z], [w, t, get(x - 1, y + 1, z - 1)],
-                [x + 1, y + 1, z], [e, t, get(x + 1, y + 1, z - 1)],
-                voxel.color,
-                voxel.type,
-                north.light,
-                north.sunlight
-              );
-            }
-            const west = get(x + 1, y, z);
-            if (isVisible(voxel.type, west.type)) {
-              const n = get(x + 1, y, z - 1);
-              const s = get(x + 1, y, z + 1);
-              const t = get(x + 1, y + 1, z);
-              const b = get(x + 1, y - 1, z);
-              pushFace(
-                [x + 1, y, z + 1], [s, b, get(x + 1, y - 1, z + 1)],
-                [x + 1, y, z], [n, b, get(x + 1, y - 1, z - 1)],
-                [x + 1, y + 1, z], [n, t, get(x + 1, y + 1, z - 1)],
-                [x + 1, y + 1, z + 1], [s, t, get(x + 1, y + 1, z + 1)],
-                voxel.color,
-                voxel.type,
-                west.light,
-                west.sunlight
-              );
-            }
-            const east = get(x - 1, y, z);
-            if (isVisible(voxel.type, east.type)) {
-              const n = get(x - 1, y, z - 1);
-              const s = get(x - 1, y, z + 1);
-              const t = get(x - 1, y + 1, z);
-              const b = get(x - 1, y - 1, z);
-              pushFace(
-                [x, y, z], [n, b, get(x - 1, y - 1, z - 1)],
-                [x, y, z + 1], [s, b, get(x - 1, y - 1, z + 1)],
-                [x, y + 1, z + 1], [s, t, get(x - 1, y + 1, z + 1)],
-                [x, y + 1, z], [n, t, get(x - 1, y + 1, z - 1)],
-                voxel.color,
-                voxel.type,
-                east.light,
-                east.sunlight
-              );
-            }
-          }
+    const { world: { generator: { types } } } = this;
+    this.meshes[subchunk] = Mesher({
+      get: (x, y, z) => {
+        if (y < 0) {
+          return { type: types.dirt, light: 0, sunlight: 0 };
         }
-      }
-    }
-    this.meshes[subchunk] = ['opaque', 'transparent'].reduce((meshes, key) => {
-      const {
-        color,
-        light,
-        position,
-        uv,
-      } = geometry[key];
-      meshes[key] = {
-        color: new Uint8Array(color),
-        light: new Uint8Array(light),
-        position: new Uint8Array(position),
-        uv: new Uint8Array(uv),
-      };
-      return meshes;
-    }, {});
+        if (y >= maxHeight) {
+          return { type: types.air, light: 0, sunlight: maxLight };
+        }
+        const { chunk, cx, cz } = this.get(x, z);
+        const voxel = getVoxel(cx, y, cz);
+        return {
+          type: chunk.voxels[voxel],
+          color: {
+            r: chunk.voxels[voxel + fields.r],
+            g: chunk.voxels[voxel + fields.g],
+            b: chunk.voxels[voxel + fields.b],
+          },
+          light: chunk.voxels[voxel + fields.light],
+          sunlight: chunk.voxels[voxel + fields.sunlight],
+        };
+      },
+      from: { x: 0, y: subchunk * size, z: 0 },
+      to: { x: size, y: (subchunk + 1) * size, z: size },
+      types,
+    });
   }
 }
 
@@ -794,16 +565,6 @@ Chunk.fields = {
   light: 4,
   sunlight: 5,
   count: 6,
-};
-Chunk.types = {
-  air: 0x00,
-  dirt: 0x01,
-  glass: 0x02,
-  light: 0x03,
-  water: 0x04,
-  trunk: 0x05,
-  leaves: 0x06,
-  sapling: 0x07,
 };
 Chunk.chunkNeighbors = [
   { x: -1, z: -1 },

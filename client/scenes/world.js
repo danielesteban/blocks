@@ -88,7 +88,7 @@ class World extends Scene {
 
   onBeforeRender(renderer, scene, camera) {
     super.onBeforeRender(renderer, scene, camera);
-    const { scale } = World;
+    const { blockFacings, scale } = World;
     const {
       ambient,
       birds,
@@ -156,39 +156,39 @@ class World extends Scene {
         origin: raycaster.ray.origin,
       });
       if (gripUp || primaryUp || triggerUp) {
-        const { point, face, uv } = hit;
-        if (hand.handedness === 'right' && (primary || primaryUp)) {
-          let color;
+        const { point, uv } = hit;
+        const isPicking = primary || primaryUp;
+        const isRemoving = grip || gripUp;
+        point
+          .addScaledVector(
+            blockFacings[Math.floor(uv.y / 2)],
+            (isPicking || isRemoving ? -1 : 1) * 0.25
+          )
+          .divideScalar(scale)
+          .floor();
+        if (isPicking) {
           if (player.skinEditor) {
-            color = player.skinEditor.getColor(uv);
-          } else {
-            point.fromBufferAttribute(hit.object.geometry.getAttribute('uv'), face.a);
-            menu.options.setBlockType(Math.floor((point.x + 1) / 2));
-            color = { r: 0, g: 0, b: 0 };
-            const vertex = Math.floor(face.a / 4) * 4;
-            for (let i = 0; i < 4; i += 1) {
-              point.fromBufferAttribute(hit.object.geometry.getAttribute('color'), vertex + i);
-              color.r = Math.max(color.r, point.x);
-              color.g = Math.max(color.g, point.y);
-              color.b = Math.max(color.b, point.z);
-            }
+            menu.picker.setColor(player.skinEditor.getColor(uv));
+            return;
           }
-          menu.picker.setColor(color);
+          server.sendEvent({
+            type: 'PICK',
+            json: {
+              x: point.x,
+              y: point.y,
+              z: point.z,
+            },
+          });
           return;
         }
-        const remove = grip || gripUp;
         if (player.skinEditor) {
           player.skinEditor.updatePixel({
             color: `#${menu.picker.color.getHexString()}`,
-            remove,
+            remove: isRemoving,
             uv,
           });
           return;
         }
-        point
-          .addScaledVector(face.normal, (remove ? -1 : 1) * 0.25)
-          .divideScalar(scale)
-          .floor();
         server.sendEvent({
           type: 'UPDATE',
           json: {
@@ -196,7 +196,7 @@ class World extends Scene {
             y: point.y,
             z: point.z,
             color: menu.picker.color.getHex(),
-            type: remove ? 0 : menu.options.blockType,
+            type: isRemoving ? 0 : menu.options.blockType,
           },
         });
       }
@@ -263,6 +263,9 @@ class World extends Scene {
       case 'INIT':
         this.onInit(event.json);
         break;
+      case 'PICK':
+        this.onPick(event.json);
+        break;
       case 'TELEPORT':
         this.onTeleport(event.json);
         break;
@@ -309,6 +312,12 @@ class World extends Scene {
     chunks.loaded.forEach((chunk) => this.unloadChunk(chunk));
     chunks.requested.clear();
     chunks.player.set(Infinity, Infinity, Infinity);
+  }
+
+  onPick({ type, color }) {
+    const { menu } = this;
+    menu.options.setBlockType(type);
+    menu.picker.setColor(color);
   }
 
   onTeleport(position) {
@@ -468,6 +477,14 @@ class World extends Scene {
   }
 }
 
+World.blockFacings = [
+  new Vector3(0, 1, 0),
+  new Vector3(0, -1, 0),
+  new Vector3(0, 0, 1),
+  new Vector3(0, 0, -1),
+  new Vector3(-1, 0, 0),
+  new Vector3(1, 0, 0),
+];
 World.dayDuration = 600;
 World.rainInterval = 1500;
 World.rainDuration = 300;

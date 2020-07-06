@@ -6,13 +6,14 @@ const Options = ({
   width,
   height,
 }) => {
-  const state = { blockType: 0x01 };
+  // const state = { blockType: 0x06 };
+  const state = { blockType: 0x03 };
   const setBlockType = (type) => {
     const [block, glass, light] = buttons; // eslint-disable-line no-use-before-define
     delete block.background;
     delete glass.background;
     delete light.background;
-    const options = { 0x01: block, 0x02: glass, 0x03: light };
+    const options = { 0x06: block, 0x02: glass, 0x03: light };
     if (options[type]) {
       options[type].background = '#393';
     }
@@ -48,7 +49,7 @@ const Options = ({
       y: height * 0.0625,
       width: width * 0.25,
       height: height * 0.1875,
-      onPointer: () => setBlockType(0x01),
+      onPointer: () => setBlockType(0x06),
     },
     {
       label: 'Glass',

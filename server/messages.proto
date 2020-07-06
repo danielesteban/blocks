@@ -31,9 +31,10 @@ message Message {
     JOIN = 3;
     LEAVE = 4;
     LOAD = 5;
-    SIGNAL = 6;
-    TELEPORT = 7;
-    UPDATE = 8;
+    PICK = 6;
+    SIGNAL = 7;
+    TELEPORT = 8;
+    UPDATE = 9;
   }
   Type type = 1;
   string json = 2;

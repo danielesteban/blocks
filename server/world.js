@@ -1,13 +1,12 @@
 const fs = require('fs');
 const Chunk = require('./chunk');
-const DefaultAtlas = require('./atlas');
 const Generators = require('./generators');
 const Room = require('./room');
 
 class World extends Room {
   constructor({
-    atlas,
     authService,
+    blockTypes,
     generator,
     maxClients,
     name,
@@ -25,7 +24,6 @@ class World extends Room {
       maxClients,
       name,
     });
-    this.atlas = atlas ? fs.readFileSync(atlas) : DefaultAtlas(Chunk.types);
     this.chunks = new Map();
     this.seed = seed && !Number.isNaN(seed) ? (
       seed % 65536
@@ -33,7 +31,7 @@ class World extends Room {
       Math.floor(Math.random() * 65536)
     );
     this.storage = storage;
-    this.generator = Generators({ generator, seed });
+    this.generator = Generators({ blockTypes, generator, seed });
     console.log(`World seed: ${this.seed}`);
     if (preload && !Number.isNaN(preload)) {
       console.log(`Preloading ${((preload + preload + 1)) ** 2} chunks...`);
@@ -108,11 +106,46 @@ class World extends Room {
         this.unloadChunks();
         break;
       }
+      case 'PICK': {
+        let { x, y, z } = request.json || {};
+        x = parseInt(x, 10);
+        y = parseInt(y, 10);
+        z = parseInt(z, 10);
+        if (
+          Number.isNaN(x)
+          || Number.isNaN(y)
+          || Number.isNaN(z)
+        ) {
+          return;
+        }
+        let chunk = {
+          x: Math.floor(x / Chunk.size),
+          z: Math.floor(z / Chunk.size),
+        };
+        x -= Chunk.size * chunk.x;
+        z -= Chunk.size * chunk.z;
+        chunk = this.getChunk(chunk);
+        if (chunk.needsPropagation) {
+          return;
+        }
+        const voxel = Chunk.getVoxel(x, y, z);
+        this.broadcast({
+          type: 'PICK',
+          json: {
+            type: chunk.voxels[voxel],
+            color: {
+              r: chunk.voxels[voxel + Chunk.fields.r],
+              g: chunk.voxels[voxel + Chunk.fields.g],
+              b: chunk.voxels[voxel + Chunk.fields.b],
+            },
+          },
+        }, {
+          include: client.id,
+        });
+        break;
+      }
       case 'TELEPORT': {
-        let {
-          x,
-          z,
-        } = request.json || {};
+        let { x, z } = request.json || {};
         x = parseInt(x, 10);
         z = parseInt(z, 10);
         if (
@@ -142,6 +175,7 @@ class World extends Room {
         break;
       }
       case 'UPDATE': {
+        const { generator: { types } } = this;
         let {
           x,
           y,
@@ -164,8 +198,8 @@ class World extends Room {
           || y >= Chunk.maxHeight
           || color < 0
           || color > 16777215
-          || Object.values(Chunk.types).indexOf(type) === -1
-          || type === Chunk.types.sapling
+          || Object.values(types).indexOf(type) === -1
+          || type === types.sapling
         ) {
           return;
         }
@@ -181,8 +215,8 @@ class World extends Room {
         }
         const current = chunk.voxels[Chunk.getVoxel(x, y, z)];
         if (
-          (current !== Chunk.types.air && type !== Chunk.types.air)
-          || (current === Chunk.types.air && type === Chunk.types.air)
+          (current !== types.air && type !== types.air)
+          || (current === types.air && type === types.air)
         ) {
           return;
         }
@@ -217,9 +251,9 @@ class World extends Room {
   }
 
   onAtlasRequest(req, res) {
-    const { atlas } = this;
+    const { generator: { atlas } } = this;
     res
-      .set('Cache-Control', 'public, max-age=86400')
+      .set('Cache-Control', 'public, max-age=0')
       .type('image/png')
       .send(atlas);
   }
