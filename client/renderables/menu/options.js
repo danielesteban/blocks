@@ -6,8 +6,7 @@ const Options = ({
   width,
   height,
 }) => {
-  // const state = { blockType: 0x06 };
-  const state = { blockType: 0x03 };
+  const state = { blockType: 0x06 };
   const setBlockType = (type) => {
     const [block, glass, light] = buttons; // eslint-disable-line no-use-before-define
     delete block.background;
