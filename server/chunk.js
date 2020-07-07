@@ -268,9 +268,6 @@ class Chunk {
               radius: voxels[voxel + fields.b],
             });
           } else if (types[type].isLight) {
-            voxels[voxel + fields.r] = 0xFF;
-            voxels[voxel + fields.g] = 0xFF;
-            voxels[voxel + fields.b] = 0xFF;
             voxels[voxel + fields.light] = maxLight;
             lightQueue.push({ x, y, z });
           }
@@ -462,9 +459,6 @@ class Chunk {
         });
       }
       if (types[type].isLight) {
-        voxels[voxel + fields.r] = 0xFF;
-        voxels[voxel + fields.g] = 0xFF;
-        voxels[voxel + fields.b] = 0xFF;
         voxels[voxel + fields.light] = maxLight;
         this.floodLight([{ x, y, z }]);
       } else if (types[type].isTransparent && !types[current].isTransparent) {
