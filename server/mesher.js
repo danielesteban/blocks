@@ -56,17 +56,6 @@ module.exports = ({
     y: (y - from.y) * 8 + oy,
     z: z * 8 + oz,
   });
-  const isVisible = (type, neighbor) => (
-    !types[type].hasCulling
-    || !types[neighbor].hasCulling
-    || (
-      types[neighbor].isTransparent
-      && (
-        !types[type].isTransparent
-        || type !== neighbor
-      )
-    )
-  );
   const geometry = {
     opaque: {
       color: [],
@@ -140,140 +129,126 @@ module.exports = ({
           };
           const { textures, hasAO, isTransparent } = types[voxel.type];
           let { faces } = types[voxel.type];
-          if (faces instanceof Function) {
-            faces = faces({ neighbors, types });
-          }
+          faces = faces({ neighbors, types, voxel });
           if (faces.top) {
             const { offset, size, texture } = faces.top;
-            if (isVisible(voxel.type, neighbors.top.type)) {
-              const o = getOrigin(x, y + 1, z + 1, offset.x, -offset.z, -offset.y);
-              const n = get(x, y + 1, z - 1);
-              const e = get(x + 1, y + 1, z);
-              const w = get(x - 1, y + 1, z);
-              const s = get(x, y + 1, z + 1);
-              pushFace(
-                [o.x, o.y, o.z], [w, s, get(x - 1, y + 1, z + 1)],
-                [o.x + size.x, o.y, o.z], [e, s, get(x + 1, y + 1, z + 1)],
-                [o.x + size.x, o.y, o.z - size.y], [e, n, get(x + 1, y + 1, z - 1)],
-                [o.x, o.y, o.z - size.y], [w, n, get(x - 1, y + 1, z - 1)],
-                voxel.color,
-                hasAO ? neighbors.top : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                0
-              );
-            }
+            const o = getOrigin(x, y + 1, z + 1, offset.x, -offset.z, -offset.y);
+            const n = get(x, y + 1, z - 1);
+            const e = get(x + 1, y + 1, z);
+            const w = get(x - 1, y + 1, z);
+            const s = get(x, y + 1, z + 1);
+            pushFace(
+              [o.x, o.y, o.z], [w, s, get(x - 1, y + 1, z + 1)],
+              [o.x + size.x, o.y, o.z], [e, s, get(x + 1, y + 1, z + 1)],
+              [o.x + size.x, o.y, o.z - size.y], [e, n, get(x + 1, y + 1, z - 1)],
+              [o.x, o.y, o.z - size.y], [w, n, get(x - 1, y + 1, z - 1)],
+              voxel.color,
+              hasAO ? neighbors.top : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              0
+            );
           }
           if (faces.bottom) {
             const { offset, size, texture } = faces.bottom;
-            if (isVisible(voxel.type, neighbors.bottom.type)) {
-              const o = getOrigin(x, y, z, offset.x, offset.z, offset.y);
-              const n = get(x, y - 1, z - 1);
-              const e = get(x + 1, y - 1, z);
-              const w = get(x - 1, y - 1, z);
-              const s = get(x, y - 1, z + 1);
-              pushFace(
-                [o.x, o.y, o.z], [w, n, get(x - 1, y - 1, z - 1)],
-                [o.x + size.x, o.y, o.z], [e, n, get(x + 1, y - 1, z - 1)],
-                [o.x + size.x, o.y, o.z + size.y], [e, s, get(x + 1, y - 1, z + 1)],
-                [o.x, o.y, o.z + size.y], [w, s, get(x - 1, y - 1, z + 1)],
-                voxel.color,
-                hasAO ? neighbors.bottom : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                1
-              );
-            }
+            const o = getOrigin(x, y, z, offset.x, offset.z, offset.y);
+            const n = get(x, y - 1, z - 1);
+            const e = get(x + 1, y - 1, z);
+            const w = get(x - 1, y - 1, z);
+            const s = get(x, y - 1, z + 1);
+            pushFace(
+              [o.x, o.y, o.z], [w, n, get(x - 1, y - 1, z - 1)],
+              [o.x + size.x, o.y, o.z], [e, n, get(x + 1, y - 1, z - 1)],
+              [o.x + size.x, o.y, o.z + size.y], [e, s, get(x + 1, y - 1, z + 1)],
+              [o.x, o.y, o.z + size.y], [w, s, get(x - 1, y - 1, z + 1)],
+              voxel.color,
+              hasAO ? neighbors.bottom : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              1
+            );
           }
           if (faces.south) {
             const { offset, size, texture } = faces.south;
-            if (isVisible(voxel.type, neighbors.south.type)) {
-              const o = getOrigin(x, y, z + 1, offset.x, offset.y, -offset.z);
-              const e = get(x + 1, y, z + 1);
-              const w = get(x - 1, y, z + 1);
-              const t = get(x, y + 1, z + 1);
-              const b = get(x, y - 1, z + 1);
-              pushFace(
-                [o.x, o.y, o.z], [w, b, get(x - 1, y - 1, z + 1)],
-                [o.x + size.x, o.y, o.z], [e, b, get(x + 1, y - 1, z + 1)],
-                [o.x + size.x, o.y + size.y, o.z], [e, t, get(x + 1, y + 1, z + 1)],
-                [o.x, o.y + size.y, o.z], [w, t, get(x - 1, y + 1, z + 1)],
-                voxel.color,
-                hasAO ? neighbors.south : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                2
-              );
-            }
+            const o = getOrigin(x, y, z + 1, offset.x, offset.y, -offset.z);
+            const e = get(x + 1, y, z + 1);
+            const w = get(x - 1, y, z + 1);
+            const t = get(x, y + 1, z + 1);
+            const b = get(x, y - 1, z + 1);
+            pushFace(
+              [o.x, o.y, o.z], [w, b, get(x - 1, y - 1, z + 1)],
+              [o.x + size.x, o.y, o.z], [e, b, get(x + 1, y - 1, z + 1)],
+              [o.x + size.x, o.y + size.y, o.z], [e, t, get(x + 1, y + 1, z + 1)],
+              [o.x, o.y + size.y, o.z], [w, t, get(x - 1, y + 1, z + 1)],
+              voxel.color,
+              hasAO ? neighbors.south : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              2
+            );
           }
           if (faces.north) {
             const { offset, size, texture } = faces.north;
-            if (isVisible(voxel.type, neighbors.north.type)) {
-              const o = getOrigin(x + 1, y, z, -offset.x, offset.y, offset.z);
-              const e = get(x + 1, y, z - 1);
-              const w = get(x - 1, y, z - 1);
-              const t = get(x, y + 1, z - 1);
-              const b = get(x, y - 1, z - 1);
-              pushFace(
-                [o.x, o.y, o.z], [e, b, get(x + 1, y - 1, z - 1)],
-                [o.x - size.x, o.y, o.z], [w, b, get(x - 1, y - 1, z - 1)],
-                [o.x - size.x, o.y + size.y, o.z], [w, t, get(x - 1, y + 1, z - 1)],
-                [o.x, o.y + size.y, o.z], [e, t, get(x + 1, y + 1, z - 1)],
-                voxel.color,
-                hasAO ? neighbors.north : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                3
-              );
-            }
+            const o = getOrigin(x + 1, y, z, -offset.x, offset.y, offset.z);
+            const e = get(x + 1, y, z - 1);
+            const w = get(x - 1, y, z - 1);
+            const t = get(x, y + 1, z - 1);
+            const b = get(x, y - 1, z - 1);
+            pushFace(
+              [o.x, o.y, o.z], [e, b, get(x + 1, y - 1, z - 1)],
+              [o.x - size.x, o.y, o.z], [w, b, get(x - 1, y - 1, z - 1)],
+              [o.x - size.x, o.y + size.y, o.z], [w, t, get(x - 1, y + 1, z - 1)],
+              [o.x, o.y + size.y, o.z], [e, t, get(x + 1, y + 1, z - 1)],
+              voxel.color,
+              hasAO ? neighbors.north : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              3
+            );
           }
           if (faces.west) {
             const { offset, size, texture } = faces.west;
-            if (isVisible(voxel.type, neighbors.west.type)) {
-              const o = getOrigin(x, y, z, offset.z, offset.y, offset.x);
-              const n = get(x - 1, y, z - 1);
-              const s = get(x - 1, y, z + 1);
-              const t = get(x - 1, y + 1, z);
-              const b = get(x - 1, y - 1, z);
-              pushFace(
-                [o.x, o.y, o.z], [n, b, get(x - 1, y - 1, z - 1)],
-                [o.x, o.y, o.z + size.x], [s, b, get(x - 1, y - 1, z + 1)],
-                [o.x, o.y + size.y, o.z + size.x], [s, t, get(x - 1, y + 1, z + 1)],
-                [o.x, o.y + size.y, o.z], [n, t, get(x - 1, y + 1, z - 1)],
-                voxel.color,
-                hasAO ? neighbors.west : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                4
-              );
-            }
+            const o = getOrigin(x, y, z, offset.z, offset.y, offset.x);
+            const n = get(x - 1, y, z - 1);
+            const s = get(x - 1, y, z + 1);
+            const t = get(x - 1, y + 1, z);
+            const b = get(x - 1, y - 1, z);
+            pushFace(
+              [o.x, o.y, o.z], [n, b, get(x - 1, y - 1, z - 1)],
+              [o.x, o.y, o.z + size.x], [s, b, get(x - 1, y - 1, z + 1)],
+              [o.x, o.y + size.y, o.z + size.x], [s, t, get(x - 1, y + 1, z + 1)],
+              [o.x, o.y + size.y, o.z], [n, t, get(x - 1, y + 1, z - 1)],
+              voxel.color,
+              hasAO ? neighbors.west : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              4
+            );
           }
           if (faces.east) {
             const { offset, size, texture } = faces.east;
-            if (isVisible(voxel.type, neighbors.east.type)) {
-              const o = getOrigin(x + 1, y, z + 1, -offset.z, offset.y, -offset.x);
-              const n = get(x + 1, y, z - 1);
-              const s = get(x + 1, y, z + 1);
-              const t = get(x + 1, y + 1, z);
-              const b = get(x + 1, y - 1, z);
-              pushFace(
-                [o.x, o.y, o.z], [s, b, get(x + 1, y - 1, z + 1)],
-                [o.x, o.y, o.z - size.x], [n, b, get(x + 1, y - 1, z - 1)],
-                [o.x, o.y + size.y, o.z - size.x], [n, t, get(x + 1, y + 1, z - 1)],
-                [o.x, o.y + size.y, o.z], [s, t, get(x + 1, y + 1, z + 1)],
-                voxel.color,
-                hasAO ? neighbors.east : voxel,
-                hasAO,
-                isTransparent,
-                textures[texture],
-                5
-              );
-            }
+            const o = getOrigin(x + 1, y, z + 1, -offset.z, offset.y, -offset.x);
+            const n = get(x + 1, y, z - 1);
+            const s = get(x + 1, y, z + 1);
+            const t = get(x + 1, y + 1, z);
+            const b = get(x + 1, y - 1, z);
+            pushFace(
+              [o.x, o.y, o.z], [s, b, get(x + 1, y - 1, z + 1)],
+              [o.x, o.y, o.z - size.x], [n, b, get(x + 1, y - 1, z - 1)],
+              [o.x, o.y + size.y, o.z - size.x], [n, t, get(x + 1, y + 1, z - 1)],
+              [o.x, o.y + size.y, o.z], [s, t, get(x + 1, y + 1, z + 1)],
+              voxel.color,
+              hasAO ? neighbors.east : voxel,
+              hasAO,
+              isTransparent,
+              textures[texture],
+              5
+            );
           }
         }
       }
