@@ -36,7 +36,9 @@ class Map {
     });
     const renderChunks = () => {
       if (!grid.length) {
-        res.type('image/png');
+        res
+          .set('Cache-Control', 'public, max-age=0')
+          .type('image/png');
         image.pack().pipe(res);
         return;
       }

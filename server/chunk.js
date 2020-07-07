@@ -526,13 +526,15 @@ class Chunk {
       size,
     } = Chunk;
     const { world: { generator: { types } } } = this;
+    const bottom = { type: types.dirt, light: 0, sunlight: 0 };
+    const top = { type: types.air, light: 0, sunlight: maxLight };
     this.meshes[subchunk] = Mesher({
       get: (x, y, z) => {
         if (y < 0) {
-          return { type: types.dirt, light: 0, sunlight: 0 };
+          return bottom;
         }
         if (y >= maxHeight) {
-          return { type: types.air, light: 0, sunlight: maxLight };
+          return top;
         }
         const { chunk, cx, cz } = this.get(x, z);
         const voxel = getVoxel(cx, y, cz);
