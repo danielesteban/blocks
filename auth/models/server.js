@@ -63,6 +63,27 @@ ServerSchema.statics = {
         server.updateStatus()
       ));
   },
+  refresh() {
+    const Server = this;
+    return Server
+      .find()
+      .sort('-updateAt')
+      .limit(100)
+      .then((servers) => {
+        const refresh = () => {
+          const server = servers.shift();
+          if (!server) {
+            return true;
+          }
+          return server
+            .updateStatus()
+            .then(refresh)
+            .catch(refresh);
+        };
+        return refresh();
+      })
+      .catch(() => {});
+  },
 };
 
 ServerSchema.plugin(mongoosePaginate);
