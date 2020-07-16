@@ -69,6 +69,7 @@ const Skin = ({
       height: height * 0.1875,
       onPointer: () => {
         menu.world.player.saveSkin();
+        menu.setPage(0);
       },
     },
   ];
