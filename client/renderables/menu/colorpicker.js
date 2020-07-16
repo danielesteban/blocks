@@ -158,8 +158,8 @@ const ColorPicker = ({
                 imageData[1] / 0xFF,
                 imageData[2] / 0xFF
               );
+              menu.draw();
             }
-            menu.draw();
             break;
           }
         }
