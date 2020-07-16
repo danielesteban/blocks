@@ -2,7 +2,6 @@ import {
   CanvasTexture,
   Mesh,
   MeshBasicMaterial,
-  NearestFilter,
   PlaneBufferGeometry,
   sRGBEncoding,
   Vector3,
@@ -30,7 +29,7 @@ class UI extends Mesh {
     styles = {
       background: 'rgba(0, 0, 0, .2)',
       color: '#fff',
-      font: '700 10px monospace',
+      font: '700 20px monospace',
       textAlign: 'center',
       textBaseline: 'middle',
       ...styles,
@@ -51,9 +50,8 @@ class UI extends Mesh {
     renderer.width = textureWidth;
     renderer.height = textureHeight;
     const texture = new CanvasTexture(renderer);
+    texture.anisotropy = 16;
     texture.encoding = sRGBEncoding;
-    texture.magFilter = NearestFilter;
-    texture.minFilter = NearestFilter;
     super(
       UI.geometry,
       new MeshBasicMaterial({
@@ -64,7 +62,6 @@ class UI extends Mesh {
     this.matrixAutoUpdate = false;
     this.scale.set(width, height, 1);
     this.context = renderer.getContext('2d');
-    this.context.imageSmoothingEnabled = false;
     this.pages = pages;
     this.pointer = new Vector3();
     this.renderer = renderer;
@@ -76,9 +73,12 @@ class UI extends Mesh {
   }
 
   dispose() {
-    const { material, texture } = this;
+    const { material, page, texture } = this;
     material.dispose();
     texture.dispose();
+    if (page && page.onDispose) {
+      page.onDispose();
+    }
   }
 
   draw() {
@@ -198,14 +198,20 @@ class UI extends Mesh {
 
   setPage(page) {
     const { pages } = this;
+    const back = this.page ? this.page.id : undefined;
     this.page = {
-      back: this.page ? this.page.id : undefined,
       id: page,
+      back,
       buttons: [],
       graphics: [],
       labels: [],
       ...pages[page],
     };
+    pages.forEach((p) => {
+      if (p.onPageUpdate) {
+        p.onPageUpdate(back, page);
+      }
+    });
     this.draw();
   }
 }

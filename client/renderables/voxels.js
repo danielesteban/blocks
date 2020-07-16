@@ -1,6 +1,7 @@
 import {
   BufferGeometry,
   Mesh,
+  MeshBasicMaterial,
   BufferAttribute,
   Object3D,
   RepeatWrapping,
@@ -10,7 +11,6 @@ import {
   CanvasTexture,
   UniformsUtils,
   UVMapping,
-  VertexColors,
 } from '../core/three.js';
 
 // Voxels chunk
@@ -19,7 +19,7 @@ class Voxels extends Object3D {
   static setupMaterials() {
     const opaque = new ShaderMaterial({
       name: 'voxels-material',
-      vertexColors: VertexColors,
+      vertexColors: true,
       fog: true,
       fragmentShader: ShaderLib.basic.fragmentShader
         .replace(
@@ -65,6 +65,9 @@ class Voxels extends Object3D {
     });
     const transparent = opaque.clone();
     transparent.transparent = true;
+    const ui = new MeshBasicMaterial({
+      transparent: true,
+    });
     const atlas = new CanvasTexture(
       document.createElement('canvas'),
       UVMapping,
@@ -124,13 +127,14 @@ class Voxels extends Object3D {
         );
       }
       atlas.needsUpdate = true;
-      const uvScale = 1 / ((count + 0.5) * 2);
-      [opaque, transparent].forEach((material) => {
+      atlas.repeat.x = 1 / ((count + 0.5) * 2);
+      atlas.updateMatrix();
+      [opaque, transparent, ui].forEach((material) => {
         material.map = atlas;
-        material.uniforms.map.value = atlas;
-        material.uniforms.uvTransform.value.setUvTransform(
-          0, 0, uvScale, 1, 0, 0, 0
-        );
+        if (material.uniforms) {
+          material.uniforms.map.value = atlas;
+          material.uniforms.uvTransform.value.copy(atlas.matrix);
+        }
         material.needsUpdate = true;
       });
     };
@@ -138,6 +142,7 @@ class Voxels extends Object3D {
       atlas,
       opaque,
       transparent,
+      ui,
     };
   }
 

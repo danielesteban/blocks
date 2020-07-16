@@ -105,6 +105,7 @@ const faces = [
 ];
 
 module.exports = {
+  name: 'Light',
   faces: ({ neighbors, types }) => faces.reduce((faces, { facing, neighbors: faceNeighbors }) => {
     faces.push(
       ...cross({

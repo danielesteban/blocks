@@ -200,15 +200,49 @@ const LoadBlockTypes = (basePath) => {
   textures.forEach((texture, i) => {
     PNG.bitblt(texture, atlas, 0, 0, texture.width, texture.height, width * i, 0);
   });
+  let client;
+  {
+    const air = { type: blockTypes.air };
+    const empty = {
+      neighbors: {
+        get: () => air,
+        top: air,
+        bottom: air,
+        south: air,
+        north: air,
+        west: air,
+        east: air,
+      },
+      types: blockTypes,
+    };
+    client = types
+      .reduce((types, v, index) => {
+        const type = index + 1;
+        if (type !== blockTypes.sapling) {
+          const { name, faces, textures } = blockTypes[type];
+          types.push({
+            id: type,
+            name,
+            faces: faces({
+              ...empty,
+              voxel: { type },
+            }),
+            textures,
+          });
+        }
+        return types;
+      }, []);
+  }
   return {
     atlas: PNG.sync.write(atlas),
+    client,
     types: blockTypes,
   };
 };
 
 module.exports = ({ blockTypes, generator, seed }) => {
   const noise = fastnoise.Create(seed);
-  const { atlas, types } = LoadBlockTypes(path.resolve(blockTypes));
+  const { atlas, client, types } = LoadBlockTypes(path.resolve(blockTypes));
   if (Generators[generator]) {
     generator = Generators[generator]({ noise, types });
   } else if (fs.existsSync(generator)) {
@@ -221,6 +255,7 @@ module.exports = ({ blockTypes, generator, seed }) => {
   return {
     ...generator,
     atlas,
+    client,
     noise,
     spawn: generator.spawn || { x: 0, z: 0 },
     types,

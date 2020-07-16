@@ -7,7 +7,6 @@ import {
 import Ambient from '../core/ambient.js';
 import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
-import MapUI from '../renderables/map.js';
 import Menu from '../renderables/menu/index.js';
 import Help from '../renderables/help.js';
 import Photo from '../renderables/photo.js';
@@ -42,7 +41,6 @@ class World extends Scene {
     this.add(this.sun);
     this.timeOffset = Date.now() / 1000;
 
-    this.map = new MapUI({ world: this });
     this.menu = new Menu({ world: this });
     this.photo = new Photo({
       player: this.player,
@@ -50,11 +48,11 @@ class World extends Scene {
     });
     const { attachments } = this.player;
     attachments.left = [this.menu, this.photo];
-    attachments.right = [this.map];
+    attachments.right = [];
     this.ui.push(
       this.menu,
-      this.photo.ui,
-      this.map
+      this.menu.tabs,
+      this.photo.ui
     );
     this.player.setWelcome(new Help());
 
@@ -95,7 +93,6 @@ class World extends Scene {
       chunks,
       clouds,
       dom,
-      map,
       menu,
       player,
       photo,
@@ -196,7 +193,7 @@ class World extends Scene {
             y: point.y,
             z: point.z,
             color: menu.picker.color.getHex(),
-            type: isRemoving ? 0 : menu.options.blockType,
+            type: isRemoving ? 0 : menu.block.type,
           },
         });
       }
@@ -240,7 +237,7 @@ class World extends Scene {
             z: chunks.player.z + neighbour.y,
           });
         });
-        map.setChunk(chunks.player);
+        menu.map.setChunk(chunks.player);
       }
     }
 
@@ -282,7 +279,7 @@ class World extends Scene {
     const {
       chunks,
       dom,
-      map,
+      menu,
       player,
       server,
     } = this;
@@ -294,7 +291,8 @@ class World extends Scene {
       dom.server.removeAttribute('href');
       dom.server.innerText = (new URL(server.serverURL)).host;
     }
-    map.setConnectedServer(server.serverURL);
+    menu.block.setBlocks(data.blocks);
+    menu.map.setConnectedServer(server.serverURL);
     if (player.spawn) {
       player.position.copy(player.spawn.position);
       player.rotation.y = player.spawn.rotation;
@@ -316,8 +314,8 @@ class World extends Scene {
 
   onPick({ type, color }) {
     const { menu } = this;
-    menu.options.setBlockType(type);
     menu.picker.setColor(color);
+    menu.block.setType(type);
   }
 
   onTeleport(position) {

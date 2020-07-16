@@ -81,36 +81,6 @@ class Help extends UI {
             },
           ],
         },
-        {
-          labels: [
-            {
-              text: 'Menu and Map',
-              font: fonts.heading,
-              x: width * 0.5,
-              y: height * 0.125,
-            },
-            {
-              text: 'Hold TRIGGER and point',
-              x: width * 0.5,
-              y: height * 0.25,
-            },
-            {
-              text: 'to the back of your...',
-              x: width * 0.5,
-              y: height * 0.3,
-            },
-            {
-              text: 'LEFT HAND: For the menu',
-              x: width * 0.5,
-              y: height * 0.45,
-            },
-            {
-              text: 'RIGHT HAND: For the map',
-              x: width * 0.5,
-              y: height * 0.55,
-            },
-          ],
-        },
       ],
       width: 1,
       height: 2,
@@ -173,7 +143,7 @@ class Help extends UI {
 
   onBeforeRender({ animation: { time } }) {
     const { lastPageSwap, page, pages } = this;
-    if (lastPageSwap + 5 > time) {
+    if (lastPageSwap + 6 > time) {
       return;
     }
     this.lastPageSwap = time;

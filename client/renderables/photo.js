@@ -129,12 +129,8 @@ class Photo extends Object3D {
     this.ui.updateMatrix();
     this.add(this.ui);
     this.matrixAutoUpdate = false;
-    this.position.set(0, 0.25, 0.025);
-    this.rotation.set(
-      0,
-      Math.PI * -0.5,
-      Math.PI * 0.5
-    );
+    this.position.set(0.25, -0.01, 0.025);
+    this.rotation.set(Math.PI * -0.5, 0, 0);
     this.updateMatrix();
     this.visible = false;
   }

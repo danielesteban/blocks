@@ -59,7 +59,10 @@ const ColorPicker = ({
       color.setRGB(r / 0xFF, g / 0xFF, b / 0xFF);
       area.color.copy(color);
       palette.update();
-      if (menu.page.id === pages.picker) {
+      if (
+        menu.page.id === pages.picker
+        || menu.page.id === pages.skin
+      ) {
         menu.draw();
       }
     },
@@ -155,8 +158,8 @@ const ColorPicker = ({
                 imageData[1] / 0xFF,
                 imageData[2] / 0xFF
               );
-              menu.draw();
             }
+            menu.draw();
             break;
           }
         }

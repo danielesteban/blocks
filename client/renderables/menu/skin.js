@@ -13,7 +13,9 @@ const Skin = ({
     const options = { opaque, transparent };
     options[layer].background = '#393';
     menu.world.player.editSkin(layer);
-    menu.setPage(pages.skin);
+    if (menu.page.id === pages.skin) {
+      menu.draw();
+    }
   };
   const buttons = [
     {
@@ -59,25 +61,13 @@ const Skin = ({
       ),
     },
     {
-      label: 'Cancel',
-      x: width * 0.0625,
-      y: height * 0.75,
-      width: width * 0.375,
-      height: height * 0.1875,
-      onPointer: () => {
-        menu.setPage(pages.options);
-        menu.world.player.disposeSkinEditor();
-      },
-    },
-    {
       background: '#393',
       label: 'Save',
-      x: width * 0.5625,
+      x: width * 0.3125,
       y: height * 0.75,
       width: width * 0.375,
       height: height * 0.1875,
       onPointer: () => {
-        menu.setPage(pages.options);
         menu.world.player.saveSkin();
       },
     },
@@ -95,8 +85,27 @@ const Skin = ({
   ];
   return {
     key: 'skin',
-    page: { buttons, graphics },
-    state: { setLayer },
+    page: {
+      buttons,
+      graphics,
+      onPageUpdate: (prev, current) => {
+        const isEditing = !!menu.world.player.skinEditor;
+        if (
+          !isEditing
+          && current === pages.skin
+        ) {
+          setLayer('transparent');
+        }
+        if (
+          isEditing
+          && current !== pages.picker
+          && current !== pages.skin
+        ) {
+          menu.world.player.disposeSkinEditor();
+        }
+      },
+    },
+    state: {},
   };
 };
 

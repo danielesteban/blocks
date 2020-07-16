@@ -11,7 +11,13 @@ const Settings = ({
       parseInt(localStorage.getItem('blocks::renderRadius') || 0, 10) || 8
     ),
     setRenderRadius(radius) {
-      const [low, mid, high] = buttons; // eslint-disable-line no-use-before-define
+      const [
+        /* teleport */,
+        /* fly */, // eslint-disable-line comma-style
+        low,
+        mid,
+        high,
+      ] = buttons; // eslint-disable-line no-use-before-define
       delete low.background;
       delete mid.background;
       delete high.background;
@@ -22,11 +28,40 @@ const Settings = ({
       }
     },
   };
+  const setLocomotion = (type) => {
+    const [teleport, fly] = buttons; // eslint-disable-line no-use-before-define
+    delete fly.background;
+    delete teleport.background;
+    const options = { fly, teleport };
+    options[type].background = '#393';
+    const locomotions = { fly: 0, teleport: 1 };
+    menu.world.locomotion = locomotions[type];
+    if (menu.page.id === pages.settings) {
+      menu.draw();
+    }
+  };
   const buttons = [
+    {
+      background: '#393',
+      label: 'Teleport',
+      x: width * 0.0625,
+      y: height * 0.25625,
+      width: width * 0.40625,
+      height: height * 0.1875,
+      onPointer: () => setLocomotion('teleport'),
+    },
+    {
+      label: 'Fly',
+      x: width * 0.53125,
+      y: height * 0.25625,
+      width: width * 0.40625,
+      height: height * 0.1875,
+      onPointer: () => setLocomotion('fly'),
+    },
     {
       label: 'Low',
       x: width * 0.0625,
-      y: height * 0.3125,
+      y: height * 0.75625,
       width: width * 0.25,
       height: height * 0.1875,
       onPointer: () => menu.world.updateRenderRadius(8),
@@ -34,7 +69,7 @@ const Settings = ({
     {
       label: 'Mid',
       x: width * 0.375,
-      y: height * 0.3125,
+      y: height * 0.75625,
       width: width * 0.25,
       height: height * 0.1875,
       onPointer: () => menu.world.updateRenderRadius(12),
@@ -42,41 +77,22 @@ const Settings = ({
     {
       label: 'High',
       x: width * 0.6875,
-      y: height * 0.3125,
+      y: height * 0.75625,
       width: width * 0.25,
       height: height * 0.1875,
       onPointer: () => menu.world.updateRenderRadius(16),
     },
-    {
-      label: 'Cancel',
-      x: width * 0.0625,
-      y: height * 0.75,
-      width: width * 0.375,
-      height: height * 0.1875,
-      onPointer: () => {
-        menu.setPage(pages.options);
-        menu.world.updateRenderRadius(state.renderRadius);
-      },
-    },
-    {
-      background: '#393',
-      label: 'Save',
-      x: width * 0.5625,
-      y: height * 0.75,
-      width: width * 0.375,
-      height: height * 0.1875,
-      onPointer: () => {
-        menu.setPage(pages.options);
-        state.renderRadius = menu.world.renderRadius;
-        localStorage.setItem('blocks::renderRadius', menu.world.renderRadius);
-      },
-    },
   ];
   const labels = [
     {
+      text: 'Locomotion',
+      x: width * 0.5,
+      y: height * 0.15,
+    },
+    {
       text: 'Render distance',
       x: width * 0.5,
-      y: height * 0.1875,
+      y: height * 0.65,
     },
   ];
   return {

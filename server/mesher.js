@@ -112,6 +112,7 @@ module.exports = ({
         const voxel = get(x, y, z);
         if (voxel.type !== types.air) {
           const neighbors = {
+            get: (nx, ny, nz) => get(x + nx, y + ny, z + nz),
             top: get(x, y + 1, z),
             bottom: get(x, y - 1, z),
             south: get(x, y, z + 1),
@@ -120,15 +121,7 @@ module.exports = ({
             east: get(x + 1, y, z),
           };
           const { textures, hasAO, isTransparent } = types[voxel.type];
-          const faces = types[voxel.type].faces({
-            get,
-            neighbors,
-            types,
-            voxel,
-            x,
-            y,
-            z,
-          });
+          const faces = types[voxel.type].faces({ neighbors, types, voxel });
           faces.forEach(({
             facing,
             offset,

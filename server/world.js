@@ -67,7 +67,7 @@ class World extends Room {
   }
 
   onInit() {
-    const { generator: { spawn: offset }, seed } = this;
+    const { generator: { client, spawn: offset }, seed } = this;
     const chunk = this.getChunk({ x: offset.x, z: offset.z });
     const spawn = {
       x: Math.floor(Math.random() * Chunk.size),
@@ -76,7 +76,11 @@ class World extends Room {
     spawn.y = chunk.heightmap[(spawn.x * Chunk.size) + spawn.z];
     spawn.x += chunk.x * Chunk.size;
     spawn.z += chunk.z * Chunk.size;
-    return { seed, spawn };
+    return {
+      blocks: client,
+      seed,
+      spawn,
+    };
   }
 
   onRequest(client, request) {
@@ -198,7 +202,7 @@ class World extends Room {
           || y >= Chunk.maxHeight
           || color < 0
           || color > 16777215
-          || Object.values(types).indexOf(type) === -1
+          || types[type] === undefined
           || type === types.sapling
         ) {
           return;
