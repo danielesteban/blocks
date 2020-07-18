@@ -76,11 +76,21 @@ class Photo extends Object3D {
         {
           buttons: [
             {
-              background: '#393',
-              label: 'Login to save',
+              label: 'X',
               x: 0,
               y: 0,
-              width: 192,
+              width: 32,
+              height: 48,
+              onPointer: () => {
+                this.visible = false;
+              },
+            },
+            {
+              background: '#393',
+              label: 'Login&Save',
+              x: 32,
+              y: 0,
+              width: 160,
               height: 48,
               onPointer: () => {
                 this.visible = false;
