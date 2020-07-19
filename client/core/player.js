@@ -100,6 +100,7 @@ class Player extends Object3D {
       dialogs,
       state: dom.session,
     });
+    this.xr = xr;
   }
 
   onAnimationTick({ camera, delta }) {
@@ -267,6 +268,27 @@ class Player extends Object3D {
       .copy(destination)
       .sub(position)
       .normalize();
+  }
+
+  setLocation(location) {
+    const {
+      auxVector: offset,
+      auxDestination: destination,
+      head,
+      position,
+    } = this;
+    offset.subVectors(head.position, position);
+    destination
+      .subVectors(location.position, destination.set(
+        offset.x,
+        0,
+        offset.z
+      ));
+    position.copy(destination);
+    head.position.addVectors(destination, offset);
+    if (location.rotation) {
+      this.rotate(location.rotation - head.rotation.y);
+    }
   }
 
   setWelcome(mesh) {

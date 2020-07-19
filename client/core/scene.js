@@ -229,9 +229,10 @@ class Scene extends ThreeScene {
         return;
       }
       if (!this.player.spawn) {
+        const position = this.player.head.position.clone();
+        position.y = this.player.position.y;
         this.player.spawn = {
-          position: this.player.position.clone(),
-          rotation: this.player.rotation.y,
+          position,
         };
       }
       this.reconnectTimer = setTimeout(() => this.connect(url), 1000);

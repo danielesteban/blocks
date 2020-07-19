@@ -6,7 +6,7 @@ const User = require('../models/user');
 
 module.exports = (app) => {
   const upload = multer({
-    limits: { fileSize: 512000 },
+    limits: { fileSize: 1048576 },
     storage: multer.memoryStorage(),
   });
 

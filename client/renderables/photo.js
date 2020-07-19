@@ -3,7 +3,7 @@ import {
   Color,
   Mesh,
   MeshBasicMaterial,
-  NearestFilter,
+  LinearFilter,
   Object3D,
   PerspectiveCamera,
   PlaneBufferGeometry,
@@ -27,6 +27,7 @@ class Photo extends Object3D {
   }
 
   constructor({
+    menu,
     player,
     renderer,
     width = 1280,
@@ -39,14 +40,16 @@ class Photo extends Object3D {
       Photo.setupGeometry();
     }
     super();
+    this.menu = menu;
     this.player = player;
     this.rasterizer = document.createElement('canvas');
     this.renderer = renderer;
     this.camera = new PerspectiveCamera(70, width / height, 0.1, 1000);
     this.target = new WebGLMultisampleRenderTarget(width, height, {
       encoding: sRGBEncoding,
-      magFilter: NearestFilter,
-      minFilter: NearestFilter,
+      magFilter: LinearFilter,
+      minFilter: LinearFilter,
+      stencilBuffer: false,
     });
     this.frame = new Mesh(
       Photo.geometry,
@@ -94,7 +97,7 @@ class Photo extends Object3D {
               height: 48,
               onPointer: () => {
                 this.visible = false;
-                renderer.xr.getSession().end();
+                this.player.xr.getSession().end();
                 this.player.session.showDialog('login');
               },
             },
@@ -193,6 +196,7 @@ class Photo extends Object3D {
 
   save() {
     const {
+      menu,
       player,
       rasterizer,
       renderer,
@@ -215,12 +219,17 @@ class Photo extends Object3D {
         ctx.scale(1, -1);
         ctx.drawImage(bitmap, 0, target.height * -1);
         rasterizer.toBlob((blob) => (
-          player.session.uploadLocation({
-            blob,
-            position: target.position,
-            rotation: target.rotation,
-          })
-        ), 'image/jpeg', 0.9);
+          player.session
+            .uploadLocation({
+              blob,
+              position: target.position,
+              rotation: target.rotation,
+            })
+            .then(() => (
+              menu.photos.update()
+            ))
+            .catch(() => {})
+        ), 'image/jpeg', 1.0);
       });
     this.visible = false;
   }

@@ -128,11 +128,11 @@ class UI extends Mesh {
       ctx.strokeStyle = border || button.border;
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = color || button.color;
-      ctx.font = font || button.font || styles.font;
-      ctx.textAlign = textAlign || button.textAlign || styles.textAlign;
-      ctx.textBaseline = textBaseline || button.textBaseline || styles.textBaseline;
       if (label) {
+        ctx.fillStyle = color || button.color;
+        ctx.font = font || button.font || styles.font;
+        ctx.textAlign = textAlign || button.textAlign || styles.textAlign;
+        ctx.textBaseline = textBaseline || button.textBaseline || styles.textBaseline;
         ctx.fillText(
           label,
           width * 0.5,
@@ -149,7 +149,11 @@ class UI extends Mesh {
       text,
       textAlign,
       textBaseline,
+      isVisible,
     }) => {
+      if (isVisible === false || !text) {
+        return;
+      }
       ctx.save();
       ctx.fillStyle = color || styles.color;
       ctx.font = font || styles.font;

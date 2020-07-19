@@ -47,6 +47,36 @@ class Session {
     state.style.display = '';
   }
 
+  static getLocation(id) {
+    const { authService, formatDate } = Session;
+    return fetch(`${authService}location/${id}/meta`)
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error();
+        }
+        return res
+          .json()
+          .then((location) => ({
+            ...location,
+            createdAt: formatDate(location.createdAt),
+            photo: `${authService}location/${location._id}/photo`,
+          }));
+      });
+  }
+
+  getLocations() {
+    const { authService, getLocation } = Session;
+    const { session } = this;
+    return fetch(`${authService}user/locations`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    })
+      .then((res) => res.json())
+      .then((locations) => locations.map((location) => ({
+        ...location,
+        getMeta: () => getLocation(location._id),
+      })));
+  }
+
   onLoginSubmit(e) {
     const { target: form } = e;
     const { authService } = Session;
@@ -217,39 +247,26 @@ class Session {
   }
 
   showLocation(id) {
-    const { authService } = Session;
+    const { getLocation } = Session;
     const { dialogs: { location: dialog } } = this;
-    return fetch(`${authService}location/${id}/meta`)
-      .then((res) => {
-        if (res.status !== 200) {
-          throw new Error();
-        }
-        return res
-          .json()
-          .then((location) => {
-            const [container] = dialog.getElementsByTagName('div');
-            const [image] = container.getElementsByTagName('img');
-            const [info] = container.getElementsByTagName('div');
-            const [title, user] = info.getElementsByTagName('div');
-            image.src = `${authService}location/${location._id}/photo`;
-            const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
-            const createdAt = new Date(location.createdAt);
-            title.innerText = (
-              `x:${location.position.x} y:${location.position.y} z:${location.position.z}`
-              + ` - ${location.server.name}`
-            );
-            user.innerText = (
-              `${location.user.name}`
-              + ` - ${createdAt.getFullYear()}/${leadingZero(`${createdAt.getMonth() + 1}`)}/${leadingZero(`${createdAt.getDate()}`)}`
-              + ` ${leadingZero(`${createdAt.getHours()}`)}:${leadingZero(`${createdAt.getMinutes()}`)}`
-            );
-            this.showDialog('location');
-            return {
-              server: location.server.url,
-              position: location.position,
-              rotation: location.rotation,
-            };
-          });
+    return getLocation(id)
+      .then((location) => {
+        const [container] = dialog.getElementsByTagName('div');
+        const [image] = container.getElementsByTagName('img');
+        const [info] = container.getElementsByTagName('div');
+        const [title, user] = info.getElementsByTagName('div');
+        image.src = location.photo;
+        title.innerText = (
+          `x:${location.position.x} y:${location.position.y} z:${location.position.z}`
+          + ` - ${location.server.name}`
+        );
+        user.innerText = (
+          `${location.user.name}`
+          + ` - ${location.createdAt.date}`
+          + ` ${location.createdAt.time}`
+        );
+        this.showDialog('location');
+        return location;
       });
   }
 
@@ -297,7 +314,7 @@ class Session {
     const { authService } = Session;
     const { session, server } = this;
     if (!session || !server) {
-      return;
+      return Promise.reject();
     }
     const body = new FormData();
     body.append('photo', blob);
@@ -306,13 +323,22 @@ class Session {
     body.append('positionZ', position.z);
     body.append('rotation', rotation);
     body.append('server', server);
-    fetch(`${authService}locations`, {
+    return fetch(`${authService}locations`, {
       body,
       headers: {
         Authorization: `Bearer ${session.token}`,
       },
       method: 'POST',
     });
+  }
+
+  static formatDate(date) {
+    const leadingZero = (v) => (v.length < 2 ? `0${v}` : v);
+    date = new Date(date);
+    return {
+      date: `${date.getFullYear()}/${leadingZero(`${date.getMonth() + 1}`)}/${leadingZero(`${date.getDate()}`)}`,
+      time: `${leadingZero(`${date.getHours()}`)}:${leadingZero(`${date.getMinutes()}`)}`,
+    };
   }
 }
 

@@ -2,6 +2,7 @@ import UI from '../ui.js';
 import Block from './block.js';
 import ColorPicker from './colorpicker.js';
 import Map from './map.js';
+import Photos from './photos.js';
 import Settings from './settings.js';
 import Skin from './skin.js';
 import Tabs from './tabs.js';
@@ -33,6 +34,7 @@ class Menu extends UI {
       Block,
       ColorPicker,
       Map,
+      Photos,
       Settings,
       Skin,
     ].forEach((Page) => {
@@ -60,6 +62,7 @@ class Menu extends UI {
       pages: [
         { name: 'Block', page: pages.block },
         { name: 'Map', page: pages.map },
+        { name: 'Photos', page: pages.photos },
         { name: 'Options', page: pages.settings },
         { name: 'Skin', page: pages.skin },
         { name: 'X', page: 0 },

@@ -43,6 +43,7 @@ class World extends Scene {
 
     this.menu = new Menu({ world: this });
     this.photo = new Photo({
+      menu: this.menu,
       player: this.player,
       renderer: renderer.renderer,
     });
@@ -63,24 +64,34 @@ class World extends Scene {
     if (params.location) {
       this.player.session
         .showLocation(params.location)
-        .then(({ server, position, rotation }) => {
-          this.player.spawn = {
-            position: (new Vector3()).copy(position)
-              .multiplyScalar(World.scale)
-              .add({
-                x: 0.25,
-                y: 0,
-                z: 0.25,
-              }),
-            rotation,
-          };
-          this.connect(server);
-        })
+        .then((location) => this.goToLocation(location))
         .catch(() => (
           this.connect(params.server || document.location.toString())
         ));
     } else {
       this.connect(params.server || document.location.toString());
+    }
+  }
+
+  goToLocation({ server, position, rotation }) {
+    const { scale } = World;
+    const { player } = this;
+    const spawn = {
+      position: (new Vector3())
+        .copy(position)
+        .multiplyScalar(scale)
+        .add({
+          x: 0.25,
+          y: 0.5,
+          z: 0.25,
+        }),
+      rotation,
+    };
+    if (this.server && this.server.serverURL === server.url) {
+      player.setLocation(spawn);
+    } else {
+      player.spawn = spawn;
+      this.connect(server.url);
     }
   }
 
@@ -294,8 +305,7 @@ class World extends Scene {
     menu.block.setBlocks(data.blocks);
     menu.map.setConnectedServer(server.serverURL);
     if (player.spawn) {
-      player.position.copy(player.spawn.position);
-      player.rotation.y = player.spawn.rotation;
+      player.setLocation(player.spawn);
       delete player.spawn;
     } else {
       player.position
