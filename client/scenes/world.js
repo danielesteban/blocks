@@ -79,12 +79,7 @@ class World extends Scene {
     const spawn = {
       position: (new Vector3())
         .copy(position)
-        .multiplyScalar(scale)
-        .add({
-          x: 0.25,
-          y: 0.5,
-          z: 0.25,
-        }),
+        .multiplyScalar(scale),
       rotation,
     };
     if (this.server && this.server.serverURL === server.url) {
