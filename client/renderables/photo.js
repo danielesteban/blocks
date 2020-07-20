@@ -58,7 +58,7 @@ class Photo extends Object3D {
       })
     );
     this.frame.matrixAutoUpdate = false;
-    this.frame.scale.set(0.5, (height * 0.5) / width, 1);
+    this.frame.scale.set(0.3, (height * 0.3) / width, 1);
     this.frame.updateMatrix();
     this.add(this.frame);
     const backplate = new Mesh(
@@ -69,11 +69,10 @@ class Photo extends Object3D {
     this.frame.add(backplate);
     this.ui = new UI({
       width: 0.15,
-      height: 0.0375,
+      height: (32 * 0.15) / 192,
       page: 0,
       styles: {
         background: 'transparent',
-        font: '700 24px monospace',
       },
       pages: [
         {
@@ -83,7 +82,7 @@ class Photo extends Object3D {
               x: 0,
               y: 0,
               width: 32,
-              height: 48,
+              height: 32,
               onPointer: () => {
                 this.visible = false;
               },
@@ -94,7 +93,7 @@ class Photo extends Object3D {
               x: 32,
               y: 0,
               width: 160,
-              height: 48,
+              height: 32,
               onPointer: () => {
                 this.visible = false;
                 this.player.xr.getSession().end();
@@ -111,7 +110,7 @@ class Photo extends Object3D {
               x: 0,
               y: 0,
               width: 96,
-              height: 48,
+              height: 32,
               onPointer: () => {
                 this.visible = false;
               },
@@ -122,7 +121,7 @@ class Photo extends Object3D {
               x: 96,
               y: 0,
               width: 96,
-              height: 48,
+              height: 32,
               onPointer: () => {
                 if (
                   this.player.session.server
@@ -136,14 +135,13 @@ class Photo extends Object3D {
         },
       ],
       textureWidth: 192,
-      textureHeight: 48,
+      textureHeight: 32,
     });
-    this.ui.position.set(0, this.frame.scale.y * -0.5 + 0.02, 0.001);
+    this.ui.position.set(0, this.frame.scale.y * -0.5 + this.ui.scale.y * 0.6, 0.001);
     this.ui.updateMatrix();
     this.add(this.ui);
     this.matrixAutoUpdate = false;
-    this.position.set(0.25, -0.01, 0.025);
-    this.rotation.set(Math.PI * -0.5, 0, 0);
+    this.position.set(-0.15, 0, 0.049);
     this.updateMatrix();
     this.visible = false;
   }

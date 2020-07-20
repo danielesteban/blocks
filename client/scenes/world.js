@@ -48,8 +48,8 @@ class World extends Scene {
       renderer: renderer.renderer,
     });
     const { attachments } = this.player;
-    attachments.left = [this.menu, this.photo];
-    attachments.right = [];
+    attachments.left = [this.menu];
+    attachments.right = [this.photo];
     this.ui.push(
       this.menu,
       this.menu.tabs,
@@ -144,7 +144,7 @@ class World extends Scene {
       ) {
         return;
       }
-      if (hand.handedness === 'left' && (primary || primaryUp)) {
+      if (hand.handedness === 'right' && (primary || primaryUp)) {
         if (primaryDown) {
           photo.update(scene);
           ambient.trigger('shutter');
@@ -165,8 +165,8 @@ class World extends Scene {
       });
       if (gripUp || primaryUp || triggerUp) {
         const { point, uv } = hit;
-        const isPicking = primary || primaryUp;
-        const isRemoving = grip || gripUp;
+        const isPicking = primaryUp;
+        const isRemoving = gripUp;
         point
           .addScaledVector(
             blockFacings[Math.floor(uv.y / 2)],
