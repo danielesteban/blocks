@@ -5,9 +5,8 @@
   };
 
   export let url;
-  const encoded = encodeURIComponent(url);
+  $: encoded = encodeURIComponent(url);
 </script>
-
 <a
   href={`https://twitter.com/intent/tweet?url=${encoded}`}
   on:click={openPopup}
