@@ -22,7 +22,10 @@ module.exports = (app) => {
       const page = Math.max(req.query.page || 1, 1);
       Server
         .paginate(
-          { verified: true },
+          {
+            available: true,
+            verified: true,
+          },
           {
             limit: 25,
             page,

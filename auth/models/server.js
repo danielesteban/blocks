@@ -3,6 +3,10 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const fetch = require('node-fetch');
 
 const ServerSchema = new mongoose.Schema({
+  available: {
+    type: Boolean,
+    default: false,
+  },
   name: {
     type: String,
     required: true,
@@ -30,15 +34,16 @@ ServerSchema.methods = {
     return fetch(`${server.url}status`)
       .then((res) => res.json())
       .then(({ name, version }) => {
+        server.available = true;
         server.name = name;
         server.version = version;
         return server.save();
       })
       .catch((err) => {
-        if (server.isNew || !server.verified) {
+        if (server.isNew || !server.available) {
           throw err;
         }
-        server.verified = false;
+        server.available = false;
         return server
           .save()
           .then(() => {
@@ -67,7 +72,7 @@ ServerSchema.statics = {
     const Server = this;
     return Server
       .find()
-      .sort('-updateAt')
+      .sort('updateAt')
       .limit(100)
       .then((servers) => {
         const refresh = () => {
