@@ -51,7 +51,7 @@ class Room {
       client.send(Room.encode({
         type: 'ERROR',
         text: 'Server is full. Try again later.',
-      }), () => {});
+      }), Room.noop);
       client.terminate();
       return;
     }
@@ -64,7 +64,7 @@ class Room {
         peers: clients.map(({ id }) => (id)),
         ...(this.onInit ? this.onInit(client) : {}),
       },
-    }), () => {});
+    }), Room.noop);
     this.broadcast({
       type: 'JOIN',
       text: client.id,
@@ -136,7 +136,7 @@ class Room {
         (!include || ~include.indexOf(client.id))
         && (!exclude || exclude.indexOf(client.id) === -1)
       ) {
-        client.send(encoded, () => {});
+        client.send(encoded, Room.noop);
       }
     });
   }
@@ -149,7 +149,7 @@ class Room {
         return;
       }
       client.isAlive = false;
-      client.ping(() => {});
+      client.ping(Room.noop);
     });
   }
 
@@ -199,6 +199,8 @@ class Room {
     }
     return buffer;
   }
+
+  static noop() {}
 }
 
 module.exports = Room;
