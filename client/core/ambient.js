@@ -81,17 +81,17 @@ Ambient.sounds = [
   {
     name: 'beach',
     from: 0,
-    to: 16,
+    to: 12,
   },
   {
     name: 'forest',
-    from: 8,
+    from: 4,
     to: 24,
   },
   {
     name: 'peak',
     from: 16,
-    to: 32,
+    to: 40,
   },
   {
     name: 'rain',
