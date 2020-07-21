@@ -3,19 +3,19 @@ import {
   FogExp2,
   Vector2,
   Vector3,
-} from '../core/three.js';
-import Ambient from '../core/ambient.js';
+} from './three.js';
+import Ambient from './ambient.js';
 import Birds from '../renderables/birds.js';
 import Clouds from '../renderables/clouds.js';
 import Menu from '../renderables/menu/index.js';
 import Help from '../renderables/help.js';
 import Photo from '../renderables/photo.js';
 import Rain from '../renderables/rain.js';
-import Scene from '../core/scene.js';
+import Room from './room.js';
 import Sun from '../renderables/sun.js';
 import Voxels from '../renderables/voxels.js';
 
-class World extends Scene {
+class World extends Room {
   constructor(renderer) {
     super(renderer);
 

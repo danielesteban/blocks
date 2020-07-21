@@ -15,11 +15,13 @@ class DesktopControls {
     this.pointer = new Vector2(0, 0);
     this.renderer = renderer;
     this.xr = xr;
+    this.onBlur = this.onBlur.bind(this);
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onPointerLock = this.onPointerLock.bind(this);
+    window.addEventListener('blur', this.onBlur);
     document.addEventListener('keydown', this.onKeyDown);
     document.addEventListener('keyup', this.onKeyUp);
     renderer.addEventListener('mousedown', this.onMouseDown);
@@ -29,6 +31,7 @@ class DesktopControls {
 
   dispose() {
     const { isLocked, renderer } = this;
+    window.removeEventListener('blur', this.onBlur);
     document.removeEventListener('keydown', this.onKeyDown);
     document.removeEventListener('keyup', this.onKeyUp);
     renderer.removeEventListener('mousedown', this.onMouseDown);
@@ -81,6 +84,11 @@ class DesktopControls {
       player.position.addScaledVector(direction, delta * 6);
       player.disposeWelcome();
     }
+  }
+
+  onBlur() {
+    const { keyboard } = this;
+    keyboard.set(0, 0, 0);
   }
 
   onKeyDown({ keyCode, repeat }) {

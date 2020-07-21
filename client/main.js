@@ -1,5 +1,5 @@
 import Renderer from './core/renderer.js';
-import World from './scenes/world.js';
+import World from './core/world.js';
 
 const renderer = new Renderer({
   dom: {
@@ -19,4 +19,4 @@ const renderer = new Renderer({
   },
 });
 
-renderer.loadScene(World);
+renderer.scene = new World(renderer);

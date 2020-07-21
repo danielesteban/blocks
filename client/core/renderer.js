@@ -55,7 +55,8 @@ class Renderer {
             session.addEventListener('end', () => {
               xr.setSession(null);
             });
-          });
+          })
+          .catch(() => {});
       }, false);
       dom.support.className = 'supported';
       dom.support.innerText = 'webxr is supported';
@@ -120,14 +121,6 @@ class Renderer {
     }
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-  }
-
-  loadScene(Scene) {
-    if (this.scene) {
-      this.scene.dispose();
-      delete this.scene;
-    }
-    this.scene = new Scene(this);
   }
 }
 

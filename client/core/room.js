@@ -3,11 +3,11 @@ import Pako from './pako.js';
 import Peers from './peers.js';
 import Player from './player.js';
 import { protocol } from './protocol.js';
-import { Scene as ThreeScene } from './three.js';
+import { Scene } from './three.js';
 
-// A multiplayer VR scene base class
+// A multiplayer VR room base class
 
-class Scene extends ThreeScene {
+class Room extends Scene {
   constructor({
     camera,
     dialogs,
@@ -16,7 +16,7 @@ class Scene extends ThreeScene {
   }) {
     super();
 
-    this.locomotion = Scene.locomotions.teleport;
+    this.locomotion = Room.locomotions.teleport;
     this.dom = dom;
 
     this.player = new Player({
@@ -38,7 +38,7 @@ class Scene extends ThreeScene {
   }
 
   onBeforeRender({ animation: { delta }, xr }, scene, camera) {
-    const { locomotions } = Scene;
+    const { locomotions } = Room;
     const {
       locomotion,
       peers,
@@ -188,7 +188,7 @@ class Scene extends ThreeScene {
   onMessage({ data }) {
     let event;
     try {
-      event = Scene.decode(new Uint8Array(data));
+      event = Room.decode(new Uint8Array(data));
     } catch (e) {
       return;
     }
@@ -216,7 +216,7 @@ class Scene extends ThreeScene {
     const server = new WebSocket(socket.toString());
     server.binaryType = 'arraybuffer';
     server.sendEvent = (event) => (
-      server.send(Scene.encode(event))
+      server.send(Room.encode(event))
     );
     server.onerror = () => {};
     server.onclose = () => {
@@ -263,9 +263,9 @@ class Scene extends ThreeScene {
   }
 }
 
-Scene.locomotions = {
+Room.locomotions = {
   fly: 0,
   teleport: 1,
 };
 
-export default Scene;
+export default Room;
