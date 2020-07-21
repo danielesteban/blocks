@@ -79,7 +79,7 @@ const Photos = ({
       y: height * 0.94,
     },
     {
-      text: 'Press the X button',
+      text: 'Press the A button',
       font: '700 30px monospace',
       x: width * 0.5,
       y: height * 0.45,
