@@ -108,18 +108,20 @@ LocationSchema.statics = {
             {
               limit: pageSize,
               page,
-              populate: [
-                { path: 'server', select: 'name' },
-                { path: 'user', select: 'name' },
-              ],
-              select: [
-                'createdAt',
-                'position',
-                'rotation',
-                ...(filter !== 'server' ? ['server'] : []),
-                ...(~['session', 'user'].indexOf(filter) ? ['user'] : []),
-              ],
               sort: '-createdAt',
+              ...(filter === 'session' ? ({
+                select: '_id',
+              }) : ({
+                populate: [
+                  { path: 'server', select: 'name' },
+                  { path: 'user', select: 'name' },
+                ],
+                select: [
+                  'createdAt',
+                  'position',
+                  'rotation',
+                ],
+              })),
             }
           )
           .then(({ docs, totalPages }) => (

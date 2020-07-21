@@ -21,7 +21,7 @@ module.exports = (app) => {
   app.get(
     '/user/locations',
     User.authenticate,
-    Location.list({ filter: 'session' })
+    Location.list({ filter: 'session', pageSize: 100 })
   );
 
   app.get(

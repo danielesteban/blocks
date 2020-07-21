@@ -7,7 +7,7 @@ export const getUserSkin = (id) => (
 );
 
 export const fetchLocations = ({ server, user }) => {
-  let endpoint = '/locations';
+  let endpoint = 'locations';
   if (server) {
     endpoint = `server/${server}/locations`;
   } else if (user) {
