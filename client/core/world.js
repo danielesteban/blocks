@@ -297,7 +297,7 @@ class World extends Room {
     Voxels.updateMaterials({ atlas: `${server.serverURL}atlas` });
     if (data.id) {
       dom.server.href = `https://blocks.gatunes.com/destinations/#/server:${data.id}`;
-      dom.server.innerText = data.id;
+      dom.server.innerText = data.name;
     } else {
       dom.server.removeAttribute('href');
       dom.server.innerText = (new URL(server.serverURL)).host;

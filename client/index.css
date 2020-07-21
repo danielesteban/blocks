@@ -109,14 +109,14 @@ canvas {
   justify-content: space-between;
 }
 
-#credits {
+#info {
   position: absolute;
   bottom: 1rem;
   left: 1rem;
   opacity: 0.3;
 }
 
-#credits > a {
+#info > a {
   color: inherit;
 }
 
