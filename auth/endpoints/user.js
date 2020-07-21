@@ -54,6 +54,45 @@ module.exports = (app) => {
   );
 
   app.patch(
+    '/user/password',
+    User.authenticate,
+    body('current')
+      .not().isEmpty()
+      .trim(),
+    body('password')
+      .not().isEmpty()
+      .trim(),
+    (req, res) => {
+      if (!validationResult(req).isEmpty()) {
+        res.status(422).end();
+        return;
+      }
+      const { current, password } = req.body;
+      User
+        .findById(req.user._id)
+        .select('password')
+        .then((user) => (
+          user
+            .comparePassword(current)
+            .then((isMatch) => {
+              if (!isMatch) {
+                return res.status(401).end();
+              }
+              user.password = password;
+              return user
+                .save()
+                .then(() => (
+                  res.status(200).end()
+                ));
+            })
+        ))
+        .catch(() => (
+          res.status(401).end()
+        ));
+    }
+  );
+
+  app.patch(
     '/user',
     User.authenticate,
     body('name')
