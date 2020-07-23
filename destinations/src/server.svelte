@@ -10,11 +10,11 @@
 </script>
 
 {#await fetchServer(id) then server}
-	<a href={server.link} target="_blank">
+	<a href={server.link}>
 		<img alt={server.name} src={server.map} />
 	</a>
 	<h3>
-		<a href={server.link} target="_blank">
+		<a href={server.link}>
 			{server.name}
 		</a>
 	</h3>

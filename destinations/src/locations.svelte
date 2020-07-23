@@ -16,7 +16,7 @@
 <destination>
 	<photo>
 		{#if location}
-			<a href={location.link} target="_blank">
+			<a href={location.link}>
 				<img alt={location.name} src="{location.photo}"/>
 			</a>
 		{/if}

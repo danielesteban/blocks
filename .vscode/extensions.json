@@ -1,8 +1,8 @@
 {
   "recommendations": [
     "dbaeumer.vscode-eslint",
-    "jamesbirtles.svelte-vscode",
     "jedmao.tabsanity",
+    "svelte.svelte-vscode",
     "zxh404.vscode-proto3"
   ]
 }
