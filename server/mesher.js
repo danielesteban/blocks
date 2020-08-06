@@ -19,23 +19,25 @@ module.exports = ({
     const ao = [n1, n2, n3].reduce((ao, n) => (
       ao - (n ? 0.2 : 0)
     ), 1);
+    let c = 1;
+    let l = light;
+    let s = sunlight;
     n1 = types[neighbors[0].type].isTransparent;
     n2 = types[neighbors[1].type].isTransparent;
-    n3 = (n1 || n2) && types[neighbors[2].type].isTransparent;
-    let c = 1;
+    n3 = types[neighbors[2].type].isTransparent;
     [n1, n2, n3].forEach((n, i) => {
       if (n) {
-        light += neighbors[i].light;
-        sunlight += neighbors[i].sunlight;
+        l += neighbors[i].light;
+        s += neighbors[i].sunlight;
         c += 1;
       }
     });
-    light = Math.round(light / c);
-    sunlight = Math.round(sunlight / c);
+    l = Math.round(l / c);
+    s = Math.round(s / c);
     return {
       ao,
-      light: (light << 4) | sunlight,
-      combined: ao * (light + sunlight) * 0.5,
+      light: (l << 4) | s,
+      combined: ao * (l + s) * 0.5,
     };
   });
   const getLighting = ({ light, sunlight }) => [...Array(4)].map(() => ({
