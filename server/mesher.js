@@ -24,7 +24,7 @@ module.exports = ({
     let s = sunlight;
     n1 = types[neighbors[0].type].isTransparent;
     n2 = types[neighbors[1].type].isTransparent;
-    n3 = types[neighbors[2].type].isTransparent;
+    n3 = (n1 || n2) && types[neighbors[2].type].isTransparent;
     [n1, n2, n3].forEach((n, i) => {
       if (n) {
         l += neighbors[i].light;
