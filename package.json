@@ -21,7 +21,7 @@
     "express-ws": "^4.0.0",
     "fastnoisejs": "^1.0.1",
     "helmet": "^3.23.3",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "pngjs": "^5.0.0",
     "protobufjs": "^6.10.1",
     "uuid": "^8.2.0",
