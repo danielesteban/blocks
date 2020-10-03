@@ -29,7 +29,7 @@ const server = (process.env.TLS_KEY && process.env.TLS_CERT ? https : http).crea
 }, app).listen(process.env.PORT || 8080, () => (
   console.log(`Listening on port: ${server.address().port}`)
 ));
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 expressWS(app, server, { clientTracking: false });
 
 app.ws('/', world.onClient.bind(world));

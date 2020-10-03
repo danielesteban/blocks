@@ -131,8 +131,8 @@ ShaderChunk.fog_pars_vertex = ShaderChunk.fog_pars_vertex.replace(
 );
 
 ShaderChunk.fog_vertex = ShaderChunk.fog_vertex.replace(
-  'fogDepth = -mvPosition.z;',
-  'vViewPosition = -mvPosition.xyz;'
+  'fogDepth = - mvPosition.z;',
+  'vViewPosition = - mvPosition.xyz;'
 );
 
 ShaderChunk.fog_pars_fragment = ShaderChunk.fog_pars_fragment.replace(
