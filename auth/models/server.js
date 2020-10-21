@@ -71,7 +71,7 @@ ServerSchema.statics = {
   refresh() {
     const Server = this;
     return Server
-      .find()
+      .find({ verified: true })
       .sort('updateAt')
       .limit(100)
       .then((servers) => {
