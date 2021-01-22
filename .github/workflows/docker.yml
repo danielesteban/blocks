@@ -1,0 +1,25 @@
+name: docker
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: docker build -t danigatunes/blocks-auth auth
+      - name: Deploy
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u danigatunes --password-stdin && docker push danigatunes/blocks-auth
+
+  blocks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: docker build -t danigatunes/blocks .
+      - name: Deploy
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u danigatunes --password-stdin && docker push danigatunes/blocks

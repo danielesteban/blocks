@@ -3,6 +3,7 @@
   "files.eol": "\n",
   "search.exclude": {
     ".eslintcache": true,
+    ".github/": true,
     ".vscode/": true,
     "data/": true,
     "**/dist/": true,
@@ -11,6 +12,7 @@
   },
   "files.exclude": {
     ".eslintcache": true,
+    ".github/": true,
     ".vscode/": true,
     "data/": true,
     "**/dist/": true,

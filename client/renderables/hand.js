@@ -2,11 +2,10 @@ import {
   AnimationClip,
   AnimationMixer,
   Bone,
-  BoxGeometry,
-  BufferGeometry,
+  BoxBufferGeometry,
+  BufferAttribute,
   BufferGeometryUtils,
   Euler,
-  Geometry,
   LoopOnce,
   MeshBasicMaterial,
   Quaternion,
@@ -14,8 +13,6 @@ import {
   Skeleton,
   SkinnedMesh,
   Vector3,
-  Vector4,
-  VertexColors,
 } from '../core/three.js';
 
 // Skinned mesh for the player/peer hands
@@ -82,7 +79,7 @@ class Hand extends SkinnedMesh {
   }
 
   static setupGeometry() {
-    const geometry = new Geometry();
+    const geometries = [];
     const pushBox = (dimensions, bone) => {
       const {
         w,
@@ -92,16 +89,35 @@ class Hand extends SkinnedMesh {
         y,
         z,
       } = dimensions;
-      const box = new BoxGeometry(w, h, d, w * 100, h * 100, d * 100);
+      const box = new BoxBufferGeometry(
+        w,
+        h,
+        d,
+        Math.round(w * 100),
+        Math.round(h * 100),
+        Math.round(d * 100)
+      );
+      box.deleteAttribute('normal');
+      box.deleteAttribute('uv');
       box.translate(x, y, z);
-      box.faces.forEach((face, i) => {
-        face.materialIndex = bone;
-        if (i % 2 === 1) {
-          face.color.offsetHSL(0, 0, Math.random() * -0.1 - (bone ? 0 : 0.1));
-          box.faces[i - 1].color.copy(face.color);
+      const geometry = box.toNonIndexed();
+      const { count } = geometry.getAttribute('position');
+      const color = new BufferAttribute(new Float32Array(count * 3), 3);
+      const skinIndex = new BufferAttribute(new Float32Array(count * 4), 4);
+      const skinWeight = new BufferAttribute(new Float32Array(count * 4), 4);
+      let light;
+      for (let i = 0; i < count; i += 1) {
+        if (i % 6 === 0) {
+          light = 1 - Math.random() * 0.1 - (bone ? 0 : 0.1);
         }
-      });
-      geometry.merge(box);
+        color.setXYZ(i, light, light, light);
+        skinIndex.setXYZW(i, bone, 0, 0, 0);
+        skinWeight.setXYZW(i, 1, 0, 0, 0);
+      }
+      geometry.setAttribute('color', color);
+      geometry.setAttribute('skinIndex', skinIndex);
+      geometry.setAttribute('skinWeight', skinWeight);
+      geometries.push(geometry);
     };
     const { dimensions: { base, phalange } } = Hand;
     // Base of the hand
@@ -110,21 +126,9 @@ class Hand extends SkinnedMesh {
     for (let i = 1; i < 16; i += 1) {
       pushBox(phalange, i);
     }
-    // Skinning
-    geometry.faces.forEach((face) => {
-      geometry.vertices[face.a].bone = face.materialIndex;
-      geometry.vertices[face.b].bone = face.materialIndex;
-      geometry.vertices[face.c].bone = face.materialIndex;
-      face.materialIndex = 0;
-    });
-    geometry.vertices.forEach((vertex) => {
-      geometry.skinIndices.push(new Vector4(vertex.bone, 0, 0, 0));
-      geometry.skinWeights.push(new Vector4(1, 0, 0, 0));
-    });
-    Hand.geometry = (new BufferGeometry()).fromGeometry(geometry);
-    delete Hand.geometry.attributes.normal;
-    delete Hand.geometry.attributes.uv;
-    Hand.geometry = BufferGeometryUtils.mergeVertices(Hand.geometry);
+    Hand.geometry = BufferGeometryUtils.mergeVertices(
+      BufferGeometryUtils.mergeBufferGeometries(geometries)
+    );
     // Pre-computed bone origins
     Hand.bones = [new Vector3(0, 0, 0)];
     for (let f = 0; f < 5; f += 1) {
@@ -151,7 +155,7 @@ class Hand extends SkinnedMesh {
     Hand.material = new MeshBasicMaterial({
       color: 0x0A0A0A,
       skinning: true,
-      vertexColors: VertexColors,
+      vertexColors: true,
     });
   }
 

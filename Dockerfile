@@ -1,4 +1,4 @@
-FROM node:erbium
+FROM node:fermium
 
 ENV NODE_ENV production
 

@@ -1,40 +1,49 @@
 import {
+  BufferAttribute,
   BufferGeometry,
   BufferGeometryUtils,
   Color,
+  Group,
   Line,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
-  Object3D,
-  TorusGeometry,
-  VertexColors,
+  TorusBufferGeometry,
 } from '../core/three.js';
 
 // A mesh to visualize the translocation destination and the curvecast path
 
-class Marker extends Object3D {
+class Marker extends Group {
   static setupGeometry() {
-    const outer = new TorusGeometry(0.3, 0.025, 16, 32);
-    const inner = new TorusGeometry(0.15, 0.0125, 16, 24);
-    [outer, inner].forEach(({ faces }) => faces.forEach((face, i) => {
-      if (i % 2 === 1) {
-        face.color.offsetHSL(0, 0, Math.random() * -0.1);
-        faces[i - 1].color.copy(face.color);
-      }
-    }));
-    outer.merge(inner);
-    outer.rotateX(Math.PI * -0.5);
-    const geometry = (new BufferGeometry()).fromGeometry(outer);
-    delete geometry.attributes.normal;
-    delete geometry.attributes.uv;
+    const geometry = BufferGeometryUtils.mergeBufferGeometries(
+      [
+        new TorusBufferGeometry(0.3, 0.025, 16, 32),
+        new TorusBufferGeometry(0.15, 0.0125, 16, 24),
+      ].map((model) => {
+        model.deleteAttribute('normal');
+        model.deleteAttribute('uv');
+        const geometry = model.toNonIndexed();
+        const { count } = geometry.getAttribute('position');
+        const color = new BufferAttribute(new Float32Array(count * 3), 3);
+        let light;
+        for (let i = 0; i < count; i += 1) {
+          if (i % 6 === 0) {
+            light = 1 - Math.random() * 0.1;
+          }
+          color.setXYZ(i, light, light, light);
+        }
+        geometry.setAttribute('color', color);
+        return geometry;
+      })
+    );
+    geometry.rotateX(Math.PI * -0.5);
     Marker.geometry = BufferGeometryUtils.mergeVertices(geometry);
   }
 
   static setupMaterial() {
     Marker.material = new MeshBasicMaterial({
       color: 0xffffff,
-      vertexColors: VertexColors,
+      vertexColors: true,
       opacity: 0.5,
       transparent: true,
     });
@@ -61,9 +70,6 @@ class Marker extends Object3D {
       Marker.geometry,
       Marker.material
     );
-    this.disc.onBeforeRender = ({ animation: { delta } }) => {
-      this.disc.rotation.y += delta;
-    };
     this.add(this.disc);
     this.line = new Line(
       new BufferGeometry(),
@@ -74,11 +80,11 @@ class Marker extends Object3D {
     this.visible = false;
   }
 
-  update({ hit, points }) {
+  update({ animation: { delta }, hit, points }) {
     const { disc, line } = this;
     if (hit) {
+      disc.rotation.y += delta;
       disc.position.copy(hit.point);
-      disc.updateWorldMatrix();
       disc.visible = true;
     } else {
       disc.visible = false;
