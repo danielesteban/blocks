@@ -23,7 +23,7 @@
     "helmet": "^4.4.1",
     "node-fetch": "^2.6.1",
     "pngjs": "^6.0.0",
-    "protobufjs": "^6.10.2",
+    "protobufjs": "^6.10.3",
     "uuid": "^8.3.2",
     "ws": "^7.4.2"
   },
